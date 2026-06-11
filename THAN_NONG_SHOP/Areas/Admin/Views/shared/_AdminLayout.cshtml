@@ -1,17 +1,4 @@
 ﻿<!DOCTYPE html>
-
-<html>
-<head>
-    <meta name="viewport" content="width=device-width" />
-    <title>@ViewBag.Title</title>
-</head>
-<body>
-    <div>
-        @RenderBody()
-    </div>
-</body>
-</html>
-<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
@@ -108,11 +95,11 @@
     <div class="sidebar">
         <div class="sidebar-brand">THẦN NÔNG ADMIN</div>
         <ul class="sidebar-menu">
-            <li><a href="#">📊 Tổng quan</a></li>
-            <li><a href="#">📦 Quản lý Danh mục</a></li>
-            <li><a href="#">🍎 Quản lý Sản phẩm</a></li>
-            <li><a href="#">🧾 Quản lý Đơn hàng</a></li>
-            <li><a href="#">👤 Quản lý Tài khoản</a></li>
+            <li><a asp-area="Admin" asp-controller="Home" asp-action="Index">📊 Tổng quan</a></li>
+            <li><a asp-area="Admin" asp-controller="Category" asp-action="Index">📦 Quản lý Danh mục</a></li>
+            <li><a asp-area="Admin" asp-controller="Product" asp-action="Index">🍎 Quản lý Sản phẩm</a></li>
+            <li><a asp-area="Admin" asp-controller="Order" asp-action="Index">🧾 Quản lý Đơn hàng</a></li>
+            <li><a asp-area="Admin" asp-controller="Account" asp-action="Index">👤 Quản lý Tài khoản</a></li>
             <li><a href="#" style="color: #e74c3c;">🚪 Đăng xuất</a></li>
         </ul>
     </div>
