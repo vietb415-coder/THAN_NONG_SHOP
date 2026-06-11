@@ -1,0 +1,136 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>@ViewBag.Title</title>
+</head>
+<body>
+    <div>
+        @RenderBody()
+    </div>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Ban Quản Trị Thần Nông Shop</title>
+    <style>
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            }
+
+            body {
+                display: flex;
+                min-height: 100vh;
+                background-color: #f4f6f9;
+            }
+
+            /* Sidebar bên trái */
+            .sidebar {
+                width: 250px;
+                background-color: #2c3e50;
+                color: #ecf0f1;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .sidebar-brand {
+                padding: 20px;
+                text-align: center;
+                font-size: 20px;
+                font-weight: bold;
+                background-color: #1a252f;
+                border-bottom: 1px solid #34495e;
+            }
+
+            .sidebar-menu {
+                list-style: none;
+                padding: 10px 0;
+                flex: 1;
+            }
+
+                .sidebar-menu li a {
+                    display: block;
+                    padding: 15px 20px;
+                    color: #bdc3c7;
+                    text-decoration: none;
+                    transition: 0.3s;
+                }
+
+                    .sidebar-menu li a:hover {
+                        background-color: #34495e;
+                        color: #fff;
+                        padding-left: 25px;
+                    }
+
+            /* Khu vực bên phải */
+            .main-container {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .header {
+                height: 60px;
+                background-color: #fff;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+                padding: 0 20px;
+            }
+
+            .content {
+                padding: 30px;
+                flex: 1;
+            }
+
+            .footer {
+                height: 40px;
+                background-color: #fff;
+                text-align: center;
+                line-height: 40px;
+                font-size: 14px;
+                color: #7f8c8d;
+                border-top: 1px solid #e0e0e0;
+            }
+    </style>
+</head>
+<body>
+
+    <!-- BÊN TRÁI: MENU ĐIỀU HƯỚNG -->
+    <div class="sidebar">
+        <div class="sidebar-brand">THẦN NÔNG ADMIN</div>
+        <ul class="sidebar-menu">
+            <li><a href="#">📊 Tổng quan</a></li>
+            <li><a href="#">📦 Quản lý Danh mục</a></li>
+            <li><a href="#">🍎 Quản lý Sản phẩm</a></li>
+            <li><a href="#">🧾 Quản lý Đơn hàng</a></li>
+            <li><a href="#">👤 Quản lý Tài khoản</a></li>
+            <li><a href="#" style="color: #e74c3c;">🚪 Đăng xuất</a></li>
+        </ul>
+    </div>
+
+    <!-- BÊN PHẢI: NỘI DUNG CHÍNH -->
+    <div class="main-container">
+        <div class="header">
+            <span>Xin chào, <strong>Quản trị viên</strong></span>
+        </div>
+
+        <div class="content">
+            @RenderBody() @* Nơi hiển thị nội dung động của từng trang con *@
+        </div>
+
+        <div class="footer">
+            &copy; 2026 - Hệ Thống Quản Trị Thần Nông Shop
+        </div>
+    </div>
+
+</body>
+</html>
