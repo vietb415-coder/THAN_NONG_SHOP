@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using THAN_NONG_SHOP.Data;
+using THAN_NONG_SHOP.Models;
 
 namespace THAN_NONG_SHOP.Areas.Admin.Controllers
 {
@@ -18,6 +19,25 @@ namespace THAN_NONG_SHOP.Areas.Admin.Controllers
         {
             var categories = _db.Categories.ToList();
             return View(categories);
+        }
+        [HttpGet]
+        public IActionResult Create()
+        {
+            return View();
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Create(Category category)
+        {
+            if (ModelState.IsValid)
+            {
+                _db.Categories.Add(category);
+                _db.SaveChanges();
+                return RedirectToAction(nameof(Index));
+            }
+            return View(category);
+
+
         }
 }
 }
