@@ -1,0 +1,73 @@
+﻿@model THAN_NONG_SHOP.Models.Product
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Thêm sản phẩm mới";
+}
+
+    <div style="padding: 20px; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); max-width: 800px; margin: 0 auto;" >
+    <h2 style="color: #2c3e50;">➕ Thêm Sản Phẩm Mới</h2>
+    <hr style="margin-bottom: 20px;" />
+
+    <form method="post" asp-action="Create" enctype="multipart/form-data">
+
+        <div asp-validation-summary="All" style="color: red; font-weight: bold; margin-bottom: 20px;"></div>
+
+        <div style="margin-bottom: 15px;">
+            <label style="display:block; margin-bottom:5px; font-weight: bold;">Tên sản phẩm:</label>
+            <input asp-for="Name" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" />
+            <span asp-validation-for="Name" style="color: red; font-size: 13px;"></span>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label style="display:block; margin-bottom:5px; font-weight: bold;">Danh mục sản phẩm:</label>
+            <select asp-for="categoryId" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <option value="">-- Chọn danh mục --</option>
+                @if (ViewBag.CategoryList != null)
+                {
+                    foreach (var cat in ViewBag.CategoryList)
+                    {
+                        <option value="@cat.Id">@cat.Name</option>
+                    }
+                }
+            </select>
+            <span asp-validation-for="categoryId" style="color: red; font-size: 13px;"></span>
+        </div>
+
+        <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+            <div style="flex: 1;">
+                <label style="display:block; margin-bottom:5px; font-weight: bold;">Giá bán (đ):</label>
+                <input asp-for="price" type="number" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" />
+                <span asp-validation-for="price" style="color: red; font-size: 13px;"></span>
+            </div>
+
+            <div style="flex: 1;">
+                <label style="display:block; margin-bottom:5px; font-weight: bold;">Số lượng tồn kho:</label>
+                <input asp-for="stockQuantity" type="number" min="0" value="0" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" />
+                <span asp-validation-for="stockQuantity" style="color: red; font-size: 13px;"></span>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label style="display:block; margin-bottom:5px; font-weight: bold;">Hình ảnh sản phẩm:</label>
+            <input type="file" name="file" accept="image/*" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" />
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <label style="display:block; margin-bottom:5px; font-weight: bold;">Mô tả sản phẩm:</label>
+            <textarea asp-for="Description" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; height: 100px;"></textarea>
+            <span asp-validation-for="Description" style="color: red; font-size: 13px;"></span>
+        </div>
+
+        <div style="margin-bottom:20px">
+            <label style="display:block; margin-bottom:5px; font-weight: bold;">Câu chuyện của người nông dân:</label>
+            <textarea asp-for="farmerStory" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; height: 100px;"></textarea>
+            <span asp-validation-for="farmerStory" style="color: red; font-size: 13px;"></span>
+        </div>
+
+        <button type="submit" style="padding: 10px 20px; background-color: #23cc72; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+            Lưu Sản Phẩm
+        </button>
+        <a asp-action="Index" style="margin-left: 15px; color: #7f8c8d; text-decoration: none; font-weight: bold;">Hủy bỏ</a>
+    </form>
+</div>

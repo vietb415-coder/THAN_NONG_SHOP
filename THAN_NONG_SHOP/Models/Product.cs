@@ -11,13 +11,13 @@ namespace THAN_NONG_SHOP.Models
         public string Name { get; set; }   
         public String Description { get; set; }
         public decimal price { get; set; }
-        public string ImageUrl { get; set; }
-        public string farmerStory { get; set; }
+        public string? ImageUrl { get; set; }
+        public string? farmerStory { get; set; }
         public int stockQuantity { get; set; }
 
         public int categoryId { get; set; }
         [ForeignKey ("categoryId")]
-        public virtual Category Category { get; set; }
+        public virtual Category? Category { get; set; }
 
 
 
