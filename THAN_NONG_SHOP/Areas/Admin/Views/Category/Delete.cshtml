@@ -1,0 +1,20 @@
+﻿@model THAN_NONG_SHOP.Models.Category
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Xóa danh mục";
+}
+ <div style="padding:20px;border-radius:8px ">
+     <h2 style="color:#e74c3c">Xác nhận xóa danh mục    </h2>
+     <hr />
+     <p><stong>Tên danh mục: </stong>@Model.Name</p>
+     <p style=" margin-bottom: 20px;"><strong>Mô tả: </strong> @Model.Description</p>
+     <form asp-action="Delete" method="post">
+        <input type="hidden" asp-for="Id"/>
+        <button type="submit" style=" padding 10px 20px; background-color:#e74c3c;color: white;border: none;border-radius:4px;cursor: pointer; font-weight: bold">
+            Xác nhận
+        </button>
+        <a asp-action="Index" style="margin-left: 15px; color: #7f8c8d;text-decoration:none;">Hủy b</a>
+
+     </form>
+ </div>

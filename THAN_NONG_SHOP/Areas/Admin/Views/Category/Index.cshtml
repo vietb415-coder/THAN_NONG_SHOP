@@ -6,28 +6,40 @@
 }
 
 <div style="padding:20px">
-    <h2>Category List</h2>
+    <h2 style="margin-bottom: 10px; color: #2c3e50;">Category List</h2>
 
-    <div style="margin-bottom: 15px;">
+    <div style="margin-bottom: 20px;">
         <a asp-area="Admin" asp-controller="Category" asp-action="Create"
            style="background: #23cc72; color: white; padding: 10px 15px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">
             ➕ Thêm mới
         </a>
     </div>
 
-    <table style="width:100%">
+    <table style="width: 100%; border-collapse: collapse; background-color: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
         <thead>
-            <tr>
-                <th>Name</th>
-                <th>Description</th>
+            <tr style="background-color: #34495e; color: white;">
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd; width: 30%;">Name</th>
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd; width: 50%;">Description</th>
+                <th style="padding: 12px; text-align: center; border: 1px solid #ddd; width: 20%;">Chức năng</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var category in Model)
             {
-                <tr>
-                    <td>@category.Name</td>
-                    <td>@category.Description</td>
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 12px; border: 1px solid #ddd;">@category.Name</td>
+                    <td style="padding: 12px; border: 1px solid #ddd;">@category.Description</td>
+                    <td style="padding: 12px; border: 1px solid #ddd; text-align: center;">
+
+                        <a asp-area="Admin" asp-controller="Category" asp-action="Edit" asp-route-id="@category.Id"
+                           style="background-color: #3498db; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-size: 14px; font-weight: bold; margin-right: 5px;">
+                            ✏️ Sửa
+                        </a>
+                        <a asp-area="Admin" asp-controller="Category" asp-action="Delete" asp-route-id="@category.Id"
+                           style="background-color: #e74c3c; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-size: 14px; font-weight: bold;">
+                            🗑️ Xóa
+                        </a>
+                    </td>
                 </tr>
             }
         </tbody>

@@ -1,0 +1,68 @@
+﻿@model IEnumerable<THAN_NONG_SHOP.Models.Product>
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Quản lý sản phẩm";
+}
+
+<div style="padding:20px">
+    <h2 style="margin-bottom: 10px; color: #2c3e50;">Danh Sách Sản Phẩm</h2>
+
+    <div style="margin-bottom: 20px;">
+        <a asp-area="Admin" asp-controller="Product" asp-action="Create"
+           style="background: #23cc72; color: white; padding: 10px 15px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">
+            ➕ Thêm sản phẩm mới
+        </a>
+    </div>
+
+    <table style="width:100%; border-collapse: collapse; background-color: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <thead>
+            <tr style="background:#34495e; color: white;">
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd; width: 15%;">Hình ảnh</th>
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd; width: 20%;">Tên sản phẩm</th>
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd; width: 15%;">Danh mục</th>
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd; width: 25%;">Mô tả</th>
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd; width: 10%;">Giá</th>
+                <th style="padding: 12px; text-align: center; border: 1px solid #ddd; width: 15%;">Chức năng</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var product in Model)
+            {
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 12px; border: 1px solid #ddd; text-align: center;">
+                        @if (!string.IsNullOrEmpty(product.ImageUrl))
+                        {
+                            <img src="@product.ImageUrl" alt="@product.Name" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px;" />
+                        }
+                        else
+                        {
+                            <span style="color:#aaa; font-size:12px;">Không có ảnh</span>
+                        }
+                    </td>
+
+                    <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold;">@product.Name</td>
+
+                    <td style="padding: 12px; border: 1px solid #ddd;">@product.Category?.Name</td>
+
+                    <td style="padding: 12px; border: 1px solid #ddd; font-size: 14px; color: #555;">@product.Description</td>
+
+                    <td style="padding: 12px; border: 1px solid #ddd; color: #e74c3c; font-weight: bold;">
+                        @product.price.ToString("N0") đ
+                    </td>
+
+                    <td style="padding: 12px; border: 1px solid #ddd; text-align: center;">
+                        <a asp-area="Admin" asp-controller="Product" asp-action="Edit" asp-route-id="@product.Id"
+                           style="background-color: #3498db; color: white; padding: 6px 10px; text-decoration: none; border-radius: 4px; font-size: 13px; font-weight: bold; margin-right: 3px;">
+                            ✏️ Sửa
+                        </a>
+                        <a asp-area="Admin" asp-controller="Product" asp-action="Delete" asp-route-id="@product.Id"
+                           style="background-color: #e74c3c; color: white; padding: 6px 10px; text-decoration: none; border-radius: 4px; font-size: 13px; font-weight: bold;">
+                            🗑️ Xóa
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
