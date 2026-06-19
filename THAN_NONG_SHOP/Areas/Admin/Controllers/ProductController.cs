@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.IO;
 using System.Linq;
+using System.IO;
 using THAN_NONG_SHOP.Data;
 using THAN_NONG_SHOP.Models;
 using Microsoft.AspNetCore.Hosting;
