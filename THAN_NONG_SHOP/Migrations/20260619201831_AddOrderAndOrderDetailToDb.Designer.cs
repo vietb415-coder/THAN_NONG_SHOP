@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using THAN_NONG_SHOP.Data;
 
@@ -11,9 +12,11 @@ using THAN_NONG_SHOP.Data;
 namespace THAN_NONG_SHOP.Migrations
 {
     [DbContext(typeof(THAN_NONG_SHOP_DbContext))]
-    partial class THAN_NONG_SHOP_DbContextModelSnapshot : ModelSnapshot
+    [Migration("20260619201831_AddOrderAndOrderDetailToDb")]
+    partial class AddOrderAndOrderDetailToDb
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -70,8 +73,8 @@ namespace THAN_NONG_SHOP.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("TotalPrice")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<double>("TotalPrice")
+                        .HasColumnType("float");
 
                     b.HasKey("Id");
 
@@ -89,14 +92,14 @@ namespace THAN_NONG_SHOP.Migrations
                     b.Property<int>("OderId")
                         .HasColumnType("int");
 
+                    b.Property<double>("Price")
+                        .HasColumnType("float");
+
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
-
-                    b.Property<decimal>("price")
-                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
