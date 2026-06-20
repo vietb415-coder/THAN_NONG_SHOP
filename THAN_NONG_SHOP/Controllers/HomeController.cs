@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using THAN_NONG_SHOP.Models;
 using THAN_NONG_SHOP.Data;
 using System.Linq;
+using Microsoft.AspNetCore.Authentication;
 
 namespace THAN_NONG_SHOP.Controllers
 {
@@ -15,11 +16,11 @@ namespace THAN_NONG_SHOP.Controllers
             _context = context;
         }
 
-        public IActionResult Index()
+         public async Task<IActionResult> Index()
         {
-            var products = _context.Products.Include(p => p.Category);
-            ViewResult viewResult = View(products);
-            return viewResult;
+            await HttpContext.SignOutAsync();
+            HttpContext.Session.Clear();
+            return View();
         }
 
 

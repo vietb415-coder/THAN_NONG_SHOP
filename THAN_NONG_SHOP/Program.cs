@@ -21,6 +21,7 @@ builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.Cookies.C
         options.LoginPath = "/Account/Login";
         options.LogoutPath = "/Account/Logout";
         options.AccessDeniedPath = "/Account/AccessDenied";
+        
     });
 var app = builder.Build();
 

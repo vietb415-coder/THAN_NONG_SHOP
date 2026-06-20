@@ -30,15 +30,14 @@ namespace THAN_NONG_SHOP.Controllers
 
         private List<CartItem> GetCartItems()
         {
-            var sessionData = HttpContext.Session.GetString(CartSessionKey);
-            if (string.IsNullOrEmpty(sessionData))
+            var cookieData = HttpContext.Request.Cookies[CartSessionKey];
+            if (string.IsNullOrEmpty(cookieData))
             {
                 return new List<CartItem>();
             }
             try
             {
-                
-                var cart = SystemTextJson.JsonSerializer.Deserialize<List<CartItem>>(sessionData, _jsonOptions);
+                var cart = SystemTextJson.JsonSerializer.Deserialize<List<CartItem>>(cookieData, _jsonOptions);
                 return cart ?? new List<CartItem>();
             }
             catch
@@ -49,9 +48,14 @@ namespace THAN_NONG_SHOP.Controllers
 
         private void SaveCartItems(List<CartItem> cartItems)
         {
-       
-            var sessionData = SystemTextJson.JsonSerializer.Serialize(cartItems);
-            HttpContext.Session.SetString(CartSessionKey, sessionData);
+            var cookieData = SystemTextJson.JsonSerializer.Serialize(cartItems);
+            var cookieOptions = new CookieOptions
+            {
+                Expires = DateTime.Now.AddDays(30), 
+                HttpOnly = true,                   
+                Secure = true                     
+            };
+            HttpContext.Response.Cookies.Append(CartSessionKey, cookieData, cookieOptions);
         }
 
         public IActionResult Index()
@@ -105,30 +109,30 @@ namespace THAN_NONG_SHOP.Controllers
         [HttpPost]
         public async Task<IActionResult> Checkout(string shippingAddress, string shippingPhone)
         {
-           
-            var cartJson = HttpContext.Session.GetString(CartSessionKey);
-            var cartItems = string.IsNullOrEmpty(cartJson)
-                ? new List<CartItem>()
-                : JsonConvert.DeserializeObject<List<CartItem>>(cartJson);
+            var cartItems = GetCartItems();
 
             if (cartItems == null || cartItems.Count == 0)
             {
                 return RedirectToAction("Index", "Home");
             }
+
             var currentUsername = User.Identity?.Name;
-            var userProfile= _context.Users.FirstOrDefault(u => u.UserName == currentUsername);
+            var userProfile = _context.Users.FirstOrDefault(u => u.UserName == currentUsername);
+
+            if (userProfile == null)
+            {
+                return NotFound("Không tìm thấy thông tin tài khoản.");
+            }
 
             var order = new Oder
             {
                 OrderDate = DateTime.Now,
                 UserName = currentUsername,
-                CustomerName = userProfile.Fullname ??"",
+                CustomerName = userProfile.Fullname ?? "",
                 Address = shippingAddress,
                 PhoneNumber = shippingPhone,
                 TotalPrice = cartItems.Sum(item => (item.Product?.price ?? 0) * item.Quantity),
                 Status = "Đang chờ xử lý",
-               
-         
             };
 
             _context.Add(order);
@@ -136,7 +140,6 @@ namespace THAN_NONG_SHOP.Controllers
 
             foreach (var item in cartItems)
             {
-                
                 if (item.Product == null) continue;
                 var orderDetail = new OderDetail
                 {
@@ -148,8 +151,8 @@ namespace THAN_NONG_SHOP.Controllers
                 _context.Add(orderDetail);
             }
             await _context.SaveChangesAsync();
+            HttpContext.Response.Cookies.Delete(CartSessionKey);
 
-            HttpContext.Session.Remove(CartSessionKey);
             return RedirectToAction("OrderSuccess");
         }
 
