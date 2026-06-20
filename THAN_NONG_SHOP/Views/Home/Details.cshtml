@@ -1,0 +1,52 @@
+﻿@model THAN_NONG_SHOP.Models.Product
+
+@{
+    ViewData["Title"] = Model.Name + " - Chi Tiết Nông Sản";
+}
+
+<div style="max-width: 900px; margin: 30px auto; padding: 20px; font-family: Arial, sans-serif;">
+
+    <a asp-action="Index" style="text-decoration: none; color: #2ea751; font-weight: bold;">⬅️ Quay lại cửa hàng</a>
+
+    <div style="display: flex; gap: 40px; margin-top: 20px; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 300px;">
+            <img src="@Model.ImageUrl" style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 8px; border: 1px solid #eee;" />
+        </div>
+
+        <div style="flex: 1; min-width: 300px;">
+            <span style="color: #2ea751; font-weight: bold; text-transform: uppercase; font-size: 12px;">
+                🌱 @Model.Category?.Name
+            </span>
+            <h1 style="color: #2c3e50; margin: 10px 0;">@Model.Name</h1>
+            <h2 style="color: #e53e3e; margin-bottom: 20px;">@Model.price.ToString("N0") đ</h2>
+
+            <p style="color: #7f8c8d; font-weight: bold;">
+                Trạng thái: @(Model.stockQuantity > 0 ? "⚫ Còn hàng" : "🔴 Hết hàng")
+            </p>
+
+            <div style="margin-top: 20px;">
+                <h4 style="color: #34495e; margin-bottom: 5px;">Mô tả nông sản:</h4>
+                <p style="color: #555; line-height: 1.6;">@Model.Description</p>
+            </div>
+
+          
+            <form asp-controller="Cart" asp-action="AddToCart" method="post" style="margin-top: 30px;">
+                <input type="hidden" name="productId" value="@Model.Id" />
+                <input type="hidden" name="quantity" value="1" />
+                <button type="submit" style="width: 100%; background: #2ea751; color: white; border: none; padding: 12px; font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer; transition: background 0.2s;">
+                    🛒 THÊM VÀO GIỎ HÀNG
+                </button>
+            </form>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.farmerStory))
+    {
+        <div style="margin-top: 40px; padding: 20px; background: #f9fbf9; border: 1px dashed #2ea751; border-radius: 8px;">
+            <h4 style="margin-top: 0; color: #2ea751;">👨‍🌾 Câu chuyện từ nhà vườn:</h4>
+            <p style="color: #555; font-style: italic; line-height: 1.6; margin: 0;">
+                "@Model.farmerStory"
+            </p>
+        </div>
+    }
+</div>

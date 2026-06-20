@@ -1,0 +1,76 @@
+﻿@model IEnumerable<THAN_NONG_SHOP.Models.CartItem>
+
+@{
+    ViewData["Title"] = "Giỏ Hàng Của Bạn";
+}
+
+<div style="max-width: 1000px; margin: 30px auto; padding: 20px; font-family: Arial, sans-serif;">
+    <h2 style="color: #2c3e50; margin-bottom: 20px;">🛒 GIỎ HÀNG CỦA BẠN</h2>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div style="text-align: center; padding: 40px; border: 1px dashed #ccc; border-radius: 8px;">
+            <p style="color: #7f8c8d; font-size: 18px;">Giỏ hàng của em đang trống rỗng.</p>
+            <a asp-controller="Home" asp-action="Index" style="display: inline-block; background: #2ea751; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-weight: bold; margin-top: 10px;">
+                ⬅️ Tiếp tục mua sắm
+            </a>
+        </div>
+    }
+    else
+    {
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
+            <thead>
+                <tr style="background-color: #f8f9fa; border-bottom: 2px solid #dee2e6; text-align: left;">
+                    <th style="padding: 12px;">Hình ảnh</th>
+                    <th style="padding: 12px;">Sản phẩm</th>
+                    <th style="padding: 12px;">Giá</th>
+                    <th style="padding: 12px; text-align: center;">Số lượng</th>
+                    <th style="padding: 12px; text-align: right;">Thành tiền</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    if (item.Product != null)
+                    {
+                        <tr style="border-bottom: 1px solid #dee2e6; vertical-align: middle;">
+                            <td style="padding: 12px; width: 100px;">
+                                <img src="@item.Product.ImageUrl" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px;" />
+                            </td>
+                            <td style="padding: 12px;">
+                                <strong style="color: #2d3748; font-size: 16px;">@item.Product.Name</strong>
+                            </td>
+                            <td style="padding: 12px;">@item.Product.price.ToString("N0") đ</td>
+                            <td style="padding: 12px; text-align: center;">
+                                <span style="display: inline-block; padding: 5px 15px; background: #edf2f7; border-radius: 4px; font-weight: bold;">
+                                    @item.Quantity
+                                </span>
+                            </td>
+                            <td style="padding: 12px; text-align: right; font-weight: bold; color: #2ea751;">
+                                @((item.Product.price * item.Quantity).ToString("N0")) đ
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; padding: 20px; border-radius: 8px;">
+            <div>
+                <a asp-controller="Home" asp-action="Index" style="text-decoration: none; color: #4a5568; font-weight: bold;">⬅️ Mua thêm sản phẩm khác</a>
+            </div>
+            <div style="text-align: right;">
+                <h3 style="margin: 0 0 15px 0; color: #2d3748;">
+                    Tổng tiền thanh toán:
+                    <span style="color: #e53e3e; font-size: 24px;">
+                        @(ViewBag.Total != null ? ViewBag.Total.ToString("N0") : "0") đ
+                    </span>
+                </h3>
+
+                <a asp-controller="Cart" asp-action="Checkout" style="display: inline-block; background: #e53e3e; color: white; padding: 12px 30px; font-size: 16px; font-weight: bold; border-radius: 4px; text-decoration: none; text-align: center;">
+                    Tiến Hành Đặt Hàng ➡️
+                </a>
+            </div>
+        </div>
+    }
+</div>

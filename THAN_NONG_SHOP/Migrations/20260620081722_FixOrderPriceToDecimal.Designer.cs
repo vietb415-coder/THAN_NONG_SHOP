@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using THAN_NONG_SHOP.Data;
 
@@ -11,9 +12,11 @@ using THAN_NONG_SHOP.Data;
 namespace THAN_NONG_SHOP.Migrations
 {
     [DbContext(typeof(THAN_NONG_SHOP_DbContext))]
-    partial class THAN_NONG_SHOP_DbContextModelSnapshot : ModelSnapshot
+    [Migration("20260620081722_FixOrderPriceToDecimal")]
+    partial class FixOrderPriceToDecimal
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -192,10 +195,6 @@ namespace THAN_NONG_SHOP.Migrations
 
                     b.Property<int>("RoleId")
                         .HasColumnType("int");
-
-                    b.Property<string>("UserName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 

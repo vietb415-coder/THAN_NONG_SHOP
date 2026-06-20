@@ -1,50 +1,228 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - THAN_NONG_SHOP</title>
-    <script type="importmap"></script>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/THAN_NONG_SHOP.styles.css" asp-append-version="true" />
+    <title>@ViewData["Title"] - THẦN NÔNG SHOP</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+            :root {
+                --primary-green: #2f855a;
+                --earth-gold: #b7791f;
+                --earth-brown: #744210;
+                --dark-text: #2d3748;
+                --light-bg: #f7fafc;
+            }
+
+            body {
+                margin: 0;
+                padding: 0;
+                font-family: 'Inter', sans-serif;
+                color: var(--dark-text);
+                background-color: #ffffff;
+            }
+            /* HEADER UPPER */
+            .header-top {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 15px 5%;
+                background: #ffffff;
+                border-bottom: 1px solid #edf2f7;
+            }
+
+            .logo-area {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                text-decoration: none;
+            }
+
+            .logo-text {
+                font-family: 'Playfair Display', serif;
+                font-size: 26px;
+                font-weight: bold;
+                color: var(--primary-green);
+                margin: 0;
+            }
+
+            .logo-sub {
+                font-size: 11px;
+                color: var(--earth-gold);
+                letter-spacing: 2px;
+                text-transform: uppercase;
+            }
+
+            .auth-buttons {
+                display: flex;
+                gap: 15px;
+                align-items: center;
+            }
+
+            .btn-auth {
+                text-decoration: none;
+                color: var(--dark-text);
+                font-weight: 600;
+                font-size: 14px;
+            }
+
+            .btn-cart {
+                position: relative;
+                text-decoration: none;
+                color: var(--primary-green);
+                font-weight: bold;
+            }
+
+            /* NAVIGATION BAR */
+            .nav-bar {
+                background: #ffffff;
+                box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+                position: sticky;
+                top: 0;
+                z-index: 100;
+                border-bottom: 2px solid #edf2f7;
+            }
+
+            .nav-menu {
+                display: flex;
+                justify-content: center;
+                list-style: none;
+                margin: 0;
+                padding: 0;
+            }
+
+            .nav-item a {
+                display: block;
+                padding: 15px 25px;
+                text-decoration: none;
+                color: var(--dark-text);
+                font-weight: 600;
+                font-size: 15px;
+                transition: all 0.3s;
+            }
+
+                .nav-item a:hover {
+                    color: var(--primary-green);
+                    background: #f0fff4;
+                }
+
+            /* FOOTER */
+            footer {
+                background: #1a202c;
+                color: #e2e8f0;
+                padding: 50px 5% 20px 5%;
+                margin-top: 50px;
+                font-size: 14px;
+                border-top: 4px solid var(--earth-gold);
+            }
+
+            .footer-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 40px;
+            }
+
+            .footer-title {
+                font-family: 'Playfair Display', serif;
+                color: #ffffff;
+                font-size: 18px;
+                margin-bottom: 20px;
+            }
+
+            .footer-links {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+
+                .footer-links li {
+                    margin-bottom: 10px;
+                }
+
+                .footer-links a {
+                    color: #a0aec0;
+                    text-decoration: none;
+                    transition: 0.2s;
+                }
+
+                    .footer-links a:hover {
+                        color: var(--earth-gold);
+                    }
+    </style>
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">THAN_NONG_SHOP</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
+
+    @{
+        var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+        var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+        bool isAuthPage = (currentController == "Account" && (currentAction == "Login" || currentAction == "Register"));
+    }
+
+    @if (!isAuthPage)
+    {
+        <header>
+            <div class="header-top">
+                <a href="/" class="logo-area">
+                    <div style="background: var(--primary-green); color: white; padding: 8px 12px; border-radius: 50%; font-weight: bold; font-family: 'Playfair Display'">TN</div>
+                    <div>
+                        <h1 class="logo-text">Thần Nông <span style="color: var(--earth-gold)">Shop</span></h1>
+                        <div class="logo-sub">Tinh hoa nông sản Việt</div>
+                    </div>
+                </a>
+
+                <div class="auth-buttons">
+                    <a asp-controller="Cart" asp-action="Index" class="btn-cart">🛒 Giỏ hàng</a>
+                    <span style="color: #cbd5e0">|</span>
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <span style="font-weight: 600;">🌾 @User.Identity.Name</span>
+                        <a asp-controller="Account" asp-action="Logout" class="btn-auth" style="color: #e53e3e">Đăng xuất</a>
+                    }
+                    else
+                    {
+                        <a asp-controller="Account" asp-action="Login" class="btn-auth">🔑 Đăng nhập</a>
+                        <a asp-controller="Account" asp-action="Register" class="btn-auth" style="background: var(--earth-gold); color: white; padding: 6px 15px; border-radius: 4px;">Đăng ký</a>
+                    }
                 </div>
             </div>
-        </nav>
-    </header>
+
+            <nav class="nav-bar">
+                @await Component.InvokeAsync("MenuCategory")
+            </nav>
+        </header>
+    }
+
     <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+        @RenderBody()
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - THAN_NONG_SHOP - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+    @if (!isAuthPage)
+    {
+        <footer>
+            <div class="footer-grid">
+                <div>
+                    <h3 class="footer-title">THẦN NÔNG SHOP</h3>
+                    <p style="color: #a0aec0; line-height: 1.6;">Mang nông sản sạch, an toàn từ những cánh đồng trù phú của người nông dân Việt Nam đến thẳng gian bếp nhà bạn.</p>
+                </div>
+                <div>
+                    <h3 class="footer-title">DANH MỤC</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Sản phẩm nổi bật</a></li>
+                        <li><a href="#">Chính sách giao hàng</a></li>
+                        <li><a href="#">Cam kết chất lượng đạt chuẩn</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="footer-title">LIÊN HỆ</h3>
+                    <p style="color: #a0aec0;">📍 Địa chỉ: Cánh đồng Thần Nông, Việt Nam</p>
+                    <p style="color: #a0aec0;">📞 Hotline: 1900 xxxx</p>
+                </div>
+            </div>
+            <hr style="border: 0; border-top: 1px solid #2d3748; margin: 30px 0;">
+            <p style="text-align: center; color: #718096; margin: 0; font-size: 13px;">&copy; @DateTime.Now.Year THAN NONG SHOP. Mộc mạc từ tâm - Nâng tầm nông sản.</p>
+        </footer>
+    }
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
