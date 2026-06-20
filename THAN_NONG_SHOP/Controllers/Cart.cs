@@ -4,9 +4,11 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
+using System.Threading.Tasks; 
+using SystemTextJson = System.Text.Json;
 using THAN_NONG_SHOP.Data;
 using THAN_NONG_SHOP.Models;
+using Newtonsoft.Json;
 
 namespace THAN_NONG_SHOP.Controllers
 {
@@ -20,10 +22,11 @@ namespace THAN_NONG_SHOP.Controllers
             _context = context;
         }
 
-        private readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
+        private readonly SystemTextJson.JsonSerializerOptions _jsonOptions = new SystemTextJson.JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
         };
+        private string currentUsername;
 
         private List<CartItem> GetCartItems()
         {
@@ -34,7 +37,8 @@ namespace THAN_NONG_SHOP.Controllers
             }
             try
             {
-                var cart = JsonSerializer.Deserialize<List<CartItem>>(sessionData, _jsonOptions);
+                
+                var cart = SystemTextJson.JsonSerializer.Deserialize<List<CartItem>>(sessionData, _jsonOptions);
                 return cart ?? new List<CartItem>();
             }
             catch
@@ -45,7 +49,8 @@ namespace THAN_NONG_SHOP.Controllers
 
         private void SaveCartItems(List<CartItem> cartItems)
         {
-            var sessionData = JsonSerializer.Serialize(cartItems);
+       
+            var sessionData = SystemTextJson.JsonSerializer.Serialize(cartItems);
             HttpContext.Session.SetString(CartSessionKey, sessionData);
         }
 
@@ -78,6 +83,7 @@ namespace THAN_NONG_SHOP.Controllers
             SaveCartItems(cartItems);
             return RedirectToAction(nameof(Index));
         }
+
         [Authorize]
         [HttpGet]
         public IActionResult Checkout()
@@ -90,47 +96,59 @@ namespace THAN_NONG_SHOP.Controllers
             ViewBag.Total = cartItems.Sum(item => (item.Product?.price ?? 0) * item.Quantity);
             return View();
         }
+
         [Authorize]
         [HttpPost]
-        public IActionResult Checkout(Oder order)
+        public async Task<IActionResult> Checkout(string shippingAddress, string shippingPhone)
         {
-            var cartItems = GetCartItems();
-            if (!cartItems.Any())
+           
+            var cartJson = HttpContext.Session.GetString(CartSessionKey);
+            var cartItems = string.IsNullOrEmpty(cartJson)
+                ? new List<CartItem>()
+                : JsonConvert.DeserializeObject<List<CartItem>>(cartJson);
+
+            if (cartItems == null || cartItems.Count == 0)
             {
                 return RedirectToAction("Index", "Home");
             }
+            var currentUsername = User.Identity?.Name;
+            var userProfile= _context.Users.FirstOrDefault(u => u.UserName == currentUsername); 
 
-            order.OrderDate = DateTime.Now;
-            order.TotalPrice = cartItems.Sum(item => (item.Product?.price ?? 0) * item.Quantity);
-            order.Status = "Chờ xử lý";
+            var order = new Oder
+            {
+                OrderDate = DateTime.Now,
+                UserName = currentUsername,
+                Address = shippingAddress,
+                PhoneNumber = shippingPhone,
+                TotalPrice = cartItems.Sum(item => (item.Product?.price ?? 0) * item.Quantity),
+                Status = "Đang chờ xử lý"
+            };
 
-            _context.Oders.Add(order);
-            _context.SaveChanges();
+            _context.Add(order);
+            await _context.SaveChangesAsync();
 
             foreach (var item in cartItems)
             {
-                if (item.Product != null)
+                
+                if (item.Product == null) continue;
+                var orderDetail = new OrderDetails
                 {
-                    // Chú ý tên Class OderDetail (nếu em viết thiếu chữ r thì giữ nguyên)
-                    var orderDetail = new OderDetail
-                    {
-                        OderId = order.Id,
-                        ProductId = item.Product.Id,
-                        Quantity = item.Quantity,
-                        price = item.Product.price // decimal đồng bộ hoàn toàn
-                    };
-                    _context.OderDetails.Add(orderDetail);
-                }
+                    OderId = order.Id,
+                    ProductId = item.Product.Id,
+                    Quantity = item.Quantity,
+                    Price = item.Product.price
+                };
+                _context.Add(orderDetail);
             }
-            _context.SaveChanges();
-            HttpContext.Session.Remove(CartSessionKey);
+            await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(OrderSuccess));
+            HttpContext.Session.Remove(CartSessionKey);
+            return RedirectToAction("OrderSuccess");
         }
 
         public IActionResult OrderSuccess()
         {
-            return View();
+            return View("OrderSuccess");
         }
     }
 }

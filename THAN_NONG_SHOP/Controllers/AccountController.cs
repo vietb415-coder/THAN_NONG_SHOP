@@ -6,6 +6,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using THAN_NONG_SHOP.Data;
 using System.Linq;
+using THAN_NONG_SHOP.Migrations;
 
 namespace THAN_NONG_SHOP.Controllers
 {
@@ -46,7 +47,7 @@ namespace THAN_NONG_SHOP.Controllers
                 var claims = new List<Claim>
                 {
                     new Claim(ClaimTypes.Name, user.UserName),
-                    new Claim(ClaimTypes.Role, roleName) 
+                    new Claim(ClaimTypes.Role, roleName)
                 };
 
                 var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -91,8 +92,9 @@ namespace THAN_NONG_SHOP.Controllers
             return View();
         }
         [HttpPost]
-        public async Task<IActionResult> Register(string username, string password, string email, string phone, string address)
+        public async Task<IActionResult> Register(string username, string fullName, string email, string phoneNumber, string password)
         {
+            // 1. Kiểm tra nếu tên đăng nhập đã tồn tại trong Database
             if (_context.Users.Any(u => u.UserName == username))
             {
                 ModelState.AddModelError(string.Empty, "Tên đăng nhập đã tồn tại.");
@@ -101,18 +103,19 @@ namespace THAN_NONG_SHOP.Controllers
             var newUser = new Models.user
             {
                 UserName = username,
+
+                
+                Fullname = fullName,
+
                 Password = password,
                 Email = email,
-                Phone = phone,
-                Address = address,
-                RoleId = 2 
+                Phone = phoneNumber, 
+                RoleId = 2
             };
+
             _context.Users.Add(newUser);
             await _context.SaveChangesAsync();
             return RedirectToAction("Login");
-
-
-
         }
-}
+    }
 }

@@ -16,5 +16,6 @@ namespace THAN_NONG_SHOP.Models
         public DateTime OrderDate { get; set; }
         public decimal TotalPrice { get; set; }
         public string Status { get; set; } = "Chờ xử lý";
+        public string? UserName { get; internal set; }
     }
 }
