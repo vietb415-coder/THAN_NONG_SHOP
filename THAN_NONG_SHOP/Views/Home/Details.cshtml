@@ -6,8 +6,6 @@
 
 <div style="max-width: 900px; margin: 30px auto; padding: 20px; font-family: Arial, sans-serif;">
 
-    <a asp-action="Index" style="text-decoration: none; color: #2ea751; font-weight: bold;">⬅️ Quay lại cửa hàng</a>
-
     <div style="display: flex; gap: 40px; margin-top: 20px; flex-wrap: wrap;">
         <div style="flex: 1; min-width: 300px;">
             <img src="@Model.ImageUrl" style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 8px; border: 1px solid #eee;" />
@@ -15,14 +13,15 @@
 
         <div style="flex: 1; min-width: 300px;">
             <span style="color: #2ea751; font-weight: bold; text-transform: uppercase; font-size: 12px;">
-                🌱 @Model.Category?.Name
+                 @Model.Category?.Name
             </span>
             <h1 style="color: #2c3e50; margin: 10px 0;">@Model.Name</h1>
             <h2 style="color: #e53e3e; margin-bottom: 20px;">@Model.price.ToString("N0") đ</h2>
 
-            <p style="color: #7f8c8d; font-weight: bold;">
-                Trạng thái: @(Model.stockQuantity > 0 ? "⚫ Còn hàng" : "🔴 Hết hàng")
-            </p>
+            <div class="stock-status" style="margin: 15px 0; font-size: 1rem;">
+                <span style="color: #555;">Số lượng có sẵn trong kho:</span>
+                <strong style="color: #2e5a1c; font-size: 1.2rem; margin-left: 5px;">@Model.stockQuantity</strong> sản phẩm
+            </div>
 
             <div style="margin-top: 20px;">
                 <h4 style="color: #34495e; margin-bottom: 5px;">Mô tả nông sản:</h4>

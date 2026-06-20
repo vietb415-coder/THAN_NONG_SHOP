@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using THAN_NONG_SHOP.Models;
 using THAN_NONG_SHOP.Data;
 using System.Linq;
+using Microsoft.AspNetCore.Authentication;
 
 namespace THAN_NONG_SHOP.Controllers
 {
@@ -15,13 +16,36 @@ namespace THAN_NONG_SHOP.Controllers
             _context = context;
         }
 
-        public IActionResult Index()
+        public IActionResult Index(string searchString, int? categoryId, decimal? minPrice, decimal? maxPrice)
         {
-            var products = _context.Products.Include(p => p.Category);
-            ViewResult viewResult = View(products);
-            return viewResult;
-        }
+      
+         
+            var products = _context.Products.AsQueryable();
 
+            
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                products = products.Where(p => p.Name.Contains(searchString));
+            }
+
+            if (categoryId.HasValue && categoryId.Value > 0)
+            {
+                products = products.Where(p => p.categoryId == categoryId);
+            }
+
+  
+            if (minPrice.HasValue)
+            {
+                products = products.Where(p => p.price >= minPrice.Value); 
+            }
+            if (maxPrice.HasValue)
+            {
+                products = products.Where(p => p.price <=maxPrice.Value);
+            }
+
+   
+            return View(products.ToList());
+        }
 
         public IActionResult Details(int id)
         {

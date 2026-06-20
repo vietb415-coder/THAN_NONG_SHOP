@@ -12,21 +12,35 @@
 <div style="max-width: 1200px; margin: 40px auto; padding: 0 20px; display: flex; gap: 30px;">
 
     <aside style="width: 250px; flex-shrink: 0;">
-        <div style="border: 1px solid #edf2f7; padding: 20px; border-radius: 8px; background: #f7fafc; position: sticky; top: 90px;">
-            <h3 style="font-family: 'Playfair Display', serif; font-size: 18px; margin-top: 0; border-bottom: 2px solid #b7791f; padding-bottom: 8px;">Bộ Lọc Nông Sản</h3>
+        <div class="filter-sidebar" style="background: #fbf9f6; border-radius: 12px; padding: 20px; border: 1px solid #eaddca;">
+            <h3 style="color: #5c4033; font-family: 'Playfair Display', serif; font-size: 1.2rem; margin-bottom: 20px; border-bottom: 2px solid #8b5a2b; padding-bottom: 5px;">
+                TÌM KIẾM
+            </h3>
 
-            <p style="font-weight: 600; margin-bottom: 10px; font-size: 14px;">Theo Khoảng Giá</p>
-            <ul style="list-style: none; padding: 0; margin: 0; font-size: 14px; line-height: 2;">
-                <li><input type="checkbox"> Dưới 100.000đ</li>
-                <li><input type="checkbox"> 100.000đ - 500.000đ</li>
-                <li><input type="checkbox"> Trên 500.000đ</li>
-            </ul>
+            <form action="/Home/Index" method="get">
+                <div class="filter-group" style="margin-bottom: 15px;">
+                    <label style="color: #8b5a2b; font-weight: 600; display:block; margin-bottom:5px;">Tìm sản phẩm:</label>
+                    <input type="text" name="searchString" placeholder="Nhập tên nông sản..." style="width:100%; padding:8px; border:1px solid #d2b48c; border-radius:6px; background:#fff;" />
+                </div>
 
-            <p style="font-weight: 600; margin: 20px 0 10px 0; font-size: 14px;">Cam Kết Đặc Quyền</p>
-            <div style="font-size: 12px; color: #718096; line-height: 1.5;">
-                🌿 100% Không chất bảo quản.<br>
-                🚜 Thu hoạch và đóng gói trong ngày.
-            </div>
+                <div class="filter-group" style="margin-bottom: 15px;">
+                    <label style="color: #8b5a2b; font-weight: 600; display:block; margin-bottom:5px;">Danh mục mục:</label>
+                    <select name="categoryId" style="width:100%; padding:8px; border:1px solid #d2b48c; border-radius:6px;">
+                        <option value="">Tất cả nông sản</option>
+                    </select>
+                </div>
+
+                <div class="filter-group" style="margin-bottom: 20px;">
+                    <label style="color: #8b5a2b; font-weight: 600; display:block; margin-bottom:5px;">Khoảng giá (VNĐ):</label>
+                    <input type="number" name="minPrice" placeholder="Từ" style="width:45%; padding:6px; border:1px solid #d2b48c; border-radius:6px;" />
+                    <span style="color:#8b5a2b;">-</span>
+                    <input type="number" name="maxPrice" placeholder="Đến" style="width:45%; padding:6px; border:1px solid #d2b48c; border-radius:6px;" />
+                </div>
+
+                <button type="submit" style="width:100%; background:#2e5a1c; color:#fff; border:none; padding:10px; border-radius:6px; font-weight:bold; cursor:pointer; transition: 0.3s;">
+                    ÁP DỤNG
+                </button>
+            </form>
         </div>
     </aside>
 
@@ -34,15 +48,31 @@
         <h3 style="font-family: 'Playfair Display', serif; font-size: 24px; margin-top: 0; margin-bottom: 25px; color: #2d3748;">Danh Sách Nông Sản Mới Thu Hoạch</h3>
 
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 25px;">
+            
+            @if(Model == null || !Model.Any())
+            {
+                <div style="padding: 20px; background: #fff5f5; color: #c53030; border: 1px solid #fed7d7; border-radius: 8px; margin-bottom: 20px;">
+                    ⚠️ Cảnh báo: Controller truyền xuống danh sách trống (0 sản phẩm). Vui lòng kiểm tra lại hàm Index trong HomeController!
+                </div>
+            }
+
             @if (Model != null)
             {
                 foreach (var product in Model)
                 {
-                    <div style="border: 1px solid #edf2f7; border-radius: 8px; overflow: hidden; background: #ffffff; transition: transform 0.3s, box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column;" onmouseenter="this.style.transform='減scale(1.02)'; this.style.boxShadow='0 10px 20px rgba(0,0,0,0.08)'" onmouseleave="this.style.transform='none'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.05)'">
+                    <div style="border: 1px solid #edf2f7; border-radius: 8px; overflow: hidden; background: #ffffff; transition: transform 0.3s, box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column;" onmouseenter="this.style.transform='scale(1.02)'; this.style.boxShadow='0 10px 20px rgba(0,0,0,0.08)'" onmouseleave="this.style.transform='none'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.05)'">
                         <img src="@product.ImageUrl" style="width: 100%; height: 200px; object-fit: cover;" />
                         <div style="padding: 15px; display: flex; flex-direction: column; flex-grow: 1;">
                             <h4 style="margin: 0 0 10px 0; font-size: 16px; color: #2d3748; font-weight: 600;">@product.Name</h4>
-                            <p style="margin: 0 0 15px 0; color: #b7791f; font-weight: bold; font-size: 16px;">@product.price.ToString("N0") đ</p>
+
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                <span style="color: #b7791f; font-weight: bold; font-size: 16px;">@product.price.ToString("N0") đ</span>
+
+                                <span style="background: #eedc82; color: #5c4033; font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; border: 1px solid #d2b48c; font-weight: 500;">
+                                    Kho: <strong>@product.stockQuantity</strong>
+                                   
+                                </span>
+                            </div>
 
                             <a asp-action="Details" asp-route-id="@product.Id" style="margin-top: auto; display: block; text-align: center; background: #2f855a; color: white; padding: 8px 0; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 13px; transition: 0.2s;" onmouseenter="this.style.background='#22543d'" onmouseleave="this.style.background='#2f855a'">Xem Chi Tiết</a>
                         </div>
