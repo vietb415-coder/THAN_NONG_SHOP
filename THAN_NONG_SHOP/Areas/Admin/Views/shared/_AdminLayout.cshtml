@@ -56,7 +56,7 @@
                         padding-left: 25px;
                     }
 
-            /* Khu vực bên phải */
+
             .main-container {
                 flex: 1;
                 display: flex;
@@ -91,20 +91,20 @@
 </head>
 <body>
 
-    <!-- BÊN TRÁI: MENU ĐIỀU HƯỚNG -->
+   
     <div class="sidebar">
         <div class="sidebar-brand">THẦN NÔNG ADMIN</div>
         <ul class="sidebar-menu">
             <li><a asp-area="Admin" asp-controller="Home" asp-action="Index">📊 Tổng quan</a></li>
             <li><a asp-area="Admin" asp-controller="Category" asp-action="Index">📦 Quản lý Danh mục</a></li>
             <li><a asp-area="Admin" asp-controller="Product" asp-action="Index">🍎 Quản lý Sản phẩm</a></li>
-            <li><a asp-area="Admin" asp-controller="Order" asp-action="Index">🧾 Quản lý Đơn hàng</a></li>
-            <li><a asp-area="Admin" asp-controller="Account" asp-action="Index">👤 Quản lý Tài khoản</a></li>
-            <li><a href="#" style="color: #e74c3c;">🚪 Đăng xuất</a></li>
+            <li><a asp-area="Admin" asp-controller="AdminOrders" asp-action="Index">🧾 Quản lý Đơn hàng</a></li>
+            <li><a asp-area="Admin" asp-controller="AdminUsers" asp-action="Index">👤 Quản lý Tài khoản</a></li>
+            <li><a asp-area="" asp-controller="Account" asp-action="Logout" style="color: #e74c3c;">🚪 Đăng xuất</a></li>
         </ul>
     </div>
 
-    <!-- BÊN PHẢI: NỘI DUNG CHÍNH -->
+   
     <div class="main-container">
         <div class="header">
             <span>Xin chào, <strong>Quản trị viên</strong></span>

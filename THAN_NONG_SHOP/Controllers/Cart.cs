@@ -88,12 +88,16 @@ namespace THAN_NONG_SHOP.Controllers
         [HttpGet]
         public IActionResult Checkout()
         {
-            var cartItems = GetCartItems();
-            if (!cartItems.Any())
+            var catItems = GetCartItems();
+            if (!catItems.Any())
             {
                 return RedirectToAction("Index", "Home");
             }
-            ViewBag.Total = cartItems.Sum(item => (item.Product?.price ?? 0) * item.Quantity);
+            var currentUsername = User.Identity?.Name;
+            var userProfile = _context.Users.FirstOrDefault(u => u.UserName == currentUsername);
+            ViewBag.UserFullName = userProfile?.Fullname??"";
+            ViewBag.UserPhone = userProfile?.Phone ?? "";
+            ViewBag.Total = catItems.Sum(item => (item.Product?.price ?? 0) * item.Quantity);
             return View();
         }
 
@@ -112,16 +116,19 @@ namespace THAN_NONG_SHOP.Controllers
                 return RedirectToAction("Index", "Home");
             }
             var currentUsername = User.Identity?.Name;
-            var userProfile= _context.Users.FirstOrDefault(u => u.UserName == currentUsername); 
+            var userProfile= _context.Users.FirstOrDefault(u => u.UserName == currentUsername);
 
             var order = new Oder
             {
                 OrderDate = DateTime.Now,
                 UserName = currentUsername,
+                CustomerName = userProfile.Fullname ??"",
                 Address = shippingAddress,
                 PhoneNumber = shippingPhone,
                 TotalPrice = cartItems.Sum(item => (item.Product?.price ?? 0) * item.Quantity),
-                Status = "Đang chờ xử lý"
+                Status = "Đang chờ xử lý",
+               
+         
             };
 
             _context.Add(order);
@@ -131,7 +138,7 @@ namespace THAN_NONG_SHOP.Controllers
             {
                 
                 if (item.Product == null) continue;
-                var orderDetail = new OrderDetails
+                var orderDetail = new OderDetail
                 {
                     OderId = order.Id,
                     ProductId = item.Product.Id,

@@ -98,8 +98,8 @@ namespace THAN_NONG_SHOP.Controllers
             if (_context.Users.Any(u => u.UserName == username))
             {
                 ModelState.AddModelError(string.Empty, "Tên đăng nhập đã tồn tại.");
-                return View();
-            }
+            return View();
+        }
             var newUser = new Models.user
             {
                 UserName = username,

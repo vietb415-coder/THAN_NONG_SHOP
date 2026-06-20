@@ -17,21 +17,20 @@ namespace THAN_NONG_SHOP.Areas.Admin.Controllers
         private readonly THAN_NONG_SHOP_DbContext _db;
         private readonly IWebHostEnvironment _webHostEnvironment;
 
-        // 🌟 ĐÃ FIX: Nạp đầy đủ cả _db và _webHostEnvironment vào Constructor
         public ProductController(THAN_NONG_SHOP_DbContext db, IWebHostEnvironment webHostEnvironment)
         {
             _db = db;
             _webHostEnvironment = webHostEnvironment;
         }
 
-        // --- 1. TRANG DANH SÁCH ---
+
         public IActionResult Index()
         {
             var products = _db.Products.Include(p => p.Category).ToList();
             return View(products);
         }
 
-        // --- 2. THÊM MỚI (GET) ---
+ 
         [HttpGet]
         public IActionResult Create()
         {
@@ -39,7 +38,6 @@ namespace THAN_NONG_SHOP.Areas.Admin.Controllers
             return View();
         }
 
-        // --- 3. THÊM MỚI (POST) ---
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Create(Product product, IFormFile? file)
@@ -51,7 +49,7 @@ namespace THAN_NONG_SHOP.Areas.Admin.Controllers
                     string wwwRootPath = _webHostEnvironment.WebRootPath;
                     string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
 
-                    // 🌟 ĐÃ FIX: Đồng bộ lưu vào thư mục images/products
+                    
                     string productPath = Path.Combine(wwwRootPath, @"images\products");
 
                     if (!Directory.Exists(productPath))
@@ -75,7 +73,6 @@ namespace THAN_NONG_SHOP.Areas.Admin.Controllers
             return View(product);
         }
 
-        // --- 4. SỬA SẢN PHẨM (GET) ---
         [HttpGet]
         public IActionResult Edit(int id)
         {
@@ -88,7 +85,6 @@ namespace THAN_NONG_SHOP.Areas.Admin.Controllers
             return View(product);
         }
 
-        // --- 5. SỬA SẢN PHẨM (POST) ---
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Edit(Product product, IFormFile? file)
@@ -102,7 +98,6 @@ namespace THAN_NONG_SHOP.Areas.Admin.Controllers
                     string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
                     string productPath = Path.Combine(wwwRootPath, @"images\products");
 
-                    // Xóa ảnh cũ nếu có
                     if (!string.IsNullOrEmpty(product.ImageUrl))
                     {
                         var oldImagePath = Path.Combine(wwwRootPath, product.ImageUrl.TrimStart('\\', '/'));
@@ -134,7 +129,7 @@ namespace THAN_NONG_SHOP.Areas.Admin.Controllers
             return View(product);
         }
 
-        // --- 6. XÓA SẢN PHẨM (GET) ---
+
         [HttpGet]
         public IActionResult Delete(int id)
         {
@@ -146,7 +141,7 @@ namespace THAN_NONG_SHOP.Areas.Admin.Controllers
             return View(product);
         }
 
-        // --- 7. XÓA SẢN PHẨM (POST) ---
+
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public IActionResult DeletePost(int id)

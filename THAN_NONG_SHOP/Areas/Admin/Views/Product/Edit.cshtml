@@ -32,6 +32,10 @@
                 </div>
 
                 <div style="margin-bottom: 15px;">
+                    <label style="display:block; margin-bottom:5px; font-weight: bold;">Số lượng tồn kho:</label>
+                    <input asp-for="stockQuantity" type="number" min="0" value="0" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" />
+
+                <div style="margin-bottom: 15px;">
                     <label style="display:block; margin-bottom:5px; font-weight: bold;">Giá bán (đ):</label>
                     <input asp-for="price" type="number" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" />
                 </div>

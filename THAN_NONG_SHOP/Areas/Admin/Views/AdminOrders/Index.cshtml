@@ -1,0 +1,44 @@
+﻿@model IEnumerable<THAN_NONG_SHOP.Models.Oder>
+
+<h2>🌾 QUẢN LÝ ĐƠN HÀNG NÔNG SẢN</h2>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Mã ĐH</th>
+            <th>Khách Hàng</th>
+            <th>Ngày Đặt</th>
+            <th>Địa Chỉ Giao</th>
+            <th>Số Điện Thoại</th>
+            <th>Tổng Tiền</th>
+            <th>Trạng Thái</th>
+            <th>Thao Tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var order in Model)
+        {
+            <tr>
+                <td>#@order.Id</td>
+                <td>@order.UserName</td>
+                <td>@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>@order.Address</td>
+                <td>@order.PhoneNumber</td>
+                <td style="color: #b7791f; font-weight: bold;">@order.TotalPrice.ToString("N0") đ</td>
+                <td>
+                    <span class="badge bg-warning text-dark">@order.Status</span>
+                </td>
+                <td>
+                    <form asp-action="UpdateStatus" method="post" style="display:inline;">
+                        <input type="hidden" name="orderId" value="@order.Id" />
+                        <select name="status" onchange="this.form.submit()" class="form-select form-select-sm" style="width: auto; display: inline-block;">
+                            <option value="Pending" selected="@(order.Status == "Pending")">Chờ xử lý</option>
+                            <option value="Shipping" selected="@(order.Status == "Shipping")">Đang giao</option>
+                            <option value="Completed" selected="@(order.Status == "Completed")">Đã hoàn thành</option>
+                            <option value="Cancelled" selected="@(order.Status == "Cancelled")">Hủy đơn</option>
+                        </select>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

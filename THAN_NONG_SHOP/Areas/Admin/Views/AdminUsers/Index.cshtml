@@ -1,0 +1,30 @@
+﻿@model IEnumerable<THAN_NONG_SHOP.Models.user>
+
+<h2>👥 QUẢN LÝ TÀI KHOẢN THÀNH VIÊN</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Tên Đăng Nhập</th>
+            <th>Họ Tên</th>
+            <th>Email</th>
+            <th>Số Điện Thoại</th>
+            <th>Quyền Hạn</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.UserName</td>
+                <td>@user.Fullname</td>
+                <td>@user.Email</td>
+                <td>@user.Phone</td>
+                <td>
+                    <span class="badge @(user.RoleId == 1 ? "bg-danger" : "bg-primary")">
+                        @(user.RoleId == 1 ? "Admin" : "Khách Hàng")
+                    </span>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
