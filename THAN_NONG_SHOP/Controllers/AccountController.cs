@@ -45,8 +45,6 @@ namespace THAN_NONG_SHOP.Controllers
 
                 var claims = new List<Claim>
                 {
-                    new Claim(ClaimTypes.Name, user.UserName),
-                    new Claim(ClaimTypes.Role, roleName) 
                 };
 
                 var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -96,8 +94,8 @@ namespace THAN_NONG_SHOP.Controllers
             if (_context.Users.Any(u => u.UserName == username))
             {
                 ModelState.AddModelError(string.Empty, "Tên đăng nhập đã tồn tại.");
-                return View();
-            }
+            return View();
+        }
             var newUser = new Models.user
             {
                 UserName = username,
@@ -114,5 +112,5 @@ namespace THAN_NONG_SHOP.Controllers
 
 
         }
-}
+    }
 }
