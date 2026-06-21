@@ -28,16 +28,22 @@
                 padding-top: 20px;
             }
 
-                .sidebar .brand {
-                    text-align: center;
-                    font-size: 1.4rem;
-                    font-weight: bold;
-                    color: var(--gold-earth);
-                    margin-bottom: 30px;
-                    letter-spacing: 1px;
-                }
+            .sidebar-brand {
+                padding: 20px;
+                text-align: center;
+                font-size: 20px;
+                font-weight: bold;
+                background-color: #1a252f;
+                border-bottom: 1px solid #34495e;
+            }
 
-                .sidebar a {
+            .sidebar-menu {
+                list-style: none;
+                padding: 10px 0;
+                flex: 1;
+            }
+
+                .sidebar-menu li a {
                     display: block;
                     padding: 12px 25px;
                     color: #dfd5ca;
@@ -51,7 +57,13 @@
                         border-left: 4px solid var(--gold-earth);
                     }
 
-         
+
+            .main-container {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+            }
+
             .header {
                 margin-left: 260px;
                 height: 70px;
@@ -59,16 +71,23 @@
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                padding: 0 30px;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-                border-bottom: 1px solid #eaddca;
+                justify-content: flex-end;
+                padding: 0 20px;
             }
 
-            .main-content {
-                margin-left: 260px;
-                padding: 40px 30px;
-                background: var(--bg-milky);
-                min-height: calc(100vh - 70px);
+            .content {
+                padding: 30px;
+                flex: 1;
+            }
+
+            .footer {
+                height: 40px;
+                background-color: #fff;
+                text-align: center;
+                line-height: 40px;
+                font-size: 14px;
+                color: #7f8c8d;
+                border-top: 1px solid #e0e0e0;
             }
     </style>
 </head>
