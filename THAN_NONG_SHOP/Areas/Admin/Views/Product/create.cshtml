@@ -1,4 +1,4 @@
-﻿@model THAN_NONG_SHOP.Models.Product
+@model THAN_NONG_SHOP.Models.Product
 
 @{
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
@@ -65,7 +65,7 @@
             <span asp-validation-for="farmerStory" style="color: red; font-size: 13px;"></span>
         </div>
 
-        <button type="submit" style="padding: 10px 20px; background-color: #8b5a2b; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+        <button type="submit" style="padding: 10px 25px; background-color: #2e5a1c; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: all 0.2s; box-shadow: 0 4px 10px rgba(46,90,28,0.15);" onmouseenter="this.style.backgroundColor='#1e3d12'; this.style.transform='translateY(-1px)'" onmouseleave="this.style.backgroundColor='#2e5a1c'; this.style.transform='none'">
             Lưu Sản Phẩm
         </button>
         <a asp-action="Index" style="margin-left: 15px; color: #7f8c8d; text-decoration: none; font-weight: bold;">Hủy bỏ</a>

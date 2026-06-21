@@ -1,4 +1,4 @@
-﻿@model IEnumerable<THAN_NONG_SHOP.Models.CartItem>
+@model IEnumerable<THAN_NONG_SHOP.Models.CartItem>
 
 @{
     ViewData["Title"] = "Giỏ Hàng Của Bạn";
@@ -11,7 +11,7 @@
     {
         <div style="text-align: center; padding: 40px; border: 1px dashed #ccc; border-radius: 8px;">
             <p style="color: #7f8c8d; font-size: 18px;">Giỏ hàng của em đang trống rỗng.</p>
-            <a asp-controller="Home" asp-action="Index" style="display: inline-block; background: #2ea751; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-weight: bold; margin-top: 10px;">
+            <a asp-controller="Home" asp-action="Index" style="display: inline-block; background: #2e5a1c; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px; transition: background 0.2s;" onmouseenter="this.style.background='#1e3d12'" onmouseleave="this.style.background='#2e5a1c'">
                 ⬅️ Tiếp tục mua sắm
             </a>
         </div>
@@ -56,7 +56,7 @@
                                        onmouseenter="this.style.background='#eaddca'" onmouseleave="this.style.background='#fbf9f6'">+</a>
                                 </div>
                             </td>
-                            <td style="padding: 12px; text-align: right; font-weight: bold; color: #2ea751;">
+                            <td style="padding: 12px; text-align: right; font-weight: bold; color: #2e5a1c;">
                                 @((item.Product.price * item.Quantity).ToString("N0")) đ
                             </td>
                         </tr>

@@ -1,45 +1,45 @@
-﻿@{
+@{
     ViewData["Title"] = "Đăng Ký";
 }
 
-<div style="max-width: 450px; margin: 40px auto; padding: 30px; border: 1px solid #cbd5e0; border-radius: 8px; font-family: Arial, sans-serif; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-    <h3 style="text-align: center; color: #2f855a; margin-bottom: 25px; font-family: 'Playfair Display', serif; font-size: 24px;">🌾 ĐĂNG KÝ THÀNH VIÊN</h3>
+<div style="max-width: 450px; margin: 40px auto; padding: 30px; background: #fdfbf7; border: 1px solid #eaddca; border-radius: 12px; font-family: 'Segoe UI', Arial, sans-serif; box-shadow: 0 8px 25px rgba(92,64,51,0.06);">
+    <h3 style="text-align: center; color: #5c4033; margin-bottom: 25px; font-family: 'Playfair Display', serif; font-size: 24px; font-weight: bold;">🌾 ĐĂNG KÝ THÀNH VIÊN</h3>
 
-    <div asp-validation-summary="All" style="color: red; margin-bottom: 15px; font-size: 14px; list-style: none; padding: 0;"></div>
+    <div asp-validation-summary="All" style="color: #e53e3e; margin-bottom: 15px; font-size: 14px; list-style: none; padding: 0;"></div>
 
     <form asp-controller="Account" asp-action="Register" method="post">
 
         <div style="margin-bottom: 15px;">
-            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #4a5568;">Tên đăng nhập:</label>
-            <input type="text" name="username" style="width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px;" required />
+            <label style="display: block; margin-bottom: 6px; font-weight: bold; color: #5c4033; font-size: 14px;">Tên đăng nhập:</label>
+            <input type="text" name="username" style="width: 100%; padding: 10px 12px; border: 1px solid #d2b48c; border-radius: 6px; box-sizing: border-box; background: #ffffff; color: #5c4033; font-size: 14px;" required />
         </div>
 
         <div style="margin-bottom: 15px;">
-            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #4a5568;"> Tên người dùng:</label>
-            <input type="text" name="fullName" style="width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px;" required />
+            <label style="display: block; margin-bottom: 6px; font-weight: bold; color: #5c4033; font-size: 14px;">Tên người dùng:</label>
+            <input type="text" name="fullName" style="width: 100%; padding: 10px 12px; border: 1px solid #d2b48c; border-radius: 6px; box-sizing: border-box; background: #ffffff; color: #5c4033; font-size: 14px;" required />
         </div>
 
         <div style="margin-bottom: 15px;">
-            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #4a5568;">Địa chỉ Email:</label>
-            <input type="email" name="email" style="width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px;" required />
+            <label style="display: block; margin-bottom: 6px; font-weight: bold; color: #5c4033; font-size: 14px;">Địa chỉ Email:</label>
+            <input type="email" name="email" style="width: 100%; padding: 10px 12px; border: 1px solid #d2b48c; border-radius: 6px; box-sizing: border-box; background: #ffffff; color: #5c4033; font-size: 14px;" required />
         </div>
 
         <div style="margin-bottom: 15px;">
-            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #4a5568;">Số điện thoại:</label>
-            <input type="tel" name="phoneNumber" style="width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px;" required />
+            <label style="display: block; margin-bottom: 6px; font-weight: bold; color: #5c4033; font-size: 14px;">Số điện thoại:</label>
+            <input type="tel" name="phoneNumber" style="width: 100%; padding: 10px 12px; border: 1px solid #d2b48c; border-radius: 6px; box-sizing: border-box; background: #ffffff; color: #5c4033; font-size: 14px;" required />
         </div>
 
         <div style="margin-bottom: 25px;">
-            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #4a5568;">Mật khẩu bảo mật:</label>
-            <input type="password" name="password" style="width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px;" required />
+            <label style="display: block; margin-bottom: 6px; font-weight: bold; color: #5c4033; font-size: 14px;">Mật khẩu bảo mật:</label>
+            <input type="password" name="password" style="width: 100%; padding: 10px 12px; border: 1px solid #d2b48c; border-radius: 6px; box-sizing: border-box; background: #ffffff; color: #5c4033; font-size: 14px;" required />
         </div>
 
-        <button type="submit" style="width: 100%; background: #b7791f; color: white; border: none; padding: 12px; font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer; transition: 0.2s;" onmouseenter="this.style.background='#975a16'" onmouseleave="this.style.background='#b7791f'">
-             Đăng ký
+        <button type="submit" style="width: 100%; background: #5c4033; color: white; border: none; padding: 12px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: background 0.3s ease; box-shadow: 0 4px 12px rgba(92,64,51,0.2);" onmouseenter="this.style.background='#442f25'" onmouseleave="this.style.background='#5c4033'">
+             ĐĂNG KÝ
         </button>
 
-        <p style="text-align: center; margin-top: 15px; font-size: 14px; color: #718096;">
-            Đã có tài khoản? <a asp-action="Login" style="color: #2f855a; font-weight: bold; text-decoration: none;">Đăng nhập ngay</a>
+        <p style="text-align: center; margin-top: 18px; font-size: 14px; color: #718096;">
+            Đã có tài khoản? <a asp-action="Login" style="color: #2e5a1c; font-weight: bold; text-decoration: none; transition: color 0.2s;" onmouseenter="this.style.color='#1e3d12'" onmouseleave="this.style.color='#2e5a1c'">Đăng nhập ngay</a>
         </p>
     </form>
 </div>

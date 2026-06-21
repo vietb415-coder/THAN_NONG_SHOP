@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -28,7 +28,7 @@ namespace THAN_NONG_SHOP.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> Login(string username, string password)
+        public async Task<IActionResult> Login(string username, string password, bool rememberMe = false)
         {
         
             var user = _context.Users.FirstOrDefault(u => u.UserName == username && u.Password == password);
@@ -51,7 +51,7 @@ namespace THAN_NONG_SHOP.Controllers
                 };
 
                 var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                var authProperties = new AuthenticationProperties { IsPersistent = true };
+                var authProperties = new AuthenticationProperties { IsPersistent = rememberMe };
 
                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
 
