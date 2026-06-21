@@ -1,6 +1,32 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-    ViewData["Title"] = "Trang chủ quản trị";
+﻿@{
+    Layout = "_AdminLayout";
+    ViewBag.AdminPageTitle = "TRANG TỔNG QUAN HỆ THỐNG"; // 🌟 Đẩy ngược lên Header đồng hàng với chữ Admin
 }
+
+<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 40px;">
+
+    <div style="background: #fff; padding: 25px; border-radius: 12px; border: 1px solid #eaddca; border-top: 4px solid var(--gold-earth);">
+        <div style="color: #777; font-size: 0.9rem; font-weight:600;">DOANH THU THÁNG</div>
+        <div style="font-size: 1.8rem; font-weight: bold; color: var(--primary-brown); margin-top: 5px;">45,200,000 đ</div>
+    </div>
+
+    <div style="background: #fff; padding: 25px; border-radius: 12px; border: 1px solid #eaddca; border-top: 4px solid var(--leaf-green);">
+        <div style="color: #777; font-size: 0.9rem; font-weight:600;">ĐƠN HÀNG MỚI</div>
+        <div style="font-size: 1.8rem; font-weight: bold; color: var(--leaf-green); margin-top: 5px;">12 Đơn</div>
+    </div>
+
+    <div style="background: #fff; padding: 25px; border-radius: 12px; border: 1px solid #eaddca; border-top: 4px solid #b87333;">
+        <div style="color: #777; font-size: 0.9rem; font-weight:600;">SẢN PHẨM HẾT HÀNG</div>
+        <div style="font-size: 1.8rem; font-weight: bold; color: #cc3333; margin-top: 5px;">3 Mặt hàng</div>
+    </div>
+
+    <div style="background: #fff; padding: 25px; border-radius: 12px; border: 1px solid #eaddca; border-top: 4px solid var(--primary-brown);">
+        <div style="color: #777; font-size: 0.9rem; font-weight:600;">KHÁCH HÀNG MỚI</div>
+        <div style="font-size: 1.8rem; font-weight: bold; color: var(--primary-brown); margin-top: 5px;">+88 Thành viên</div>
+    </div>
+</div>
+
+<div style="background: #fff; padding: 30px; border-radius: 12px; border: 1px solid #eaddca;">
+    <h3 style="margin-top:0; color: var(--primary-brown);">🌾 Tiến độ xuất nhập kho nông sản hôm nay</h3>
+    <p style="color:#666;">Hệ thống đang hoạt động ổn định. Không có cảnh báo lỗi kết nối cơ sở dữ liệu.</p>
+</div>
