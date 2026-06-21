@@ -2,121 +2,99 @@
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Ban Quản Trị Thần Nông Shop</title>
+    <title>Thần Nông Quản Trị</title>
     <style>
-            * {
-                box-sizing: border-box;
-                margin: 0;
-                padding: 0;
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            :root {
+                --bg-milky: #fdfbf7; 
+                --primary-brown: #5c4033; 
+                --gold-earth: #c5a059; 
+                --leaf-green: #2e5a1c; 
             }
 
             body {
-                display: flex;
-                min-height: 100vh;
-                background-color: #f4f6f9;
+                margin: 0;
+                font-family: 'Segoe UI', sans-serif;
+                background: var(--bg-milky);
+                color: #333;
             }
 
-            /* Sidebar bên trái */
+
             .sidebar {
-                width: 250px;
-                background-color: #2c3e50;
-                color: #ecf0f1;
-                display: flex;
-                flex-direction: column;
+                width: 260px;
+                height: 100vh;
+                position: fixed;
+                background: var(--primary-brown);
+                color: #fff;
+                padding-top: 20px;
             }
 
-            .sidebar-brand {
-                padding: 20px;
-                text-align: center;
-                font-size: 20px;
-                font-weight: bold;
-                background-color: #1a252f;
-                border-bottom: 1px solid #34495e;
-            }
+                .sidebar .brand {
+                    text-align: center;
+                    font-size: 1.4rem;
+                    font-weight: bold;
+                    color: var(--gold-earth);
+                    margin-bottom: 30px;
+                    letter-spacing: 1px;
+                }
 
-            .sidebar-menu {
-                list-style: none;
-                padding: 10px 0;
-                flex: 1;
-            }
-
-                .sidebar-menu li a {
+                .sidebar a {
                     display: block;
-                    padding: 15px 20px;
-                    color: #bdc3c7;
+                    padding: 12px 25px;
+                    color: #dfd5ca;
                     text-decoration: none;
                     transition: 0.3s;
                 }
 
-                    .sidebar-menu li a:hover {
-                        background-color: #34495e;
-                        color: #fff;
-                        padding-left: 25px;
+                    .sidebar a:hover, .sidebar a.active {
+                        background: rgba(255,255,255,0.08);
+                        color: var(--gold-earth);
+                        border-left: 4px solid var(--gold-earth);
                     }
 
-
-            .main-container {
-                flex: 1;
-                display: flex;
-                flex-direction: column;
-            }
-
+         
             .header {
-                height: 60px;
-                background-color: #fff;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                margin-left: 260px;
+                height: 70px;
+                background: #ffffff;
                 display: flex;
+                justify-content: space-between;
                 align-items: center;
-                justify-content: flex-end;
-                padding: 0 20px;
+                padding: 0 30px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+                border-bottom: 1px solid #eaddca;
             }
 
-            .content {
-                padding: 30px;
-                flex: 1;
-            }
-
-            .footer {
-                height: 40px;
-                background-color: #fff;
-                text-align: center;
-                line-height: 40px;
-                font-size: 14px;
-                color: #7f8c8d;
-                border-top: 1px solid #e0e0e0;
+            .main-content {
+                margin-left: 260px;
+                padding: 40px 30px;
+                background: var(--bg-milky);
+                min-height: calc(100vh - 70px);
             }
     </style>
 </head>
 <body>
 
-   
     <div class="sidebar">
-        <div class="sidebar-brand">THẦN NÔNG ADMIN</div>
-        <ul class="sidebar-menu">
-            <li><a asp-area="Admin" asp-controller="Home" asp-action="Index">📊 Tổng quan</a></li>
-            <li><a asp-area="Admin" asp-controller="Category" asp-action="Index">📦 Quản lý Danh mục</a></li>
-            <li><a asp-area="Admin" asp-controller="Product" asp-action="Index">🍎 Quản lý Sản phẩm</a></li>
-            <li><a asp-area="Admin" asp-controller="AdminOrders" asp-action="Index">🧾 Quản lý Đơn hàng</a></li>
-            <li><a asp-area="Admin" asp-controller="AdminUsers" asp-action="Index">👤 Quản lý Tài khoản</a></li>
-            <li><a asp-area="" asp-controller="Account" asp-action="Logout" style="color: #e74c3c;">🚪 Đăng xuất</a></li>
-        </ul>
+        <div class="brand">THẦN NÔNG ADMIN</div>
+        <a href="/Admin/Home/Index">Tổng Quan</a>
+        <a href="/Admin/AdminOrders/Index">Quản Lý Đơn Hàng</a>
+        <a href="/Admin/Product/Index"> Quản Lý Sản Phẩm</a>
+        <a href="/Admin/Category/Index"> Quản Lý Danh Mục</a>
+        <a href="/Admin/AdminUsers/Index"> Quản Lý Tài Khoản</a>
+        <a href="/Home/Index" style="margin-top:50px; color:#ff9999;">Đăng xuất</a>
     </div>
 
-   
-    <div class="main-container">
-        <div class="header">
-            <span>Xin chào, <strong>Quản trị viên</strong></span>
+    <div class="header">
+        <h2 style="margin: 0; color: var(--primary-brown); font-size: 1.4rem; font-weight: 600;">
+            @ViewBag.AdminPageTitle
+        </h2>
+        <div class="user-info" style="font-weight: 500; color: var(--leaf-green);">
+            Chào, Quản trị viên 👑
         </div>
+    </div>
 
-        <div class="content">
-            @RenderBody() @* Nơi hiển thị nội dung động của từng trang con *@
-        </div>
-
-        <div class="footer">
-            &copy; 2026 - Hệ Thống Quản Trị Thần Nông Shop
-        </div>
+    <div class="main-content">
+        @RenderBody()
     </div>
 
 </body>
