@@ -4,11 +4,10 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks; 
+using System.Threading.Tasks;
 using SystemTextJson = System.Text.Json;
 using THAN_NONG_SHOP.Data;
 using THAN_NONG_SHOP.Models;
-using Newtonsoft.Json;
 
 namespace THAN_NONG_SHOP.Controllers
 {
@@ -26,8 +25,8 @@ namespace THAN_NONG_SHOP.Controllers
         {
             PropertyNameCaseInsensitive = true
         };
-        private string currentUsername;
 
+        // Lấy danh sách giỏ hàng thô từ Cookie (Chỉ có Id sản phẩm và số lượng)
         private List<CartItem> GetCartItems()
         {
             var cookieData = HttpContext.Request.Cookies[CartSessionKey];
@@ -46,26 +45,47 @@ namespace THAN_NONG_SHOP.Controllers
             }
         }
 
+        // Lưu giỏ hàng xuống cookie
         private void SaveCartItems(List<CartItem> cartItems)
         {
-            var cookieData = SystemTextJson.JsonSerializer.Serialize(cartItems);
+            // Để cookie nhẹ và không lỗi Entity, ta chỉ map lại dữ liệu thô để sấy chuỗi JSON
+            var simplifiedCart = cartItems.Select(item => new CartItem
+            {
+                // Gán Product thô chỉ có Id hoặc dùng trực tiếp thuộc tính ProductId nếu class của bạn có sẵn
+                Product = new Product { Id = item.Product.Id },
+                Quantity = item.Quantity
+            }).ToList();
+
+            var cookieData = SystemTextJson.JsonSerializer.Serialize(simplifiedCart);
             var cookieOptions = new CookieOptions
             {
-                Expires = DateTime.Now.AddDays(30), 
-                HttpOnly = true,                   
-                Secure = true                     
+                Expires = DateTime.Now.AddDays(30),
+                HttpOnly = true,
+                Secure = false // Đổi thành false để test mượt ở localhost, khi lên hosting SSL đổi thành true
             };
             HttpContext.Response.Cookies.Append(CartSessionKey, cookieData, cookieOptions);
         }
 
+        // Trang danh sách giỏ hàng công khai công khai
         public IActionResult Index()
         {
             var cartItems = GetCartItems();
+
+            // Nạp thông tin chi tiết sản phẩm từ Database dựa trên Id đã lưu trong Cookie
+            foreach (var item in cartItems)
+            {
+                if (item.Product != null)
+                {
+                    item.Product = _context.Products.Find(item.Product.Id);
+                }
+            }
+
             ViewBag.Total = cartItems.Sum(item => (item.Product?.price ?? 0) * item.Quantity);
             return View(cartItems);
         }
 
         [HttpPost]
+        [Authorize(Roles = "User")] // CHỮ "User" VIẾT HOA: Đã sửa đồng bộ với phân quyền lúc Login
         public IActionResult AddToCart(int productId, int quantity)
         {
             var product = _context.Products.Find(productId);
@@ -73,21 +93,27 @@ namespace THAN_NONG_SHOP.Controllers
             {
                 return NotFound();
             }
+
             var cartItems = GetCartItems();
             var existingItem = cartItems.FirstOrDefault(item => item.Product != null && item.Product.Id == productId);
 
             if (existingItem == null)
             {
-                cartItems.Add(new CartItem { Product = product, Quantity = quantity });
+                // Thêm mới sản phẩm vào giỏ
+                cartItems.Add(new CartItem { Product = new Product { Id = productId }, Quantity = quantity });
             }
             else
             {
+                // Cộng dồn số lượng
                 existingItem.Quantity += quantity;
             }
+
             SaveCartItems(cartItems);
+
+            // Sau khi thêm thành công, chuyển hướng thẳng sang trang hiển thị Giỏ hàng
             return RedirectToAction(nameof(Index));
         }
-        [HttpGet]
+
         public IActionResult UpdateQuantity(int productId, int quantity)
         {
             var cartItems = GetCartItems();
@@ -96,7 +122,7 @@ namespace THAN_NONG_SHOP.Controllers
             if (existingItem != null)
             {
                 if (quantity <= 0)
-                { 
+                {
                     cartItems.Remove(existingItem);
                 }
                 else
@@ -109,24 +135,36 @@ namespace THAN_NONG_SHOP.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        [Authorize]
+        [Authorize(Roles = "User")]
         [HttpGet]
         public IActionResult Checkout()
         {
-            var catItems = GetCartItems();
-            if (!catItems.Any())
+            var cartItems = GetCartItems();
+            if (!cartItems.Any())
             {
                 return RedirectToAction("Index", "Home");
             }
+
+            // Nạp lại dữ liệu sản phẩm để hiển thị số tiền chính xác ở trang check out
+            foreach (var item in cartItems)
+            {
+                if (item.Product != null)
+                {
+                    item.Product = _context.Products.Find(item.Product.Id);
+                }
+            }
+
             var currentUsername = User.Identity?.Name;
             var userProfile = _context.Users.FirstOrDefault(u => u.UserName == currentUsername);
-            ViewBag.UserFullName = userProfile?.Fullname??"";
+
+            ViewBag.UserFullName = userProfile?.Fullname ?? "";
             ViewBag.UserPhone = userProfile?.Phone ?? "";
-            ViewBag.Total = catItems.Sum(item => (item.Product?.price ?? 0) * item.Quantity);
-            return View();
+            ViewBag.Total = cartItems.Sum(item => (item.Product?.price ?? 0) * item.Quantity);
+
+            return View(cartItems); // Nên truyền danh sách mặt hàng để hiển thị tóm tắt đơn hàng
         }
 
-        [Authorize]
+        [Authorize(Roles = "User")]
         [HttpPost]
         public async Task<IActionResult> Checkout(string shippingAddress, string shippingPhone)
         {
@@ -135,6 +173,15 @@ namespace THAN_NONG_SHOP.Controllers
             if (cartItems == null || cartItems.Count == 0)
             {
                 return RedirectToAction("Index", "Home");
+            }
+
+            // Nạp lại giá từ DB để tính tổng tiền chính xác, tránh việc người dùng gian lận thay đổi dữ liệu cookie
+            foreach (var item in cartItems)
+            {
+                if (item.Product != null)
+                {
+                    item.Product = _context.Products.Find(item.Product.Id);
+                }
             }
 
             var currentUsername = User.Identity?.Name;
@@ -157,7 +204,7 @@ namespace THAN_NONG_SHOP.Controllers
             };
 
             _context.Add(order);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(); // Lưu để lấy được order.Id tự tăng
 
             foreach (var item in cartItems)
             {
@@ -172,6 +219,8 @@ namespace THAN_NONG_SHOP.Controllers
                 _context.Add(orderDetail);
             }
             await _context.SaveChangesAsync();
+
+            // Xóa sạch giỏ hàng sau khi đặt thành công
             HttpContext.Response.Cookies.Delete(CartSessionKey);
 
             return RedirectToAction("OrderSuccess");
@@ -179,7 +228,7 @@ namespace THAN_NONG_SHOP.Controllers
 
         public IActionResult OrderSuccess()
         {
-            return View("OrderSuccess");
+            return View();
         }
     }
 }

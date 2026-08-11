@@ -20,12 +20,26 @@
                     <input type="text" asp-for="Name" style="width: 100%; padding: 10px 14px; border: 1px solid #d2b48c; border-radius: 6px; box-sizing: border-box; color: #5c4033; font-size: 14px;" required />
                 </div>
 
+                <select asp-for="categoryId" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    <option value="">-- Chọn danh mục --</option>
+                    @if (ViewBag.CategoryList != null)
+                    {
+                        foreach (var cat in ViewBag.CategoryList)
+                        {
+                            <option value="@cat.Id">@cat.Name</option>
+                        }
+                    }
+                </select>
+
+                @*
                 <div>
                     <label style="display: block; font-weight: 600; color: #5c4033; margin-bottom: 8px; font-size: 14px;">Danh mục sản phẩm:</label>
                     <select asp-for="categoryId" asp-items="ViewBag.Categories" style="width: 100%; padding: 10px 14px; border: 1px solid #d2b48c; border-radius: 6px; box-sizing: border-box; color: #5c4033; font-size: 14px; background-color: #fff;">
-                        
+
                     </select>
                 </div>
+                *@
+
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                     <div>
@@ -54,7 +68,8 @@
                     </div>
                     <div style="flex-grow: 1;">
                         <label style="display: block; font-weight: 600; color: #5c4033; margin-bottom: 6px; font-size: 13px;">Thay đổi ảnh mới:</label>
-                        <input type="file" name="ImageFile" style="font-size: 13px; color: #718096;" />
+                        <input type="file" name="file" accept="image/*" style="font-size: 13px; color: #718096;" />
+                        @*<input type="file" name="ImageFile" style="font-size: 13px; color: #718096;" />*@
                     </div>
                 </div>
             </div>

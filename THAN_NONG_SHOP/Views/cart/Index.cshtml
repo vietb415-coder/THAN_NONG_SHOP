@@ -10,7 +10,7 @@
     @if (Model == null || !Model.Any())
     {
         <div style="text-align: center; padding: 40px; border: 1px dashed #ccc; border-radius: 8px;">
-            <p style="color: #7f8c8d; font-size: 18px;">Giỏ hàng của em đang trống rỗng.</p>
+            <p style="color: #7f8c8d; font-size: 18px;">Giỏ hàng của bạn đang trống.</p>
             <a asp-controller="Home" asp-action="Index" style="display: inline-block; background: #2e5a1c; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px; transition: background 0.2s;" onmouseenter="this.style.background='#1e3d12'" onmouseleave="this.style.background='#2e5a1c'">
                 ⬅️ Tiếp tục mua sắm
             </a>
@@ -81,6 +81,6 @@
                     Tiến Hành Đặt Hàng ➡️
                 </a>
             </div>
-        </div>
+        </div>  
     }
 </div>

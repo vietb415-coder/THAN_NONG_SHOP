@@ -20,7 +20,7 @@ builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.Cookies.C
     {
         options.LoginPath = "/Account/Login";
         options.LogoutPath = "/Account/Logout";
-        options.AccessDeniedPath = "/Account/AccessDenied";
+        options.AccessDeniedPath = "/Account/Login";
         options.ExpireTimeSpan = TimeSpan.FromDays(7);
         options.SlidingExpiration = true;
         options.Cookie.HttpOnly = true;

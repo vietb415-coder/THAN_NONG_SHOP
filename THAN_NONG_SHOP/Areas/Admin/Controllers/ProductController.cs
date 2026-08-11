@@ -1,17 +1,19 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.IO;
-using System.Linq;
 using System.IO;
+using System.Linq;
 using THAN_NONG_SHOP.Data;
 using THAN_NONG_SHOP.Models;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 
 namespace THAN_NONG_SHOP.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = "Admin")]
     public class ProductController : Controller
     {
         private readonly THAN_NONG_SHOP_DbContext _db;

@@ -18,11 +18,9 @@ namespace THAN_NONG_SHOP.Controllers
 
         public IActionResult Index(string searchString, int? categoryId, decimal? minPrice, decimal? maxPrice)
         {
-      
-         
             var products = _context.Products.AsQueryable();
+            ViewBag.Categories = _context.Categories.ToList();
 
-            
             if (!string.IsNullOrEmpty(searchString))
             {
                 products = products.Where(p => p.Name.Contains(searchString));
@@ -45,6 +43,7 @@ namespace THAN_NONG_SHOP.Controllers
 
    
             return View(products.ToList());
+            //products.ToList()
         }
 
         public IActionResult Details(int id)

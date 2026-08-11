@@ -19,10 +19,12 @@ namespace THAN_NONG_SHOP.Models
         [ForeignKey ("categoryId")]
         public virtual Category? Category { get; set; }
 
+    }
 
-
-
-
-
+    public class ProductManagementViewModel
+    {
+        // Gộp cả 2 danh sách bạn cần vào đây
+        public IEnumerable<Product> Products { get; set; }
+        public IEnumerable<Category> Categories { get; set; }
     }
 }

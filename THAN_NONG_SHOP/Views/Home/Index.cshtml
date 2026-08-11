@@ -27,6 +27,15 @@
                     <label style="color: #8b5a2b; font-weight: 600; display:block; margin-bottom:5px;">Danh mục mục:</label>
                     <select name="categoryId" style="width:100%; padding:8px; border:1px solid #d2b48c; border-radius:6px;">
                         <option value="">Tất cả nông sản</option>
+
+                        @if (ViewBag.Categories != null)
+                        {
+
+                            foreach (var cat in ViewBag.Categories)
+                            {
+                                <option value="@cat.Id">@cat.Name</option>
+                            }
+                        }
                     </select>
                 </div>
 

@@ -19,7 +19,6 @@ namespace THAN_NONG_SHOP.Controllers
             _context = context;
         }
 
-        // 1. Hiển thị trang giao diện đăng nhập
         [HttpGet]
         public IActionResult Login()
         {
@@ -94,7 +93,7 @@ namespace THAN_NONG_SHOP.Controllers
         [HttpPost]
         public async Task<IActionResult> Register(string username, string fullName, string email, string phoneNumber, string password)
         {
-            // 1. Kiểm tra nếu tên đăng nhập đã tồn tại trong Database
+         
             if (_context.Users.Any(u => u.UserName == username))
             {
                 ModelState.AddModelError(string.Empty, "Tên đăng nhập đã tồn tại.");
