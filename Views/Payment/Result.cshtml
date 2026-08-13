@@ -1,0 +1,15 @@
+@{
+    var isPaid = string.Equals(ViewBag.PaymentStatus as string, "PAID", StringComparison.OrdinalIgnoreCase);
+    var isCancelled = string.Equals(ViewBag.PaymentStatus as string, "CANCELLED", StringComparison.OrdinalIgnoreCase);
+    ViewData["Title"] = isPaid ? "Thanh toán thành công" : "Kết quả thanh toán";
+}
+
+<div style="max-width: 620px; margin: 50px auto; padding: 38px; text-align: center; border: 1px solid #dfe8dc; border-radius: 14px; box-shadow: 0 8px 28px rgba(34,85,24,.10); background: #fff;">
+    <div style="font-size: 64px;">@(isPaid ? "✅" : isCancelled ? "↩️" : "⏳")</div>
+    <h2 style="color: #245719; margin: 15px 0;">
+        @(isPaid ? "THANH TOÁN THÀNH CÔNG" : isCancelled ? "ĐÃ HỦY THANH TOÁN" : "ĐANG XỬ LÝ THANH TOÁN")
+    </h2>
+    <p style="color:#52606d;">Mã đơn hàng: <strong>#@ViewBag.OrderCode</strong></p>
+    <p style="color:#52606d; line-height:1.6;">Trạng thái chính thức của đơn hàng sẽ được cập nhật tự động sau khi PayOS gửi webhook xác thực.</p>
+    <a asp-controller="Home" asp-action="Index" style="display:inline-block; margin-top:18px; padding:12px 28px; border-radius:7px; color:#fff; background:#2e5a1c; text-decoration:none; font-weight:700;">Về trang chủ</a>
+</div>

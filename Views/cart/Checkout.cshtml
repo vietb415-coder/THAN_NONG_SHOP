@@ -1,0 +1,62 @@
+@model IEnumerable<THAN_NONG_SHOP.Models.CartItem>
+@{
+    ViewData["Title"] = "Thanh toán";
+}
+
+<div style="max-width: 920px; margin: 35px auto; font-family: Arial, sans-serif;">
+    <h2 style="color:#245719; text-align:center; margin-bottom:25px;">THANH TOÁN ĐƠN HÀNG</h2>
+
+    @if (TempData["CheckoutError"] != null)
+    {
+        <div style="padding:12px 16px; margin-bottom:18px; color:#8a1c1c; background:#fff1f1; border:1px solid #efb4b4; border-radius:7px;">@TempData["CheckoutError"]</div>
+    }
+
+    <form asp-controller="Cart" asp-action="Checkout" method="post" style="display:grid; grid-template-columns:minmax(0,1fr) minmax(300px,.8fr); gap:24px;">
+        @Html.AntiForgeryToken()
+        <section style="padding:24px; border:1px solid #dfe8dc; border-radius:12px; background:#fff; box-shadow:0 5px 18px rgba(34,85,24,.07);">
+            <h3 style="margin-top:0; color:#2c3e50;">Thông tin giao hàng</h3>
+
+            <label style="display:block; margin:15px 0 6px; font-weight:700;">Họ và tên người nhận</label>
+            <input type="text" name="customerName" value="@ViewBag.UserFullName" required style="width:100%; padding:11px; border:1px solid #cbd5e0; border-radius:6px; box-sizing:border-box;" />
+
+            <label style="display:block; margin:15px 0 6px; font-weight:700;">Số điện thoại</label>
+            <input type="tel" name="shippingPhone" value="@ViewBag.UserPhone" required style="width:100%; padding:11px; border:1px solid #cbd5e0; border-radius:6px; box-sizing:border-box;" />
+
+            <label style="display:block; margin:15px 0 6px; font-weight:700;">Địa chỉ nhận hàng</label>
+            <textarea name="shippingAddress" rows="4" required style="width:100%; padding:11px; border:1px solid #cbd5e0; border-radius:6px; box-sizing:border-box;"></textarea>
+
+            <h3 style="margin:24px 0 12px; color:#2c3e50;">Phương thức thanh toán</h3>
+            <label style="display:flex; gap:10px; padding:14px; border:1px solid #cbd5e0; border-radius:8px; margin-bottom:10px; cursor:pointer;">
+                <input type="radio" name="paymentMethod" value="cod" checked />
+                <span><strong>Thanh toán khi nhận hàng</strong><br /><small style="color:#65727e;">Trả tiền mặt khi đơn hàng được giao tới.</small></span>
+            </label>
+            <label style="display:flex; gap:10px; padding:14px; border:1px solid #8fb885; border-radius:8px; cursor:pointer; background:#f5fbf2;">
+                <input type="radio" name="paymentMethod" value="payos" />
+                <span><strong>Chuyển khoản ngân hàng qua PayOS</strong><br /><small style="color:#65727e;">Quét mã VietQR hoặc mở ứng dụng ngân hàng.</small></span>
+            </label>
+        </section>
+
+        <aside style="padding:24px; border:1px solid #dfe8dc; border-radius:12px; background:#f8fbf7; height:max-content;">
+            <h3 style="margin-top:0; color:#2c3e50;">Đơn hàng của bạn</h3>
+            @foreach (var item in Model)
+            {
+                <div style="display:flex; justify-content:space-between; gap:15px; padding:11px 0; border-bottom:1px solid #e1e8df;">
+                    <span>@item.Product?.Name × @item.Quantity</span>
+                    <strong>@(((item.Product?.price ?? 0) * item.Quantity).ToString("N0")) đ</strong>
+                </div>
+            }
+            <div style="display:flex; justify-content:space-between; margin:20px 0; font-size:20px; color:#b54708;">
+                <strong>Tổng cộng</strong>
+                <strong>@(((decimal?)ViewBag.Total ?? 0).ToString("N0")) đ</strong>
+            </div>
+            <button type="submit" style="width:100%; border:0; border-radius:7px; padding:13px; background:#2e5a1c; color:white; font-size:16px; font-weight:700; cursor:pointer;">XÁC NHẬN THANH TOÁN</button>
+            <p style="font-size:12px; color:#65727e; line-height:1.5; margin-bottom:0;">Thông tin thanh toán được xử lý trên trang bảo mật của PayOS. Shop không lưu thông tin tài khoản ngân hàng của bạn.</p>
+        </aside>
+    </form>
+</div>
+
+<style>
+@@media (max-width: 760px) {
+    form { grid-template-columns: 1fr !important; }
+}
+</style>

@@ -1,0 +1,48 @@
+@{
+    Layout = "_AdminLayout";
+    ViewBag.AdminPageTitle = "BẢNG ĐIỀU KHIỂN HỆ THỐNG";
+}
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 25px; margin-bottom: 40px;">
+
+    <!-- Card 1: Doanh Thu -->
+    <div style="background: #ffffff; padding: 25px; border-radius: 12px; border: 1px solid #eaddca; border-top: 4px solid var(--leaf-green); box-shadow: 0 4px 15px rgba(92,64,51,0.03); transition: transform 0.2s;" onmouseenter="this.style.transform='translateY(-3px)'" onmouseleave="this.style.transform='none'">
+        <div style="color: #8b5a2b; font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">💰 Doanh thu thực tế</div>
+        <div style="font-size: 1.8rem; font-weight: bold; color: var(--primary-brown); margin-top: 10px;">
+            @(((decimal)ViewBag.TotalRevenue).ToString("N0")) đ
+        </div>
+        <div style="font-size: 0.75rem; color: #a0aec0; margin-top: 8px;">Đơn hàng "Đã hoàn thành"</div>
+    </div>
+
+    <!-- Card 2: Đơn Hàng -->
+    <div style="background: #ffffff; padding: 25px; border-radius: 12px; border: 1px solid #eaddca; border-top: 4px solid var(--primary-brown); box-shadow: 0 4px 15px rgba(92,64,51,0.03); transition: transform 0.2s;" onmouseenter="this.style.transform='translateY(-3px)'" onmouseleave="this.style.transform='none'">
+        <div style="color: #8b5a2b; font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">📋 Tổng số đơn hàng</div>
+        <div style="font-size: 1.8rem; font-weight: bold; color: var(--leaf-green); margin-top: 10px;">
+            @(ViewBag.TotalOrders) Đơn
+        </div>
+        <div style="font-size: 0.75rem; color: #a0aec0; margin-top: 8px;">Toàn bộ lịch sử đặt hàng</div>
+    </div>
+
+    <!-- Card 3: Tồn Kho -->
+    <div style="background: #ffffff; padding: 25px; border-radius: 12px; border: 1px solid #eaddca; border-top: 4px solid var(--gold-earth); box-shadow: 0 4px 15px rgba(92,64,51,0.03); transition: transform 0.2s;" onmouseenter="this.style.transform='translateY(-3px)'" onmouseleave="this.style.transform='none'">
+        <div style="color: #8b5a2b; font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">🌾 Nông sản tồn kho</div>
+        <div style="font-size: 1.8rem; font-weight: bold; color: var(--primary-brown); margin-top: 10px;">
+            @(ViewBag.TotalStock) SP
+        </div>
+        <div style="font-size: 0.75rem; color: #a0aec0; margin-top: 8px;">Đang kinh doanh trên web</div>
+    </div>
+
+    <!-- Card 4: Khách Hàng -->
+    <div style="background: #ffffff; padding: 25px; border-radius: 12px; border: 1px solid #eaddca; border-top: 4px solid var(--leaf-green); box-shadow: 0 4px 15px rgba(92,64,51,0.03); transition: transform 0.2s;" onmouseenter="this.style.transform='translateY(-3px)'" onmouseleave="this.style.transform='none'">
+        <div style="color: #8b5a2b; font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">👤 Khách hàng đăng ký</div>
+        <div style="font-size: 1.8rem; font-weight: bold; color: var(--leaf-green); margin-top: 10px;">
+            @(ViewBag.TotalCustomers) Thành viên
+        </div>
+        <div style="font-size: 0.75rem; color: #a0aec0; margin-top: 8px;">Tài khoản khách hàng</div>
+    </div>
+</div>
+
+<div style="background: #ffffff; padding: 30px; border-radius: 12px; border: 1px solid #eaddca; box-shadow: 0 4px 15px rgba(92,64,51,0.02);">
+    <h3 style="margin-top:0; color: var(--primary-brown); font-family: 'Playfair Display', serif; font-size: 1.3rem;">🌾 Bảng Tin Vận Hành Cửa Hàng</h3>
+    <p style="color:#666; line-height: 1.6; margin-bottom: 0;">Chào mừng bạn đến với trang quản lý của <strong>Thần Nông Shop</strong>. Hệ thống quản trị đang hoạt động trơn tru. Tất cả dữ liệu biểu đồ và số liệu thống kê ở trên được cập nhật tự động theo thời gian thực từ cơ sở dữ liệu.</p>
+</div>

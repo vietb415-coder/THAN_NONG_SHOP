@@ -1,0 +1,83 @@
+@{
+    ViewData["Title"] = "Về chúng tôi";
+}
+
+<div class="about-page">
+    <section class="about-hero">
+        <div class="about-hero-content">
+            <span class="about-label">CÂU CHUYỆN THẦN NÔNG</span>
+            <h1>Mộc mạc từ tâm<br />Nâng tầm nông sản</h1>
+            <p>Chúng tôi kết nối những người nông dân tận tâm với các gia đình yêu thực phẩm sạch, để mỗi bữa cơm đều an lành và giàu hương vị quê nhà.</p>
+            <a asp-controller="Home" asp-action="Index" class="about-button">Khám phá sản phẩm</a>
+        </div>
+    </section>
+
+    <section class="about-intro">
+        <div>
+            <span class="about-label">CHÚNG TÔI LÀ AI?</span>
+            <h2>Nông sản tử tế, từ những vùng đất Việt</h2>
+        </div>
+        <div class="about-copy">
+            <p><strong>Thần Nông Shop</strong> được xây dựng với mong muốn đưa nông sản sạch, rõ nguồn gốc đến gần hơn với mọi gia đình.</p>
+            <p>Chúng tôi ưu tiên hợp tác trực tiếp với nông hộ và hợp tác xã có quy trình canh tác minh bạch. Sản phẩm được tuyển chọn, bảo quản và giao đi với sự trân trọng dành cho công sức của người trồng.</p>
+        </div>
+    </section>
+
+    <section class="about-values">
+        <article><span>🌱</span><h3>An toàn</h3><p>Ưu tiên nông sản có nguồn gốc rõ ràng, quy trình canh tác an toàn và kiểm soát chất lượng.</p></article>
+        <article><span>🤝</span><h3>Đồng hành</h3><p>Kết nối lâu dài với nông hộ, góp phần tạo đầu ra ổn định và nâng cao giá trị nông sản Việt.</p></article>
+        <article><span>🍃</span><h3>Tươi mới</h3><p>Thu hoạch đúng độ chín, đóng gói cẩn thận và rút ngắn thời gian từ nông trại tới bàn ăn.</p></article>
+        <article><span>💚</span><h3>Tận tâm</h3><p>Lắng nghe khách hàng và phục vụ bằng sự chân thành trong từng sản phẩm, từng đơn hàng.</p></article>
+    </section>
+
+    <section class="about-process">
+        <div class="about-process-image"></div>
+        <div class="about-process-content">
+            <span class="about-label">TỪ NÔNG TRẠI ĐẾN BÀN ĂN</span>
+            <h2>Một hành trình được chăm chút</h2>
+            <ol>
+                <li><b>01</b><div><strong>Lựa chọn vùng trồng</strong><p>Đồng hành cùng những nhà vườn có phương pháp sản xuất phù hợp và minh bạch.</p></div></li>
+                <li><b>02</b><div><strong>Thu hoạch và tuyển chọn</strong><p>Nông sản được thu hoạch đúng thời điểm, phân loại và loại bỏ sản phẩm không đạt chuẩn.</p></div></li>
+                <li><b>03</b><div><strong>Đóng gói cẩn thận</strong><p>Bảo quản phù hợp với từng loại sản phẩm để giữ độ tươi và hạn chế hao hụt.</p></div></li>
+                <li><b>04</b><div><strong>Giao đến gia đình</strong><p>Đưa nông sản đến khách hàng nhanh chóng, nguyên vẹn và sẵn sàng cho bữa cơm ngon.</p></div></li>
+            </ol>
+        </div>
+    </section>
+
+    <section class="about-cta">
+        <p>THẦN NÔNG SHOP</p>
+        <h2>Cùng gieo những lựa chọn xanh<br />cho cuộc sống an lành hơn</h2>
+        <a asp-controller="Home" asp-action="Index" class="about-button light">Mua sắm ngay</a>
+    </section>
+</div>
+
+<style>
+    .about-page { color:#2d3748; margin-top:-80px; }
+    .about-hero { min-height:520px; display:flex; align-items:center; padding:40px 8%; background:linear-gradient(90deg,rgba(24,55,16,.92),rgba(24,55,16,.58),rgba(24,55,16,.18)),url('https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1600&q=85') center/cover; color:white; }
+    .about-hero-content { max-width:670px; }
+    .about-label { display:block; color:#c9a75f; font-weight:700; letter-spacing:2.5px; font-size:13px; margin-bottom:15px; }
+    .about-hero h1 { font-family:'Playfair Display',serif; font-size:58px; line-height:1.08; margin:0 0 22px; }
+    .about-hero p { max-width:610px; line-height:1.8; font-size:17px; color:#edf5e9; margin-bottom:30px; }
+    .about-button { display:inline-block; padding:13px 25px; border-radius:6px; background:#c5a059; color:#fff; font-weight:700; text-decoration:none; }
+    .about-intro { max-width:1120px; margin:0 auto; padding:85px 25px; display:grid; grid-template-columns:1fr 1.1fr; gap:70px; align-items:start; }
+    .about-intro h2,.about-process h2 { font-family:'Playfair Display',serif; color:#264f1b; font-size:38px; line-height:1.25; margin:0; }
+    .about-copy { border-left:3px solid #c5a059; padding-left:28px; line-height:1.85; color:#52606d; }
+    .about-values { background:#f7f5ef; padding:55px max(5%,calc((100% - 1120px)/2)); display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
+    .about-values article { background:#fff; padding:28px 22px; border-radius:10px; border-bottom:3px solid #c5a059; box-shadow:0 5px 18px rgba(35,70,25,.06); }
+    .about-values article>span { font-size:36px; }
+    .about-values h3 { color:#2e5a1c; margin:15px 0 8px; }
+    .about-values p { color:#66736b; font-size:14px; line-height:1.65; margin:0; }
+    .about-process { max-width:1120px; margin:85px auto; padding:0 25px; display:grid; grid-template-columns:.9fr 1.1fr; gap:65px; align-items:center; }
+    .about-process-image { min-height:570px; border-radius:14px; background:url('https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&w=900&q=85') center/cover; box-shadow:18px 18px 0 #e8e1cf; }
+    .about-process ol { list-style:none; padding:0; margin:28px 0 0; }
+    .about-process li { display:flex; gap:18px; padding:17px 0; border-bottom:1px solid #e1e7df; }
+    .about-process li b { color:#c5a059; font-family:'Playfair Display',serif; font-size:23px; }
+    .about-process li strong { color:#2e5a1c; }
+    .about-process li p { margin:5px 0 0; color:#69756d; line-height:1.5; font-size:14px; }
+    .about-cta { text-align:center; padding:65px 20px; background:#2e5a1c; color:#fff; }
+    .about-cta>p { color:#d1b875; letter-spacing:3px; font-weight:700; }
+    .about-cta h2 { font-family:'Playfair Display',serif; font-size:38px; margin:12px 0 28px; }
+    .about-button.light { background:#fff; color:#2e5a1c; }
+    @@media(max-width:800px){.about-hero h1{font-size:42px}.about-intro,.about-process{grid-template-columns:1fr;gap:35px}.about-values{grid-template-columns:1fr 1fr}.about-process-image{min-height:360px}.about-page{margin-top:-80px}}
+    @@media(max-width:520px){.about-values{grid-template-columns:1fr}.about-hero{min-height:430px}.about-hero h1{font-size:35px}.about-intro h2,.about-process h2,.about-cta h2{font-size:30px}}
+</style>

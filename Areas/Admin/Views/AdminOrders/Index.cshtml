@@ -1,0 +1,91 @@
+﻿@model IEnumerable<THAN_NONG_SHOP.Models.Oder> // Hãy kiểm tra lại kiểu Model truyền vào cho đúng với dự án của em
+
+@{
+    ViewData["Title"] = "Quản Lý Đơn Hàng Thành Viên";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml"; // Sử dụng Layout Admin dùng chung
+}
+
+<div style="background: #ffffff; padding: 30px; border-radius: 12px; border: 1px solid #eaddca; box-shadow: 0 4px 20px rgba(92,64,51,0.03);">
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid #f5f0e6; padding-bottom: 15px;">
+        <div style="color: #8b5a2b; font-size: 15px; font-weight: 500;">
+            📊 Tổng số đơn hàng hệ thống: <strong style="color: #2e5a1c; font-size: 18px;">@Model.Count()</strong> đơn
+        </div>
+        <div style="font-size: 13px; color: #718096; italic;">
+            * Lưu ý: Hãy cập nhật chính xác trạng thái xử lý để thông báo tới khách hàng.
+        </div>
+    </div>
+
+    <table class="table-admin" style="width: 100%; border-collapse: collapse; text-align: left;">
+        <thead>
+            <tr>
+                <th style="width: 80px; text-align: center;">Mã ĐH</th>
+                <th>Khách Hàng</th>
+                <th>Ngày Đặt</th>
+                <th>Địa Chỉ Giao Hàng</th>
+                <th style="text-align: right; padding-right: 20px;">Tổng Tiền</th>
+                <th style="text-align: center; width: 160px;">Trạng Thái</th>
+                <th style="text-align: center; width: 160px;">Thao Tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var order in Model)
+            {
+                <tr style="transition: background 0.2s;" onmouseenter="this.style.background='#fdfcfb'" onmouseleave="this.style.background='transparent'">
+                    <td style="text-align: center; font-weight: bold; color: #8b5a2b;">
+                        #@order.Id
+                    </td>
+
+                    <td style="font-weight: 600; color: #5c4033;">
+                        @order.UserName
+                    </td>
+
+                    <td style="color: #718096; font-size: 14px;">
+                        @order.OrderDate.ToString("dd/MM/yyyy HH:mm")
+                    </td>
+
+                    <td>
+                        <div style="font-weight: 500; color: #2d3748; margin-bottom: 4px;">@order.Address</div>
+                        <div style="font-size: 13px; color: #8b5a2b;"><span style="color:#a0aec0;">📞</span> @order.PhoneNumber</div>
+                    </td>
+
+                    <td style="text-align: right; padding-right: 20px; font-weight: bold; color: #8b5a2b; font-size: 15px;">
+                        @order.TotalPrice.ToString("N0") đ
+                    </td>
+
+                    <td style="text-align: center;">
+                        @if (order.Status == "Chờ xử lý")
+                        {
+                            <span style="display: inline-block; padding: 4px 10px; background: #fffaf0; color: #b7791f; border: 1px solid #ffe3b3; border-radius: 4px; font-size: 13px; font-weight: 500;">⏳ Chờ xử lý</span>
+                        }
+                        else if (order.Status == "Đang giao")
+                        {
+                            <span style="display: inline-block; padding: 4px 10px; background: #ebf8ff; color: #2b6cb0; border: 1px solid #bee3f8; border-radius: 4px; font-size: 13px; font-weight: 500;">🚚 Đang giao</span>
+                        }
+                        else
+                        {
+                            <span style="display: inline-block; padding: 4px 10px; background: #f0fff4; color: #2f855a; border: 1px solid #c6f6d5; border-radius: 4px; font-size: 13px; font-weight: 500;">✅ Thành công</span>
+                        }
+                    </td>
+
+                    <td style="text-align: center;">
+                        <form asp-area="Admin" asp-controller="Order" asp-action="UpdateStatus" method="post" style="display: inline-flex; align-items: center; gap: 5px;">
+                            <input type="hidden" name="orderId" value="@order.Id" />
+
+                            <select name="status" style="padding: 6px 10px; border: 1px solid #d2b48c; border-radius: 4px; background: #fff; font-size: 13px; color: #5c4033; outline: none; cursor: pointer;">
+                                <option value="Chờ xử lý" selected="@(order.Status == "Chờ xử lý")">Chờ xử lý</option>
+                                <option value="Đang giao" selected="@(order.Status == "Đang giao")">Đang giao</option>
+                                <option value="Đã hoàn thành" selected="@(order.Status == "Đã hoàn thành")">Đã hoàn thành</option>
+                                <option value="Đã hủy" selected="@(order.Status == "Đã hủy")">Hủy đơn</option>
+                            </select>
+
+                            <button type="submit" class="btn-action btn-edit" style="cursor: pointer; padding: 6px 10px; border-radius: 4px; transition: 0.2s;" onmouseenter="this.style.background='#eaddca'" onmouseleave="this.style.background='#eedc82'">
+                                Cập nhật
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
