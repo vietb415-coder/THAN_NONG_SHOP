@@ -26,10 +26,20 @@ namespace THAN_NONG_SHOP.Areas.Admin.Controllers
         }
 
 
-        public IActionResult Index()
+        public IActionResult Index(int? categoryId)
         {
-            var products = _db.Products.Include(p => p.Category).ToList();
-            return View(products);
+            var products = _db.Products.Include(p => p.Category).AsQueryable();
+
+            if (categoryId.HasValue && categoryId.Value > 0)
+            {
+                products = products.Where(p => p.categoryId == categoryId.Value);
+                ViewBag.SelectedCategory = _db.Categories
+                    .Where(c => c.Id == categoryId.Value)
+                    .Select(c => c.Name)
+                    .FirstOrDefault();
+            }
+
+            return View(products.ToList());
         }
 
  

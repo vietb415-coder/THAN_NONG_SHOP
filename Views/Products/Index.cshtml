@@ -1,0 +1,93 @@
+@model IEnumerable<THAN_NONG_SHOP.Models.Product>
+
+@{
+    ViewData["Title"] = "Danh sách sản phẩm";
+    var categories = ViewBag.Categories as IEnumerable<THAN_NONG_SHOP.Models.Category>;
+    int? selectedCategoryId = ViewBag.CategoryId;
+}
+
+<section style="background: #f7f5ef; border-bottom: 1px solid #eaddca; padding: 42px 20px; text-align: center;">
+    <h1 style="font-family: 'Playfair Display', serif; color: #2e5a1c; font-size: 36px; margin: 0 0 10px;">Nông sản Thần Nông</h1>
+    <p style="color: #718096; margin: 0;">Khám phá những sản phẩm tươi ngon, rõ nguồn gốc từ các vùng trồng uy tín.</p>
+</section>
+
+<div style="max-width: 1200px; margin: 38px auto; padding: 0 20px; display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 30px; align-items: start;">
+    <aside style="background: #fbf9f6; border-radius: 12px; padding: 20px; border: 1px solid #eaddca; position: sticky; top: 85px;">
+        <h2 style="color: #5c4033; font-family: 'Playfair Display', serif; font-size: 20px; margin: 0 0 20px; border-bottom: 2px solid #8b5a2b; padding-bottom: 8px;">Tìm kiếm sản phẩm</h2>
+
+        <form asp-area="" asp-controller="Products" asp-action="Index" method="get">
+            <label style="display: block; color: #8b5a2b; font-weight: 600; margin-bottom: 6px;">Tên sản phẩm</label>
+            <input type="text" name="searchString" value="@ViewBag.SearchString" placeholder="Nhập tên nông sản..." style="width: 100%; padding: 9px; border: 1px solid #d2b48c; border-radius: 6px; box-sizing: border-box; margin-bottom: 15px;" />
+
+            <label style="display: block; color: #8b5a2b; font-weight: 600; margin-bottom: 6px;">Danh mục</label>
+            <select name="categoryId" style="width: 100%; padding: 9px; border: 1px solid #d2b48c; border-radius: 6px; margin-bottom: 15px;">
+                <option value="">Tất cả sản phẩm</option>
+                @if (categories != null)
+                {
+                    foreach (var category in categories)
+                    {
+                        <option value="@category.Id" selected="@(selectedCategoryId == category.Id)">@category.Name</option>
+                    }
+                }
+            </select>
+
+            <label style="display: block; color: #8b5a2b; font-weight: 600; margin-bottom: 6px;">Khoảng giá (VNĐ)</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 18px;">
+                <input type="number" name="minPrice" value="@ViewBag.MinPrice" min="0" placeholder="Từ" style="min-width: 0; padding: 8px; border: 1px solid #d2b48c; border-radius: 6px;" />
+                <input type="number" name="maxPrice" value="@ViewBag.MaxPrice" min="0" placeholder="Đến" style="min-width: 0; padding: 8px; border: 1px solid #d2b48c; border-radius: 6px;" />
+            </div>
+
+            <button type="submit" style="width: 100%; background: #2e5a1c; color: #fff; border: 0; padding: 10px; border-radius: 6px; font-weight: 700; cursor: pointer;">Áp dụng</button>
+            <a asp-area="" asp-controller="Products" asp-action="Index" style="display: block; margin-top: 10px; color: #718096; text-align: center; text-decoration: none; font-size: 14px;">Xóa bộ lọc</a>
+        </form>
+    </aside>
+
+    <main>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; gap: 15px;">
+            <h2 style="font-family: 'Playfair Display', serif; color: #2d3748; font-size: 25px; margin: 0;">Danh sách sản phẩm</h2>
+            <span style="color: #718096;">@Model.Count() sản phẩm</span>
+        </div>
+
+        @if (!Model.Any())
+        {
+            <div style="padding: 35px; background: #fff8ed; color: #8b5a2b; border: 1px solid #eed7b5; border-radius: 10px; text-align: center;">
+                Không tìm thấy sản phẩm phù hợp. Hãy thử thay đổi bộ lọc.
+            </div>
+        }
+        else
+        {
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 24px;">
+                @foreach (var product in Model)
+                {
+                    <article style="border: 1px solid #edf2f7; border-radius: 10px; overflow: hidden; background: #fff; box-shadow: 0 5px 16px rgba(0,0,0,.05); display: flex; flex-direction: column;">
+                        @if (!string.IsNullOrWhiteSpace(product.ImageUrl))
+                        {
+                            <img src="@product.ImageUrl" alt="@product.Name" style="width: 100%; height: 205px; object-fit: cover; background: #f7f5ef;" />
+                        }
+                        else
+                        {
+                            <div style="height: 205px; display: grid; place-items: center; background: #f7f5ef; color: #a0aec0;">Chưa có hình ảnh</div>
+                        }
+
+                        <div style="padding: 16px; display: flex; flex-direction: column; flex-grow: 1;">
+                            <span style="color: #2e5a1c; font-size: 12px; font-weight: 700; text-transform: uppercase;">@product.Category?.Name</span>
+                            <h3 style="margin: 7px 0 12px; color: #2d3748; font-size: 17px;">@product.Name</h3>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto; margin-bottom: 14px;">
+                                <strong style="color: #b54708; font-size: 18px;">@product.price.ToString("N0") đ</strong>
+                                <span style="color: #718096; font-size: 13px;">Kho: @product.stockQuantity</span>
+                            </div>
+                            <a asp-area="" asp-controller="Products" asp-action="Details" asp-route-id="@product.Id" style="display: block; padding: 9px; border-radius: 6px; background: #2e5a1c; color: #fff; text-align: center; text-decoration: none; font-weight: 700;">Xem chi tiết</a>
+                        </div>
+                    </article>
+                }
+            </div>
+        }
+    </main>
+</div>
+
+<style>
+    @@media (max-width: 760px) {
+        div[style*="grid-template-columns: 250px"] { grid-template-columns: 1fr !important; }
+        aside[style*="position: sticky"] { position: static !important; }
+    }
+</style>

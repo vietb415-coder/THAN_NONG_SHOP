@@ -3,7 +3,7 @@
 }
 
 <div style="max-width: 450px; margin: 40px auto; padding: 30px; background: #fdfbf7; border: 1px solid #eaddca; border-radius: 12px; font-family: 'Segoe UI', Arial, sans-serif; box-shadow: 0 8px 25px rgba(92,64,51,0.06);">
-    <h3 style="text-align: center; color: #5c4033; margin-bottom: 25px; font-family: 'Playfair Display', serif; font-size: 24px; font-weight: bold;">🌾 ĐĂNG KÝ THÀNH VIÊN</h3>
+    <h3 style="text-align: center; color: #5c4033; margin-bottom: 25px; font-family: 'Playfair Display', serif; font-size: 24px; font-weight: bold;"><svg class="app-icon"><use href="#icon-user"></use></svg>ĐĂNG KÝ THÀNH VIÊN</h3>
 
     <div asp-validation-summary="All" style="color: #e53e3e; margin-bottom: 15px; font-size: 14px; list-style: none; padding: 0;"></div>
 
@@ -41,5 +41,10 @@
         <p style="text-align: center; margin-top: 18px; font-size: 14px; color: #718096;">
             Đã có tài khoản? <a asp-action="Login" style="color: #2e5a1c; font-weight: bold; text-decoration: none; transition: color 0.2s;" onmouseenter="this.style.color='#1e3d12'" onmouseleave="this.style.color='#2e5a1c'">Đăng nhập ngay</a>
         </p>
+
+        <a asp-controller="Home" asp-action="Index"
+           style="display: block; padding: 11px; border: 1px solid #d2b48c; border-radius: 6px; color: #5c4033; text-align: center; text-decoration: none; font-weight: 600;">
+            ← Về trang chủ
+        </a>
     </form>
 </div>

@@ -50,6 +50,7 @@
                 <strong>@(((decimal?)ViewBag.Total ?? 0).ToString("N0")) đ</strong>
             </div>
             <button type="submit" style="width:100%; border:0; border-radius:7px; padding:13px; background:#2e5a1c; color:white; font-size:16px; font-weight:700; cursor:pointer;">XÁC NHẬN THANH TOÁN</button>
+            <a asp-controller="Cart" asp-action="Index" style="display:block; margin-top:10px; padding:11px; border:1px solid #cbd5e0; border-radius:7px; color:#52606d; text-align:center; text-decoration:none; font-weight:600;">← Quay lại giỏ hàng</a>
             <p style="font-size:12px; color:#65727e; line-height:1.5; margin-bottom:0;">Thông tin thanh toán được xử lý trên trang bảo mật của PayOS. Shop không lưu thông tin tài khoản ngân hàng của bạn.</p>
         </aside>
     </form>
