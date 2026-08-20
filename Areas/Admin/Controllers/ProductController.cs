@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.IO;
-using System.IO;
 using System.Linq;
 using THAN_NONG_SHOP.Data;
 using THAN_NONG_SHOP.Models;
@@ -26,10 +25,20 @@ namespace THAN_NONG_SHOP.Areas.Admin.Controllers
         }
 
 
-        public IActionResult Index()
+        public IActionResult Index(int? categoryId)
         {
-            var products = _db.Products.Include(p => p.Category).ToList();
-            return View(products);
+            var products = _db.Products.Include(p => p.Category).AsQueryable();
+
+            if (categoryId.HasValue && categoryId.Value > 0)
+            {
+                products = products.Where(p => p.categoryId == categoryId.Value);
+                ViewBag.SelectedCategory = _db.Categories
+                    .Where(c => c.Id == categoryId.Value)
+                    .Select(c => c.Name)
+                    .FirstOrDefault();
+            }
+
+            return View(products.ToList());
         }
 
  
@@ -91,6 +100,12 @@ namespace THAN_NONG_SHOP.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Edit(Product product, IFormFile? file)
         {
+            var existingProduct = _db.Products.Find(product.Id);
+            if (existingProduct == null) return NotFound();
+
+            // Form không gửi ImageUrl; giữ ảnh hiện tại nếu quản trị viên không chọn ảnh mới.
+            product.ImageUrl = existingProduct.ImageUrl;
+
             if (ModelState.IsValid)
             {
                 string wwwRootPath = _webHostEnvironment.WebRootPath;
@@ -100,9 +115,9 @@ namespace THAN_NONG_SHOP.Areas.Admin.Controllers
                     string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
                     string productPath = Path.Combine(wwwRootPath, @"images\products");
 
-                    if (!string.IsNullOrEmpty(product.ImageUrl))
+                    if (!string.IsNullOrEmpty(existingProduct.ImageUrl))
                     {
-                        var oldImagePath = Path.Combine(wwwRootPath, product.ImageUrl.TrimStart('\\', '/'));
+                        var oldImagePath = Path.Combine(wwwRootPath, existingProduct.ImageUrl.TrimStart('\\', '/'));
                         if (System.IO.File.Exists(oldImagePath))
                         {
                             System.IO.File.Delete(oldImagePath);
@@ -119,10 +134,15 @@ namespace THAN_NONG_SHOP.Areas.Admin.Controllers
                         file.CopyTo(fileStream);
                     }
 
-                    product.ImageUrl = @"/images/products/" + fileName;
+                    existingProduct.ImageUrl = @"/images/products/" + fileName;
                 }
 
-                _db.Products.Update(product);
+                // Chỉ cập nhật dữ liệu có trên form, tránh ghi null vào ảnh và câu chuyện nhà nông.
+                existingProduct.Name = product.Name;
+                existingProduct.Description = product.Description;
+                existingProduct.categoryId = product.categoryId;
+                existingProduct.price = product.price;
+                existingProduct.stockQuantity = product.stockQuantity;
                 _db.SaveChanges();
                 return RedirectToAction(nameof(Index));
             }

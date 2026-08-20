@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Linq;
+using Microsoft.AspNetCore.Authorization;
 using THAN_NONG_SHOP.Data;
 using THAN_NONG_SHOP.Models;
 
 namespace THAN_NONG_SHOP.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = "Admin")]
     public class CategoryController : Controller
     {
         private readonly THAN_NONG_SHOP_DbContext _db;

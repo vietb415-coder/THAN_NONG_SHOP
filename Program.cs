@@ -1,5 +1,8 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.AspNetCore.Identity;
+using THAN_NONG_SHOP.Models;
 using THAN_NONG_SHOP.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +11,14 @@ var builder = WebApplication.CreateBuilder(args);
 // 1. MVC
 // =========================
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<IPasswordHasher<user>, PasswordHasher<user>>();
+builder.Services.AddMemoryCache();
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.Providers.Add<BrotliCompressionProvider>();
+    options.Providers.Add<GzipCompressionProvider>();
+});
 
 
 // =========================
@@ -68,7 +79,8 @@ builder.Services
 
         options.Cookie.HttpOnly = true;
         options.Cookie.IsEssential = true;
-        options.Cookie.Name = "THAN_NONG_SHOP_Auth";
+        // Đổi phiên bản cookie khi cấu trúc claims thay đổi để không dùng lại tên hiển thị cũ.
+        options.Cookie.Name = "THAN_NONG_SHOP_Auth_v2";
     });
 
 
@@ -92,7 +104,14 @@ if (!app.Environment.IsDevelopment())
 // 7. MIDDLEWARE
 // =========================
 app.UseHttpsRedirection();
-app.UseStaticFiles();
+app.UseResponseCompression();
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = context =>
+    {
+        context.Context.Response.Headers.CacheControl = "public,max-age=604800";
+    }
+});
 
 // Static Assets của .NET 10
 app.MapStaticAssets();

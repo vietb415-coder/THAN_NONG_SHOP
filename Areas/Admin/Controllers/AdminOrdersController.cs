@@ -21,8 +21,14 @@ namespace THAN_NONG_SHOP.Areas.Admin.Controllers
             return View(orders);
         }
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateStatus(int orderId, string newStatus)
         {
+            string[] allowedStatuses = ["Chờ xử lý", "Đang giao", "Đã hoàn thành", "Đã hủy"];
+            if (!allowedStatuses.Contains(newStatus))
+            {
+                return BadRequest("Trạng thái đơn hàng không hợp lệ.");
+            }
             var order = await _db.Oders.FindAsync(orderId);
             if (order == null)
             {

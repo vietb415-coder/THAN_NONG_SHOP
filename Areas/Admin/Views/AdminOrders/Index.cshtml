@@ -9,7 +9,7 @@
 
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid #f5f0e6; padding-bottom: 15px;">
         <div style="color: #8b5a2b; font-size: 15px; font-weight: 500;">
-            📊 Tổng số đơn hàng hệ thống: <strong style="color: #2e5a1c; font-size: 18px;">@Model.Count()</strong> đơn
+            <svg class="app-icon"><use href="#icon-chart"></use></svg>Tổng số đơn hàng hệ thống: <strong style="color: #2e5a1c; font-size: 18px;">@Model.Count()</strong> đơn
         </div>
         <div style="font-size: 13px; color: #718096; italic;">
             * Lưu ý: Hãy cập nhật chính xác trạng thái xử lý để thông báo tới khách hàng.
@@ -56,23 +56,23 @@
                     <td style="text-align: center;">
                         @if (order.Status == "Chờ xử lý")
                         {
-                            <span style="display: inline-block; padding: 4px 10px; background: #fffaf0; color: #b7791f; border: 1px solid #ffe3b3; border-radius: 4px; font-size: 13px; font-weight: 500;">⏳ Chờ xử lý</span>
+                            <span style="display: inline-block; padding: 4px 10px; background: #fffaf0; color: #b7791f; border: 1px solid #ffe3b3; border-radius: 4px; font-size: 13px; font-weight: 500;"><svg class="app-icon"><use href="#icon-clock"></use></svg>Chờ xử lý</span>
                         }
                         else if (order.Status == "Đang giao")
                         {
-                            <span style="display: inline-block; padding: 4px 10px; background: #ebf8ff; color: #2b6cb0; border: 1px solid #bee3f8; border-radius: 4px; font-size: 13px; font-weight: 500;">🚚 Đang giao</span>
+                            <span style="display: inline-block; padding: 4px 10px; background: #ebf8ff; color: #2b6cb0; border: 1px solid #bee3f8; border-radius: 4px; font-size: 13px; font-weight: 500;"><svg class="app-icon"><use href="#icon-truck"></use></svg>Đang giao</span>
                         }
                         else
                         {
-                            <span style="display: inline-block; padding: 4px 10px; background: #f0fff4; color: #2f855a; border: 1px solid #c6f6d5; border-radius: 4px; font-size: 13px; font-weight: 500;">✅ Thành công</span>
+                            <span style="display: inline-block; padding: 4px 10px; background: #f0fff4; color: #2f855a; border: 1px solid #c6f6d5; border-radius: 4px; font-size: 13px; font-weight: 500;"><svg class="app-icon"><use href="#icon-check"></use></svg>Thành công</span>
                         }
                     </td>
 
                     <td style="text-align: center;">
-                        <form asp-area="Admin" asp-controller="Order" asp-action="UpdateStatus" method="post" style="display: inline-flex; align-items: center; gap: 5px;">
+                        <form asp-area="Admin" asp-controller="AdminOrders" asp-action="UpdateStatus" method="post" style="display: inline-flex; align-items: center; gap: 5px;">
                             <input type="hidden" name="orderId" value="@order.Id" />
 
-                            <select name="status" style="padding: 6px 10px; border: 1px solid #d2b48c; border-radius: 4px; background: #fff; font-size: 13px; color: #5c4033; outline: none; cursor: pointer;">
+                            <select name="newStatus" style="padding: 6px 10px; border: 1px solid #d2b48c; border-radius: 4px; background: #fff; font-size: 13px; color: #5c4033; outline: none; cursor: pointer;">
                                 <option value="Chờ xử lý" selected="@(order.Status == "Chờ xử lý")">Chờ xử lý</option>
                                 <option value="Đang giao" selected="@(order.Status == "Đang giao")">Đang giao</option>
                                 <option value="Đã hoàn thành" selected="@(order.Status == "Đã hoàn thành")">Đã hoàn thành</option>

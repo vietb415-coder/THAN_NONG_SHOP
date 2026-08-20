@@ -5,14 +5,19 @@
 }
 
 <div style="max-width: 1000px; margin: 30px auto; padding: 20px; font-family: Arial, sans-serif;">
-    <h2 style="color: #2c3e50; margin-bottom: 20px;">🛒 GIỎ HÀNG CỦA BẠN</h2>
+    <h2 style="color: #2c3e50; margin-bottom: 20px;"><svg class="app-icon"><use href="#icon-cart"></use></svg>GIỎ HÀNG CỦA BẠN</h2>
+
+    @if (TempData["CartError"] != null)
+    {
+        <div style="padding:12px 16px; margin-bottom:18px; color:#8a1c1c; background:#fff1f1; border:1px solid #efb4b4; border-radius:7px;">@TempData["CartError"]</div>
+    }
 
     @if (Model == null || !Model.Any())
     {
         <div style="text-align: center; padding: 40px; border: 1px dashed #ccc; border-radius: 8px;">
             <p style="color: #7f8c8d; font-size: 18px;">Giỏ hàng của bạn đang trống.</p>
-            <a asp-controller="Home" asp-action="Index" style="display: inline-block; background: #2e5a1c; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px; transition: background 0.2s;" onmouseenter="this.style.background='#1e3d12'" onmouseleave="this.style.background='#2e5a1c'">
-                ⬅️ Tiếp tục mua sắm
+            <a asp-controller="Products" asp-action="Index" style="display: inline-block; background: #2e5a1c; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px; transition: background 0.2s;" onmouseenter="this.style.background='#1e3d12'" onmouseleave="this.style.background='#2e5a1c'">
+                ← Tiếp tục mua sắm
             </a>
         </div>
     }
@@ -35,7 +40,7 @@
                     {
                         <tr style="border-bottom: 1px solid #dee2e6; vertical-align: middle;">
                             <td style="padding: 12px; width: 100px;">
-                                <img src="@item.Product.ImageUrl" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px;" />
+                                <img src="@item.Product.ImageUrl" alt="@item.Product.Name" loading="lazy" decoding="async" width="80" height="80" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px;" />
                             </td>
                             <td style="padding: 12px;">
                                 <strong style="color: #2d3748; font-size: 16px;">@item.Product.Name</strong>
@@ -43,17 +48,21 @@
                             <td style="padding: 12px;">@item.Product.price.ToString("N0") đ</td>
                             <td style="padding: 12px; text-align: center;">
                                 <div style="display: inline-flex; align-items: center; border: 1px solid #d2b48c; border-radius: 4px; overflow: hidden; background: #fff;">
-                                    <a href="/Cart/UpdateQuantity?productId=@item.Product.Id&quantity=@(item.Quantity - 1)"
-                                       style="padding: 5px 12px; background: #fbf9f6; color: #5c4033; text-decoration: none; font-weight: bold; font-size: 16px; transition: 0.2s;"
-                                       onmouseenter="this.style.background='#eaddca'" onmouseleave="this.style.background='#fbf9f6'">-</a>
+                                    <form asp-controller="Cart" asp-action="UpdateQuantity" method="post" style="display:inline">
+                                        <input type="hidden" name="productId" value="@item.Product.Id" />
+                                        <input type="hidden" name="quantity" value="@(item.Quantity - 1)" />
+                                        <button type="submit" style="padding:5px 12px; border:0; background:#fbf9f6; color:#5c4033; font-weight:bold; font-size:16px; cursor:pointer;">-</button>
+                                    </form>
 
                                     <span style="padding: 5px 15px; font-weight: bold; min-width: 20px; text-align: center; color: #2d3748; background: #ffffff;">
                                         @item.Quantity
                                     </span>
 
-                                    <a href="/Cart/UpdateQuantity?productId=@item.Product.Id&quantity=@(item.Quantity + 1)"
-                                       style="padding: 5px 12px; background: #fbf9f6; color: #5c4033; text-decoration: none; font-weight: bold; font-size: 16px; transition: 0.2s;"
-                                       onmouseenter="this.style.background='#eaddca'" onmouseleave="this.style.background='#fbf9f6'">+</a>
+                                    <form asp-controller="Cart" asp-action="UpdateQuantity" method="post" style="display:inline">
+                                        <input type="hidden" name="productId" value="@item.Product.Id" />
+                                        <input type="hidden" name="quantity" value="@(item.Quantity + 1)" />
+                                        <button type="submit" style="padding:5px 12px; border:0; background:#fbf9f6; color:#5c4033; font-weight:bold; font-size:16px; cursor:pointer;">+</button>
+                                    </form>
                                 </div>
                             </td>
                             <td style="padding: 12px; text-align: right; font-weight: bold; color: #2e5a1c;">
@@ -67,7 +76,7 @@
 
         <div style="display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; padding: 20px; border-radius: 8px;">
             <div>
-                <a asp-controller="Home" asp-action="Index" style="text-decoration: none; color: #4a5568; font-weight: bold;">⬅️ Mua thêm sản phẩm khác</a>
+                <a asp-controller="Products" asp-action="Index" style="text-decoration: none; color: #4a5568; font-weight: bold;">← Mua thêm sản phẩm khác</a>
             </div>
             <div style="text-align: right;">
                 <h3 style="margin: 0 0 15px 0; color: #2d3748;">
@@ -78,7 +87,7 @@
                 </h3>
 
                 <a asp-controller="Cart" asp-action="Checkout" style="display: inline-block; background: #e53e3e; color: white; padding: 12px 30px; font-size: 16px; font-weight: bold; border-radius: 4px; text-decoration: none; text-align: center;">
-                    Tiến Hành Đặt Hàng ➡️
+                    Tiến Hành Đặt Hàng →
                 </a>
             </div>
         </div>  

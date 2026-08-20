@@ -1,11 +1,16 @@
 @{
-    var isPaid = string.Equals(ViewBag.PaymentStatus as string, "PAID", StringComparison.OrdinalIgnoreCase);
-    var isCancelled = string.Equals(ViewBag.PaymentStatus as string, "CANCELLED", StringComparison.OrdinalIgnoreCase);
+    var isPaid = string.Equals(ViewBag.PaymentStatus as string, "Đã thanh toán", StringComparison.OrdinalIgnoreCase);
+    var isCancelled = string.Equals(ViewBag.PaymentStatus as string, "Đã hủy thanh toán", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(ViewBag.PaymentStatus as string, "CANCELLED", StringComparison.OrdinalIgnoreCase);
     ViewData["Title"] = isPaid ? "Thanh toán thành công" : "Kết quả thanh toán";
 }
 
 <div style="max-width: 620px; margin: 50px auto; padding: 38px; text-align: center; border: 1px solid #dfe8dc; border-radius: 14px; box-shadow: 0 8px 28px rgba(34,85,24,.10); background: #fff;">
-    <div style="font-size: 64px;">@(isPaid ? "✅" : isCancelled ? "↩️" : "⏳")</div>
+    <div style="color: #2e5a1c;">
+        <svg class="app-icon" style="width: 64px; height: 64px; margin: 0;">
+            <use href="@(isPaid ? "#icon-check" : isCancelled ? "#icon-logout" : "#icon-clock")"></use>
+        </svg>
+    </div>
     <h2 style="color: #245719; margin: 15px 0;">
         @(isPaid ? "THANH TOÁN THÀNH CÔNG" : isCancelled ? "ĐÃ HỦY THANH TOÁN" : "ĐANG XỬ LÝ THANH TOÁN")
     </h2>

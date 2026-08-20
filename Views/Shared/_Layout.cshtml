@@ -73,6 +73,18 @@
                 font-weight: bold;
             }
 
+            .app-icon {
+                width: 1.1em;
+                height: 1.1em;
+                fill: none;
+                stroke: currentColor;
+                stroke-width: 1.8;
+                stroke-linecap: round;
+                stroke-linejoin: round;
+                vertical-align: -0.18em;
+                margin-right: 0.32em;
+            }
+
       
             .nav-bar {
                 background: #ffffff;
@@ -153,6 +165,7 @@
     </style>
 </head>
 <body>
+    @await Html.PartialAsync("~/Views/Shared/_IconSprite.cshtml")
 
     @{
         var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
@@ -173,16 +186,16 @@
                 </a>
 
                 <div class="auth-buttons">
-                    <a asp-controller="Cart" asp-action="Index" class="btn-cart">🛒 Giỏ hàng</a>
+                    <a asp-controller="Cart" asp-action="Index" class="btn-cart"><svg class="app-icon"><use href="#icon-cart"></use></svg>Giỏ hàng</a>
                     <span style="color: #cbd5e0">|</span>
-                    @if (User.Identity.IsAuthenticated)
+                    @if (User.Identity?.IsAuthenticated == true)
                     {
-                        <span style="font-weight: 600;">🌾 @User.Identity.Name</span>
+                        <span style="font-weight: 600;"><svg class="app-icon"><use href="#icon-user"></use></svg>@User.Identity.Name</span>
                         <a asp-controller="Account" asp-action="Logout" class="btn-auth" style="color: #e53e3e">Đăng xuất</a>
                     }
                     else
                     {
-                        <a asp-controller="Account" asp-action="Login" class="btn-auth" style="text-decoration: none; color: var(--dark-text); font-weight: 600; padding: 8px 15px; transition: color 0.2s;" onmouseenter="this.style.color='var(--primary-green)'" onmouseleave="this.style.color='var(--dark-text)'">🔑 Đăng nhập</a>
+                        <a asp-controller="Account" asp-action="Login" class="btn-auth" style="text-decoration: none; color: var(--dark-text); font-weight: 600; padding: 8px 15px; transition: color 0.2s;" onmouseenter="this.style.color='var(--primary-green)'" onmouseleave="this.style.color='var(--dark-text)'"><svg class="app-icon"><use href="#icon-key"></use></svg>Đăng nhập</a>
                         <a asp-controller="Account" asp-action="Register" class="btn-auth" style="background: var(--earth-brown); color: white; padding: 8px 18px; border-radius: 6px; font-weight: 600; text-decoration: none; transition: all 0.2s; box-shadow: 0 4px 6px rgba(92, 64, 51, 0.1);" onmouseenter="this.style.background='#442f25'" onmouseleave="this.style.background='var(--earth-brown)'">Đăng ký</a>
                     }
                 </div>
@@ -210,7 +223,7 @@
                 <div>
                     <h3 class="footer-title">DANH MỤC</h3>
                     <ul class="footer-links">
-                        <li><a href="#">Sản phẩm nổi bật</a></li>
+                        <li><a asp-area="" asp-controller="Products" asp-action="Index">Sản phẩm nổi bật</a></li>
                         <li><a href="#">Chính sách giao hàng</a></li>
                         <li><a href="#">Cam kết chất lượng đạt chuẩn</a></li>
                     </ul>

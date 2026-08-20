@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using THAN_NONG_SHOP.Models;
 
 namespace THAN_NONG_SHOP.Data
@@ -144,15 +145,17 @@ namespace THAN_NONG_SHOP.Data
             // 3. Gieo dữ liệu hạt giống Admin User (Tài khoản Quản trị)
             if (!context.Users.Any(u => u.UserName == "admin"))
             {
-                context.Users.Add(new user
+                var adminUser = new user
                 {
                     UserName = "admin",
                     Fullname = "Quản Trị Viên",
                     Email = "admin@thannong.com",
-                    Password = "admin123", // Lưu thô cho đồ án dễ kiểm tra và chấm điểm
+                    Password = "",
                     Phone = "0123456789",
                     RoleId = adminRoleId
-                });
+                };
+                adminUser.Password = new PasswordHasher<user>().HashPassword(adminUser, "admin123");
+                context.Users.Add(adminUser);
                 context.SaveChanges();
             }
 

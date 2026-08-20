@@ -1,93 +1,48 @@
-@model IEnumerable<THAN_NONG_SHOP.Models.Product>
-
 @{
-    ViewData["Title"] = "Trang Chủ Nông Sản";
+    ViewData["Title"] = "Trang chủ nông sản";
 }
 
-<div style="background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1200&q=80') center/cover; height: 350px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; color: white;">
-    <h2 style="font-family: 'Playfair Display', serif; font-size: 42px; margin: 0 0 10px 0; font-style: italic;">Tinh Hoa Quà Tặng Từ Đất Mẹ</h2>
-    <p style="font-size: 18px; font-weight: 300; max-width: 600px; margin: 0; letter-spacing: 1px;">Sản phẩm 100% hữu cơ, gìn giữ trọn vẹn hương vị truyền thống quê hương.</p>
-</div>
+<section style="background: linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)), url('https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1600&q=80') center/cover; min-height: 420px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px; text-align: center; color: white;">
+    <h1 style="font-family: 'Playfair Display', serif; font-size: 46px; margin: 0 0 15px;">Tinh hoa quà tặng từ đất mẹ</h1>
+    <p style="font-size: 19px; line-height: 1.7; max-width: 680px; margin: 0;">
+        Thần Nông Shop kết nối nông sản sạch từ những vùng trồng uy tín đến với mọi gia đình Việt.
+    </p>
 
-<div style="max-width: 1200px; margin: 40px auto; padding: 0 20px; display: flex; gap: 30px;">
+    <a asp-area="" asp-controller="Products" asp-action="Index"
+       style="display: inline-block; margin-top: 28px; padding: 13px 25px; border-radius: 7px; background: #c5a059; color: #fff; text-decoration: none; font-weight: 700; box-shadow: 0 5px 15px rgba(0,0,0,.2);">
+        <svg class="app-icon"><use href="#icon-product"></use></svg>Xem sản phẩm
+    </a>
 
-    <aside style="width: 250px; flex-shrink: 0;">
-        <div class="filter-sidebar" style="background: #fbf9f6; border-radius: 12px; padding: 20px; border: 1px solid #eaddca;">
-            <h3 style="color: #5c4033; font-family: 'Playfair Display', serif; font-size: 1.2rem; margin-bottom: 20px; border-bottom: 2px solid #8b5a2b; padding-bottom: 5px;">
-                TÌM KIẾM
-            </h3>
+    @if (User.IsInRole("Admin"))
+    {
+        <a asp-area="Admin" asp-controller="Product" asp-action="Index"
+           style="display: inline-block; margin: 28px 0 0 10px; padding: 13px 25px; border-radius: 7px; border: 1px solid rgba(255,255,255,.75); color: #fff; text-decoration: none; font-weight: 700;">
+            <svg class="app-icon"><use href="#icon-settings"></use></svg>Quản lý sản phẩm
+        </a>
+    }
+</section>
 
-            <form action="/Home/Index" method="get">
-                <div class="filter-group" style="margin-bottom: 15px;">
-                    <label style="color: #8b5a2b; font-weight: 600; display:block; margin-bottom:5px;">Tìm sản phẩm:</label>
-                    <input type="text" name="searchString" placeholder="Nhập tên nông sản..." style="width:100%; padding:8px; border:1px solid #d2b48c; border-radius:6px; background:#fff;" />
-                </div>
+<section style="max-width: 1100px; margin: 55px auto; padding: 0 25px; text-align: center;">
+    <h2 style="font-family: 'Playfair Display', serif; color: #2e5a1c; font-size: 32px; margin-bottom: 12px;">Giá trị của Thần Nông Shop</h2>
+    <p style="color: #718096; line-height: 1.7; max-width: 720px; margin: 0 auto 35px;">
+        Chúng tôi trân trọng giá trị bản địa, quy trình canh tác an toàn và công sức của người nông dân.
+    </p>
 
-                <div class="filter-group" style="margin-bottom: 15px;">
-                    <label style="color: #8b5a2b; font-weight: 600; display:block; margin-bottom:5px;">Danh mục mục:</label>
-                    <select name="categoryId" style="width:100%; padding:8px; border:1px solid #d2b48c; border-radius:6px;">
-                        <option value="">Tất cả nông sản</option>
-
-                        @if (ViewBag.Categories != null)
-                        {
-
-                            foreach (var cat in ViewBag.Categories)
-                            {
-                                <option value="@cat.Id">@cat.Name</option>
-                            }
-                        }
-                    </select>
-                </div>
-
-                <div class="filter-group" style="margin-bottom: 20px;">
-                    <label style="color: #8b5a2b; font-weight: 600; display:block; margin-bottom:5px;">Khoảng giá (VNĐ):</label>
-                    <input type="number" name="minPrice" placeholder="Từ" style="width:45%; padding:6px; border:1px solid #d2b48c; border-radius:6px;" />
-                    <span style="color:#8b5a2b;">-</span>
-                    <input type="number" name="maxPrice" placeholder="Đến" style="width:45%; padding:6px; border:1px solid #d2b48c; border-radius:6px;" />
-                </div>
-
-                <button type="submit" style="width:100%; background:#2e5a1c; color:#fff; border:none; padding:10px; border-radius:6px; font-weight:bold; cursor:pointer; transition: 0.3s;">
-                    ÁP DỤNG
-                </button>
-            </form>
-        </div>
-    </aside>
-
-    <main style="flex-grow: 1;">
-        <h3 style="font-family: 'Playfair Display', serif; font-size: 24px; margin-top: 0; margin-bottom: 25px; color: #2d3748;">Danh Sách Nông Sản Mới Thu Hoạch</h3>
-
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 25px;">
-            
-            @if(Model == null || !Model.Any())
-            {
-                <div style="padding: 20px; background: #fff5f5; color: #c53030; border: 1px solid #fed7d7; border-radius: 8px; margin-bottom: 20px;">
-                    ⚠️ Cảnh báo: Controller truyền xuống danh sách trống (0 sản phẩm). Vui lòng kiểm tra lại hàm Index trong HomeController!
-                </div>
-            }
-
-            @if (Model != null)
-            {
-                foreach (var product in Model)
-                {
-                    <div style="border: 1px solid #edf2f7; border-radius: 8px; overflow: hidden; background: #ffffff; transition: transform 0.3s, box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column;" onmouseenter="this.style.transform='scale(1.02)'; this.style.boxShadow='0 10px 20px rgba(0,0,0,0.08)'" onmouseleave="this.style.transform='none'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.05)'">
-                        <img src="@product.ImageUrl" style="width: 100%; height: 200px; object-fit: cover;" />
-                        <div style="padding: 15px; display: flex; flex-direction: column; flex-grow: 1;">
-                            <h4 style="margin: 0 0 10px 0; font-size: 16px; color: #2d3748; font-weight: 600;">@product.Name</h4>
-
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                                <span style="color: #b7791f; font-weight: bold; font-size: 16px;">@product.price.ToString("N0") đ</span>
-
-                                <span style="background: #eedc82; color: #5c4033; font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; border: 1px solid #d2b48c; font-weight: 500;">
-                                    Kho: <strong>@product.stockQuantity</strong>
-                                   
-                                </span>
-                            </div>
-
-                            <a asp-action="Details" asp-route-id="@product.Id" style="margin-top: auto; display: block; text-align: center; background: #2e5a1c; color: white; padding: 8px 0; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 13px; transition: all 0.2s;" onmouseenter="this.style.background='#1e3d12'" onmouseleave="this.style.background='#2e5a1c'">Xem Chi Tiết</a>
-                        </div>
-                    </div>
-                }
-            }
-        </div>
-    </main>
-</div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px;">
+        <article style="padding: 28px 22px; border: 1px solid #eaddca; border-radius: 12px; background: #fdfbf7;">
+            <div style="color: #2e5a1c;"><svg class="app-icon" style="width: 38px; height: 38px; margin: 0;"><use href="#icon-sprout"></use></svg></div>
+            <h3 style="color: #5c4033;">Canh tác an toàn</h3>
+            <p style="color: #718096; line-height: 1.6;">Sản phẩm có nguồn gốc rõ ràng và quy trình sản xuất đáng tin cậy.</p>
+        </article>
+        <article style="padding: 28px 22px; border: 1px solid #eaddca; border-radius: 12px; background: #fdfbf7;">
+            <div style="color: #2e5a1c;"><svg class="app-icon" style="width: 38px; height: 38px; margin: 0;"><use href="#icon-truck"></use></svg></div>
+            <h3 style="color: #5c4033;">Tươi mới mỗi ngày</h3>
+            <p style="color: #718096; line-height: 1.6;">Nông sản được bảo quản cẩn thận để giữ trọn độ tươi ngon tự nhiên.</p>
+        </article>
+        <article style="padding: 28px 22px; border: 1px solid #eaddca; border-radius: 12px; background: #fdfbf7;">
+            <div style="color: #2e5a1c;"><svg class="app-icon" style="width: 38px; height: 38px; margin: 0;"><use href="#icon-heart"></use></svg></div>
+            <h3 style="color: #5c4033;">Đồng hành cùng nhà nông</h3>
+            <p style="color: #718096; line-height: 1.6;">Nâng cao giá trị nông sản và tạo đầu ra bền vững cho người trồng.</p>
+        </article>
+    </div>
+</section>

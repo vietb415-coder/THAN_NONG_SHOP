@@ -5,7 +5,7 @@
 }
 
 <div style="max-width: 400px; margin: 60px auto; padding: 30px; background: #fdfbf7; border: 1px solid #eaddca; border-radius: 12px; font-family: 'Segoe UI', Arial, sans-serif; box-shadow: 0 8px 25px rgba(92,64,51,0.06);">
-    <h3 style="text-align: center; color: #5c4033; margin-bottom: 25px; font-family: 'Playfair Display', serif; font-size: 24px; font-weight: bold;">🔑 ĐĂNG NHẬP HỆ THỐNG</h3>
+    <h3 style="text-align: center; color: #5c4033; margin-bottom: 25px; font-family: 'Playfair Display', serif; font-size: 24px; font-weight: bold;"><svg class="app-icon"><use href="#icon-key"></use></svg>ĐĂNG NHẬP HỆ THỐNG</h3>
 
     <div asp-validation-summary="All" style="color: #e53e3e; margin-bottom: 15px; font-size: 14px; list-style: none; padding: 0;"></div>
 
@@ -30,5 +30,10 @@
         <button type="submit" style="width: 100%; background: #2e5a1c; color: white; border: none; padding: 12px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: background 0.3s ease; box-shadow: 0 4px 12px rgba(46,90,28,0.2);" onmouseenter="this.style.background='#1e3d12'" onmouseleave="this.style.background='#2e5a1c'">
             ĐĂNG NHẬP
         </button>
+
+        <a asp-controller="Home" asp-action="Index"
+           style="display: block; margin-top: 12px; padding: 11px; border: 1px solid #d2b48c; border-radius: 6px; color: #5c4033; text-align: center; text-decoration: none; font-weight: 600;">
+            ← Về trang chủ
+        </a>
     </form>
 </div>

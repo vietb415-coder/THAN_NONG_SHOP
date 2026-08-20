@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using PayOS;
 using PayOS.Models.Webhooks;
 using THAN_NONG_SHOP.Data;
@@ -20,15 +21,17 @@ public class PaymentController : Controller
 
     [AllowAnonymous]
     [HttpGet]
-    public IActionResult Return(long orderCode, string? status)
+    public async Task<IActionResult> Return(long orderCode)
     {
-        if (string.Equals(status, "PAID", StringComparison.OrdinalIgnoreCase))
+        var order = await _context.Oders.AsNoTracking().FirstOrDefaultAsync(o => o.Id == orderCode);
+        var verifiedStatus = order?.Status;
+        if (string.Equals(verifiedStatus, "Đã thanh toán", StringComparison.OrdinalIgnoreCase))
         {
             Response.Cookies.Delete(CartSessionKey);
         }
 
         ViewBag.OrderCode = orderCode;
-        ViewBag.PaymentStatus = status;
+        ViewBag.PaymentStatus = verifiedStatus ?? "Không tìm thấy đơn hàng";
         return View("Result");
     }
 
@@ -36,13 +39,6 @@ public class PaymentController : Controller
     [HttpGet]
     public async Task<IActionResult> Cancel(long orderCode)
     {
-        var order = await _context.Oders.FindAsync((int)orderCode);
-        if (order != null && order.Status == "Chờ thanh toán PayOS")
-        {
-            order.Status = "Đã hủy thanh toán";
-            await _context.SaveChangesAsync();
-        }
-
         ViewBag.OrderCode = orderCode;
         ViewBag.PaymentStatus = "CANCELLED";
         return View("Result");

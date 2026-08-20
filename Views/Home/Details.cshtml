@@ -6,6 +6,11 @@
 
 <div style="max-width: 900px; margin: 30px auto; padding: 20px; font-family: Arial, sans-serif;">
 
+    <a asp-controller="Home" asp-action="Index"
+       style="display: inline-block; margin-bottom: 15px; color: #5c4033; text-decoration: none; font-weight: 600;">
+        ← Về trang chủ
+    </a>
+
     <div style="display: flex; gap: 40px; margin-top: 20px; flex-wrap: wrap;">
         <div style="flex: 1; min-width: 300px;">
             <img src="@Model.ImageUrl" style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 8px; border: 1px solid #eee;" />
@@ -34,7 +39,7 @@
                 <input type="hidden" name="quantity" value="1" />
 
                 <button type="submit" style="...">
-                    🛒 THÊM VÀO GIỎ HÀNG
+                    <svg class="app-icon"><use href="#icon-cart"></use></svg>THÊM VÀO GIỎ HÀNG
                 </button>
             </form>
         </div>
@@ -43,7 +48,7 @@
     @if (!string.IsNullOrEmpty(Model.farmerStory))
     {
         <div style="margin-top: 40px; padding: 20px; background: #fdfbf7; border: 1px dashed #2e5a1c; border-radius: 8px;">
-            <h4 style="margin-top: 0; color: #2e5a1c;">👨‍🌾 Câu chuyện từ nhà vườn:</h4>
+            <h4 style="margin-top: 0; color: #2e5a1c;"><svg class="app-icon"><use href="#icon-story"></use></svg>Câu chuyện từ nhà vườn:</h4>
             <p style="color: #555; font-style: italic; line-height: 1.6; margin: 0;">
                 "@Model.farmerStory"
             </p>

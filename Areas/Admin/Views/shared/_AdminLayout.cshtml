@@ -85,19 +85,33 @@
                 flex: 1;
                 overflow-x: auto;
             }
+
+            .app-icon {
+                width: 1.1em;
+                height: 1.1em;
+                fill: none;
+                stroke: currentColor;
+                stroke-width: 1.8;
+                stroke-linecap: round;
+                stroke-linejoin: round;
+                vertical-align: -0.18em;
+                margin-right: 0.4em;
+            }
     </style>
 </head>
 <body>
+    @await Html.PartialAsync("~/Views/Shared/_IconSprite.cshtml")
 
     <div style="display: flex; min-height: 100vh;">
         <div class="sidebar">
-            <div class="sidebar-brand">🚜 THẦN NÔNG</div>
-            <a href="/Admin/Home/Index">🌾 Tổng Quan</a>
-            <a href="/Admin/AdminOrders/Index">📋 Quản Lý Đơn Hàng</a>
-            <a href="/Admin/Product/Index">🥕 Quản Lý Sản Phẩm</a>
-            <a href="/Admin/Category/Index">📂 Quản Lý Danh Mục</a>
-            <a href="/Admin/AdminUsers/Index">👤 Quản Lý Tài Khoản</a>
-            <a href="/Home/Index" style="margin-top: auto; margin-bottom: 20px; color: #ff9999; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">🚪 Đăng xuất</a>
+            <div class="sidebar-brand"><svg class="app-icon"><use href="#icon-leaf"></use></svg>THẦN NÔNG</div>
+            <a href="/Admin/Home/Index"><svg class="app-icon"><use href="#icon-dashboard"></use></svg>Tổng Quan</a>
+            <a href="/Admin/AdminOrders/Index"><svg class="app-icon"><use href="#icon-orders"></use></svg>Quản Lý Đơn Hàng</a>
+            <a href="/Admin/Product/Index"><svg class="app-icon"><use href="#icon-product"></use></svg>Quản Lý Sản Phẩm</a>
+            <a href="/Admin/Category/Index"><svg class="app-icon"><use href="#icon-folder"></use></svg>Quản Lý Danh Mục</a>
+            <a href="/Admin/AdminUsers/Index"><svg class="app-icon"><use href="#icon-user"></use></svg>Quản Lý Tài Khoản</a>
+            <a asp-area="" asp-controller="Home" asp-action="Index" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">← Về trang chủ</a>
+            <a asp-area="" asp-controller="Account" asp-action="Logout" style="margin-bottom: 20px; color: #ff9999;"><svg class="app-icon"><use href="#icon-logout"></use></svg>Đăng xuất</a>
         </div>
 
         <div class="main-container">
@@ -106,7 +120,7 @@
                     @ViewBag.AdminPageTitle
                 </h2>
                 <div class="user-info" style="font-weight: 500; color: var(--leaf-green);">
-                    Chào, Quản trị viên 👑
+                    <svg class="app-icon"><use href="#icon-user"></use></svg>Chào, Quản trị viên
                 </div>
             </div>
 
