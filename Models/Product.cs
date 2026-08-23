@@ -13,6 +13,7 @@ namespace THAN_NONG_SHOP.Models
         public decimal price { get; set; }
         public string? ImageUrl { get; set; }
         public string? farmerStory { get; set; }
+        [Range(0, int.MaxValue, ErrorMessage = "Số lượng tồn kho không được âm.")]
         public int stockQuantity { get; set; }
 
         public int categoryId { get; set; }

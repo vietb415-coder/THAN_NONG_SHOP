@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using PayOS;
 using PayOS.Models.Webhooks;
 using THAN_NONG_SHOP.Data;
+using THAN_NONG_SHOP.Models;
+using System.Data;
 
 namespace THAN_NONG_SHOP.Controllers;
 
@@ -25,7 +27,7 @@ public class PaymentController : Controller
     {
         var order = await _context.Oders.AsNoTracking().FirstOrDefaultAsync(o => o.Id == orderCode);
         var verifiedStatus = order?.Status;
-        if (string.Equals(verifiedStatus, "Đã thanh toán", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(verifiedStatus, OrderStatus.Paid, StringComparison.OrdinalIgnoreCase))
         {
             Response.Cookies.Delete(CartSessionKey);
         }
@@ -37,9 +39,11 @@ public class PaymentController : Controller
 
     [AllowAnonymous]
     [HttpGet]
-    public async Task<IActionResult> Cancel(long orderCode)
+    public IActionResult Cancel(long orderCode)
     {
         ViewBag.OrderCode = orderCode;
+        // URL quay về từ trình duyệt không có chữ ký xác thực, nên không được dùng để đổi đơn hoặc hoàn kho.
+        // Việc hủy chính thức chỉ được xử lý bởi webhook PayOS đã xác thực hoặc quản trị viên.
         ViewBag.PaymentStatus = "CANCELLED";
         return View("Result");
     }
@@ -53,19 +57,53 @@ public class PaymentController : Controller
         {
             var payOS = CreateClient();
             var verifiedData = await payOS.Webhooks.VerifyAsync(webhookData);
-            var order = await _context.Oders.FindAsync((int)verifiedData.OrderCode);
+            await using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+            var order = await _context.Oders.FirstOrDefaultAsync(o => o.Id == verifiedData.OrderCode);
 
-            if (order != null && verifiedData.Code == "00")
+            if (order == null)
             {
-                order.Status = "Đã thanh toán";
-                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return Ok(new { success = true });
             }
 
+            if (verifiedData.Code == "00")
+            {
+                // Webhook có thể được PayOS gửi lại nhiều lần; đơn đã thanh toán không cần xử lý lại.
+                if (order.Status == OrderStatus.AwaitingPayment)
+                {
+                    order.Status = OrderStatus.Paid;
+                }
+            }
+            else if (order.Status == OrderStatus.AwaitingPayment)
+            {
+                await RestoreInventoryAsync(order.Id);
+                order.Status = OrderStatus.Cancelled;
+            }
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
             return Ok(new { success = true });
         }
         catch
         {
             return BadRequest(new { success = false, message = "Invalid webhook" });
+        }
+    }
+
+    private async Task RestoreInventoryAsync(int orderId)
+    {
+        var quantities = await _context.OderDetails
+            .Where(detail => detail.OderId == orderId)
+            .GroupBy(detail => detail.ProductId)
+            .Select(group => new { ProductId = group.Key, Quantity = group.Sum(detail => detail.Quantity) })
+            .ToListAsync();
+
+        var productIds = quantities.Select(item => item.ProductId).ToArray();
+        var products = await _context.Products.Where(product => productIds.Contains(product.Id)).ToListAsync();
+        foreach (var item in quantities)
+        {
+            var product = products.FirstOrDefault(candidate => candidate.Id == item.ProductId);
+            if (product != null) product.stockQuantity += item.Quantity;
         }
     }
 

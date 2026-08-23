@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.Identity;
 using THAN_NONG_SHOP.Models;
 using THAN_NONG_SHOP.Data;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -81,6 +83,25 @@ builder.Services
         options.Cookie.IsEssential = true;
         // Đổi phiên bản cookie khi cấu trúc claims thay đổi để không dùng lại tên hiển thị cũ.
         options.Cookie.Name = "THAN_NONG_SHOP_Auth_v2";
+        options.Events.OnValidatePrincipal = async context =>
+        {
+            var username = context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                context.RejectPrincipal();
+                return;
+            }
+
+            var db = context.HttpContext.RequestServices.GetRequiredService<THAN_NONG_SHOP_DbContext>();
+            var account = await db.Users.AsNoTracking().FirstOrDefaultAsync(user => user.UserName == username);
+            var expectedRole = account?.RoleId == 1 ? "Admin" : "User";
+            var currentRole = context.Principal?.FindFirstValue(ClaimTypes.Role);
+            if (account == null || !account.IsActive || currentRole != expectedRole)
+            {
+                context.RejectPrincipal();
+                await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            }
+        };
     });
 
 
@@ -158,12 +179,13 @@ using (var scope = app.Services.CreateScope())
         var context =
             services.GetRequiredService<THAN_NONG_SHOP_DbContext>();
 
+        context.Database.Migrate();
         DbInitializer.Seed(context);
 
         var logger =
             services.GetRequiredService<ILogger<Program>>();
 
-        logger.LogInformation("Seed Data thành công.");
+        logger.LogInformation("Migration và Seed Data thành công.");
     }
     catch (Exception ex)
     {
@@ -172,7 +194,8 @@ using (var scope = app.Services.CreateScope())
 
         logger.LogError(
             ex,
-            "Lỗi xảy ra trong quá trình Seed Data.");
+            "Không thể kết nối, migration hoặc seed cơ sở dữ liệu. Hãy kiểm tra SQL Server và ConnectionString.");
+        throw;
     }
 }
 

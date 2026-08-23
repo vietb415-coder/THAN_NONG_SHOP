@@ -69,6 +69,7 @@
                     <div style="flex-grow: 1;">
                         <label style="display: block; font-weight: 600; color: #5c4033; margin-bottom: 6px; font-size: 13px;">Thay đổi ảnh mới:</label>
                         <input type="file" name="file" accept="image/*" style="font-size: 13px; color: #718096;" />
+                        @Html.ValidationMessage("file", null, new { style = "color:red; font-size:13px; display:block;" })
                         @*<input type="file" name="ImageFile" style="font-size: 13px; color: #718096;" />*@
                     </div>
                 </div>

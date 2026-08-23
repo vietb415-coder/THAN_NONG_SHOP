@@ -40,6 +40,7 @@
                 <th style="padding: 12px; text-align: left; border: 1px solid #ddd; width: 15%;">Danh mục</th>
                 <th style="padding: 12px; text-align: left; border: 1px solid #ddd; width: 25%;">Mô tả</th>
                 <th style="padding: 12px; text-align: left; border: 1px solid #ddd; width: 10%;">Giá</th>
+                <th style="padding: 12px; text-align: center; border: 1px solid #ddd; width: 10%;">Tồn kho</th>
                 <th style="padding: 12px; text-align: center; border: 1px solid #ddd; width: 15%;">Chức năng</th>
             </tr>
         </thead>
@@ -66,6 +67,10 @@
 
                     <td style="padding: 12px; border: 1px solid #ddd; color: #e74c3c; font-weight: bold;">
                         @product.price.ToString("N0") đ
+                    </td>
+
+                    <td style="padding:12px; border:1px solid #ddd; text-align:center; font-weight:bold; color:@(product.stockQuantity > 0 ? "#2f855a" : "#c53030")">
+                        @product.stockQuantity
                     </td>
 
                     <td style="padding: 12px; border: 1px solid #ddd; text-align: center;">

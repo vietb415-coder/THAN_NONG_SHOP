@@ -10,7 +10,6 @@ using System.Net.Mail;
 using System.Text.RegularExpressions;
 using THAN_NONG_SHOP.Data;
 using System.Linq;
-using THAN_NONG_SHOP.Migrations;
 
 namespace THAN_NONG_SHOP.Controllers
 {
@@ -36,6 +35,8 @@ namespace THAN_NONG_SHOP.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(string username, string password, bool rememberMe = false)
         {
+            username = username?.Trim() ?? "";
+            password ??= "";
             var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == username);
             var passwordIsValid = false;
 
@@ -64,6 +65,12 @@ namespace THAN_NONG_SHOP.Controllers
                 }
             }
 
+            if (user != null && !user.IsActive)
+            {
+                ModelState.AddModelError(string.Empty, "Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.");
+                return View();
+            }
+
             if (user != null && passwordIsValid)
             {
 
@@ -85,6 +92,8 @@ namespace THAN_NONG_SHOP.Controllers
                 var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                 var authProperties = new AuthenticationProperties { IsPersistent = rememberMe };
 
+                // Loại bỏ hoàn toàn phiên cũ trước khi tạo cookie cho tài khoản vừa đăng nhập.
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
 
              
@@ -102,6 +111,7 @@ namespace THAN_NONG_SHOP.Controllers
 
 
             ModelState.AddModelError(string.Empty, "Tài khoản hoặc mật khẩu không chính xác.");
+            ViewData["LoginUsername"] = username;
             return View();
         }
 
@@ -177,7 +187,8 @@ namespace THAN_NONG_SHOP.Controllers
                 Password = "",
                 Email = email,
                 Phone = phoneNumber, 
-                RoleId = 2
+                RoleId = 2,
+                IsActive = true
             };
             newUser.Password = _passwordHasher.HashPassword(newUser, password);
 

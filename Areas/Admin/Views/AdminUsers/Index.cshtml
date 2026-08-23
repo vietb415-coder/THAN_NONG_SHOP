@@ -5,6 +5,15 @@
 
 <div style="background: #ffffff; padding: 30px; border-radius: 12px; border: 1px solid #eaddca; box-shadow: 0 4px 20px rgba(92,64,51,0.03); font-family: 'Segoe UI', sans-serif;">
 
+    @if (TempData["UserError"] != null)
+    {
+        <div style="padding:10px 14px; margin-bottom:15px; color:#9b2c2c; background:#fff5f5; border:1px solid #fed7d7; border-radius:6px;">@TempData["UserError"]</div>
+    }
+    @if (TempData["UserSuccess"] != null)
+    {
+        <div style="padding:10px 14px; margin-bottom:15px; color:#276749; background:#f0fff4; border:1px solid #c6f6d5; border-radius:6px;">@TempData["UserSuccess"]</div>
+    }
+
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid #f5f0e6; padding-bottom: 15px;">
         <div style="color: #8b5a2b; font-size: 15px; font-weight: 500;">
             👥 Tổng số người dùng đăng ký: <strong style="color: #2e5a1c; font-size: 18px;">@Model.Count()</strong> tài khoản
@@ -22,6 +31,7 @@
                 <th>Địa Chỉ Email</th>
                 <th style="text-align: center;">Số Điện Thoại</th>
                 <th style="text-align: center; width: 160px;">Quyền Hạn</th>
+                <th style="text-align: center; width: 120px;">Trạng thái</th>
                 <th style="text-align: center; width: 140px;">Thao Tác</th>
             </tr>
         </thead>
@@ -61,7 +71,23 @@
                         }
                     </td>
 
-                
+                    <td style="text-align:center; font-weight:600; color:@(account.IsActive ? "#2f855a" : "#c53030")">
+                        @(account.IsActive ? "Hoạt động" : "Đã khóa")
+                    </td>
+                    <td style="text-align:center;">
+                        <form asp-area="Admin" asp-controller="AdminUsers" asp-action="Update" method="post" style="display:flex; gap:5px; justify-content:center; align-items:center; flex-wrap:wrap;">
+                            <input type="hidden" name="id" value="@account.Id" />
+                            <select name="roleId" aria-label="Quyền của @account.UserName" style="padding:5px; border:1px solid #d2b48c; border-radius:4px;">
+                                <option value="1" selected="@(account.RoleId == 1 ? "selected" : null)">Admin</option>
+                                <option value="2" selected="@(account.RoleId == 2 ? "selected" : null)">User</option>
+                            </select>
+                            <select name="isActive" aria-label="Trạng thái của @account.UserName" style="padding:5px; border:1px solid #d2b48c; border-radius:4px;">
+                                <option value="true" selected="@(account.IsActive ? "selected" : null)">Mở</option>
+                                <option value="false" selected="@(!account.IsActive ? "selected" : null)">Khóa</option>
+                            </select>
+                            <button type="submit" style="padding:6px 9px; border:0; border-radius:4px; background:#8b5a2b; color:white; cursor:pointer;">Lưu</button>
+                        </form>
+                    </td>
                 </tr>
             }
         </tbody>

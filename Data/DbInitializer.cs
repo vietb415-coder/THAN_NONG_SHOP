@@ -9,10 +9,20 @@ namespace THAN_NONG_SHOP.Data
 {
     public static class DbInitializer
     {
-        public static void Seed(THAN_NONG_SHOP_DbContext context)
+        public static void Seed(THAN_NONG_SHOP_DbContext context, bool runCatalogSecondPass = true)
         {
-            // Đảm bảo cơ sở dữ liệu đã được tạo
-            context.Database.EnsureCreated();
+            // Chuẩn hóa dữ liệu cũ từng dùng trạng thái khác với danh sách hiện tại.
+            var legacyPendingOrders = context.Oders
+                .Where(order => order.Status == "Đang chờ xử lý")
+                .ToList();
+            if (legacyPendingOrders.Count > 0)
+            {
+                foreach (var order in legacyPendingOrders)
+                {
+                    order.Status = OrderStatus.Pending;
+                }
+                context.SaveChanges();
+            }
 
             // 1. Tự động đồng bộ hóa đường dẫn ảnh sản phẩm nếu có lỗi đường dẫn vật lý ổ đĩa cục bộ C:\, D:\
             var productsToFix = context.Products.ToList();
@@ -223,6 +233,13 @@ namespace THAN_NONG_SHOP.Data
                     );
                     context.SaveChanges();
                 }
+            }
+
+            // Ở database hoàn toàn mới, danh mục và 4 sản phẩm cơ bản chỉ vừa được tạo ở phía trên.
+            // Chạy lại một lượt idempotent để bổ sung catalog mở rộng ngay lần khởi động đầu tiên.
+            if (runCatalogSecondPass && !context.Products.Any(product => product.Name == "Cà rốt hữu cơ"))
+            {
+                Seed(context, false);
             }
         }
     }

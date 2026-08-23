@@ -15,6 +15,9 @@ namespace THAN_NONG_SHOP.Areas.Admin.Controllers
     [Authorize(Roles = "Admin")]
     public class ProductController : Controller
     {
+        private const long MaxImageSize = 5 * 1024 * 1024;
+        private static readonly string[] AllowedImageExtensions = [".jpg", ".jpeg", ".png", ".webp"];
+        private static readonly string[] AllowedImageContentTypes = ["image/jpeg", "image/png", "image/webp"];
         private readonly THAN_NONG_SHOP_DbContext _db;
         private readonly IWebHostEnvironment _webHostEnvironment;
 
@@ -53,26 +56,12 @@ namespace THAN_NONG_SHOP.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Create(Product product, IFormFile? file)
         {
+            ValidateImage(file);
             if (ModelState.IsValid)
             {
                 if (file != null)
                 {
-                    string wwwRootPath = _webHostEnvironment.WebRootPath;
-                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-
-                    
-                    string productPath = Path.Combine(wwwRootPath, @"images\products");
-
-                    if (!Directory.Exists(productPath))
-                    {
-                        Directory.CreateDirectory(productPath);
-                    }
-
-                    using (var fileStream = new FileStream(Path.Combine(productPath, fileName), FileMode.Create))
-                    {
-                        file.CopyTo(fileStream);
-                    }
-                    product.ImageUrl = @"/images/products/" + fileName;
+                    product.ImageUrl = SaveImage(file);
                 }
 
                 _db.Products.Add(product);
@@ -105,6 +94,7 @@ namespace THAN_NONG_SHOP.Areas.Admin.Controllers
 
             // Form không gửi ImageUrl; giữ ảnh hiện tại nếu quản trị viên không chọn ảnh mới.
             product.ImageUrl = existingProduct.ImageUrl;
+            ValidateImage(file);
 
             if (ModelState.IsValid)
             {
@@ -112,8 +102,7 @@ namespace THAN_NONG_SHOP.Areas.Admin.Controllers
 
                 if (file != null)
                 {
-                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-                    string productPath = Path.Combine(wwwRootPath, @"images\products");
+                    var newImageUrl = SaveImage(file);
 
                     if (!string.IsNullOrEmpty(existingProduct.ImageUrl))
                     {
@@ -124,17 +113,7 @@ namespace THAN_NONG_SHOP.Areas.Admin.Controllers
                         }
                     }
 
-                    if (!Directory.Exists(productPath))
-                    {
-                        Directory.CreateDirectory(productPath);
-                    }
-
-                    using (var fileStream = new FileStream(Path.Combine(productPath, fileName), FileMode.Create))
-                    {
-                        file.CopyTo(fileStream);
-                    }
-
-                    existingProduct.ImageUrl = @"/images/products/" + fileName;
+                    existingProduct.ImageUrl = newImageUrl;
                 }
 
                 // Chỉ cập nhật dữ liệu có trên form, tránh ghi null vào ảnh và câu chuyện nhà nông.
@@ -184,6 +163,52 @@ namespace THAN_NONG_SHOP.Areas.Admin.Controllers
             _db.Products.Remove(productFormDb);
             _db.SaveChanges();
             return RedirectToAction(nameof(Index));
+        }
+
+        private void ValidateImage(IFormFile? file)
+        {
+            if (file == null) return;
+
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (file.Length <= 0 || file.Length > MaxImageSize)
+            {
+                ModelState.AddModelError("file", "Ảnh phải có dung lượng từ 1 byte đến 5 MB.");
+                return;
+            }
+
+            if (!AllowedImageExtensions.Contains(extension) ||
+                !AllowedImageContentTypes.Contains(file.ContentType, StringComparer.OrdinalIgnoreCase) ||
+                !HasValidImageSignature(file, extension))
+            {
+                ModelState.AddModelError("file", "Chỉ chấp nhận ảnh JPG, PNG hoặc WEBP hợp lệ.");
+            }
+        }
+
+        private string SaveImage(IFormFile file)
+        {
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            var fileName = $"{Guid.NewGuid():N}{extension}";
+            var productPath = Path.Combine(_webHostEnvironment.WebRootPath, "images", "products");
+            Directory.CreateDirectory(productPath);
+
+            using var fileStream = new FileStream(Path.Combine(productPath, fileName), FileMode.CreateNew);
+            file.CopyTo(fileStream);
+            return "/images/products/" + fileName;
+        }
+
+        private static bool HasValidImageSignature(IFormFile file, string extension)
+        {
+            Span<byte> header = stackalloc byte[12];
+            using var stream = file.OpenReadStream();
+            var bytesRead = stream.Read(header);
+
+            return extension switch
+            {
+                ".jpg" or ".jpeg" => bytesRead >= 3 && header[0] == 0xFF && header[1] == 0xD8 && header[2] == 0xFF,
+                ".png" => bytesRead >= 8 && header[..8].SequenceEqual(new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }),
+                ".webp" => bytesRead >= 12 && header[..4].SequenceEqual("RIFF"u8) && header[8..12].SequenceEqual("WEBP"u8),
+                _ => false
+            };
         }
     }
 }

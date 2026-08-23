@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using THAN_NONG_SHOP.Data;
+using THAN_NONG_SHOP.Models;
 
 namespace THAN_NONG_SHOP.Areas.Admin.Controllers
 {
@@ -23,7 +24,7 @@ namespace THAN_NONG_SHOP.Areas.Admin.Controllers
 
             // 2. Tổng doanh thu từ các đơn hàng đã hoàn thành ("Đã hoàn thành")
             ViewBag.TotalRevenue = _context.Oders
-                .Where(o => o.Status == "Đã hoàn thành")
+                .Where(o => o.Status == OrderStatus.Completed)
                 .Sum(o => (decimal?)o.TotalPrice) ?? 0;
 
             // 3. Tổng số lượng sản phẩm nông sản hiện có trong kho

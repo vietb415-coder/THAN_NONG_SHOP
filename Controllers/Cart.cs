@@ -312,7 +312,7 @@ namespace THAN_NONG_SHOP.Controllers
                 Address = shippingAddress.Trim(),
                 PhoneNumber = shippingPhone.Trim(),
                 TotalPrice = cartItems.Sum(item => (item.Product?.price ?? 0) * item.Quantity),
-                Status = isPayOS ? "Chờ thanh toán PayOS" : "Đang chờ xử lý",
+                Status = isPayOS ? OrderStatus.AwaitingPayment : OrderStatus.Pending,
             };
 
             _context.Add(order);
@@ -361,7 +361,7 @@ namespace THAN_NONG_SHOP.Controllers
                 }
                 catch (Exception)
                 {
-                    order.Status = "Lỗi tạo thanh toán PayOS";
+                    order.Status = OrderStatus.Cancelled;
                     foreach (var item in cartItems)
                     {
                         if (item.Product == null) continue;

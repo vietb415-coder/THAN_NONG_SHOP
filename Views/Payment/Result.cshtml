@@ -1,6 +1,6 @@
 @{
-    var isPaid = string.Equals(ViewBag.PaymentStatus as string, "Đã thanh toán", StringComparison.OrdinalIgnoreCase);
-    var isCancelled = string.Equals(ViewBag.PaymentStatus as string, "Đã hủy thanh toán", StringComparison.OrdinalIgnoreCase)
+    var isPaid = string.Equals(ViewBag.PaymentStatus as string, OrderStatus.Paid, StringComparison.OrdinalIgnoreCase);
+    var isCancelled = string.Equals(ViewBag.PaymentStatus as string, OrderStatus.Cancelled, StringComparison.OrdinalIgnoreCase)
         || string.Equals(ViewBag.PaymentStatus as string, "CANCELLED", StringComparison.OrdinalIgnoreCase);
     ViewData["Title"] = isPaid ? "Thanh toán thành công" : "Kết quả thanh toán";
 }
