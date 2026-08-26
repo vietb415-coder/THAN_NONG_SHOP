@@ -15,5 +15,22 @@ namespace THAN_NONG_SHOP.Data
         public DbSet<Role> Roles { get; set; }
         public DbSet<Oder> Oders { get; set; }
         public DbSet<OderDetail> OderDetails { get; set; }
+        public DbSet<ChatKnowledge> ChatKnowledge { get; set; }
+        public DbSet<ChatConversation> ChatConversations { get; set; }
+        public DbSet<ChatStoredMessage> ChatMessages { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Oder>()
+                .HasIndex(order => order.PayOSOrderCode)
+                .IsUnique()
+                .HasFilter("[PayOSOrderCode] IS NOT NULL");
+            modelBuilder.Entity<ChatConversation>().HasMany(c => c.Messages).WithOne(m => m.Conversation)
+                .HasForeignKey(m => m.ConversationId).OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<ChatConversation>().HasIndex(c => c.LastMessageAt);
+            modelBuilder.Entity<ChatStoredMessage>().HasIndex(m => new { m.ConversationId, m.CreatedAt });
+        }
     }
 }

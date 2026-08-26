@@ -1,0 +1,27 @@
+@using Microsoft.Extensions.Options
+@inject IOptions<THAN_NONG_SHOP.Models.ChatbotOptions> ChatOptions
+@{ var chat = ChatOptions.Value; }
+<aside class="ai-chat" id="aiChat" data-endpoint="/api/chat">
+    <button class="ai-chat__launcher" id="chatLauncher" type="button" aria-label="Mở trợ lý Thần Nông" aria-expanded="false">
+        <span class="ai-chat__logo" aria-hidden="true">
+            <svg viewBox="0 0 48 48"><path class="ai-logo__halo" d="M24 2a22 22 0 1 1 0 44 22 22 0 0 1 0-44Z"/><path class="ai-logo__leaf" d="M24 15c-1-6 3-10 10-10 0 7-4 11-10 10Zm-1 0C17 15 13 11 14 6c6 0 9 3 9 9Z"/><path class="ai-logo__stem" d="M24 13v6"/><rect class="ai-logo__face" x="10" y="17" width="28" height="22" rx="9"/><circle class="ai-logo__eye" cx="19" cy="27" r="2.4"/><circle class="ai-logo__eye" cx="29" cy="27" r="2.4"/><path class="ai-logo__smile" d="M19 33c3 2 7 2 10 0"/><path class="ai-logo__spark" d="m39 12 1 2 2 1-2 1-1 2-1-2-2-1 2-1 1-2Z"/></svg>
+        </span>
+        <span class="ai-chat__launcher-text" data-i18n="launcher">Tư vấn AI</span>
+    </button>
+    <section class="ai-chat__panel" id="chatPanel" aria-label="Trợ lý chăm sóc khách hàng" hidden>
+        <header class="ai-chat__header"><div class="ai-chat__identity"><span class="ai-chat__logo ai-chat__logo--header" aria-hidden="true"><svg viewBox="0 0 48 48"><path class="ai-logo__halo" d="M24 2a22 22 0 1 1 0 44 22 22 0 0 1 0-44Z"/><path class="ai-logo__leaf" d="M24 15c-1-6 3-10 10-10 0 7-4 11-10 10Zm-1 0C17 15 13 11 14 6c6 0 9 3 9 9Z"/><path class="ai-logo__stem" d="M24 13v6"/><rect class="ai-logo__face" x="10" y="17" width="28" height="22" rx="9"/><circle class="ai-logo__eye" cx="19" cy="27" r="2.4"/><circle class="ai-logo__eye" cx="29" cy="27" r="2.4"/><path class="ai-logo__smile" d="M19 33c3 2 7 2 10 0"/></svg></span><div><strong data-i18n="title">Trợ lý Thần Nông</strong><small><i></i> <span data-i18n="ready">Sẵn sàng hỗ trợ</span></small></div></div><button id="chatClose" type="button" aria-label="Đóng cửa sổ chat">×</button></header>
+        <div class="ai-chat__messages" id="chatMessages" aria-live="polite"><div class="ai-message ai-message--bot" data-i18n="welcome">Xin chào! Mình có thể giúp bạn chọn nông sản, tra cứu thông tin giao hàng hoặc kết nối với nhân viên tư vấn.</div></div>
+        <div class="ai-chat__suggestions">
+            <button type="button" data-chat-action="products" data-chat-prompt="Sản phẩm nào đang có sẵn?" data-i18n="products">Sản phẩm có sẵn</button>
+            <button type="button" data-chat-action="shipping" data-chat-prompt="Chính sách giao hàng thế nào?" data-i18n="shipping">Giao hàng</button>
+            <button type="button" data-chat-action="staff" data-chat-prompt="Tôi cần gặp nhân viên tư vấn" data-i18n="staff">Gặp nhân viên</button>
+        </div>
+        <form class="ai-chat__form" id="chatForm"><textarea id="chatInput" rows="1" maxlength="1000" placeholder="Nhập câu hỏi..." aria-label="Tin nhắn"></textarea><button type="submit" aria-label="Gửi tin nhắn">➤</button></form>
+        <nav class="ai-chat__social" aria-label="Liên hệ hỗ trợ">
+            <a class="ai-social ai-social--facebook" href="@chat.FacebookUrl" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 8h3V4h-3c-3.3 0-5 2-5 5v2H6v4h3v7h4v-7h3l1-4h-4V9c0-.7.3-1 1-1Z"/></svg><span>Facebook</span></a>
+            <a class="ai-social ai-social--zalo" href="@chat.ZaloUrl" target="_blank" rel="noopener noreferrer" aria-label="Zalo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3h16a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3h-8l-5 3v-3H4a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3Z"/><text x="12" y="13.5" text-anchor="middle">Z</text></svg><span>Zalo</span></a>
+            <a class="ai-social ai-social--discord" href="@chat.DiscordUrl" target="_blank" rel="noopener noreferrer" aria-label="Discord"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 5.5A16 16 0 0 0 15.5 4l-.5 1a12 12 0 0 0-6 0l-.5-1A16 16 0 0 0 5 5.5C2.8 8.8 2.2 12 2.5 15.2A14 14 0 0 0 7 18l1.1-1.5a8 8 0 0 1-1.7-.8l.4-.3c3.3 1.5 7.1 1.5 10.4 0l.4.3a8 8 0 0 1-1.7.8L17 18a14 14 0 0 0 4.5-2.8c.3-3.2-.3-6.4-2.5-9.7ZM9 14c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2S10 14 9 14Zm6 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Z"/></svg><span>Discord</span></a>
+        </nav>
+        <p class="ai-chat__notice" data-i18n="notice">AI có thể nhầm lẫn. Không gửi mật khẩu hoặc thông tin thanh toán.</p>
+    </section>
+</aside>

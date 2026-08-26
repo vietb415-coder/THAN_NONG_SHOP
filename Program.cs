@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Identity;
 using THAN_NONG_SHOP.Models;
 using THAN_NONG_SHOP.Data;
 using System.Security.Claims;
+using THAN_NONG_SHOP.Services;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +18,23 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<IPasswordHasher<user>, PasswordHasher<user>>();
 builder.Services.AddMemoryCache();
+builder.Services.Configure<ChatbotOptions>(builder.Configuration.GetSection("Chatbot"));
+builder.Services.AddHttpClient("OpenAI", client =>
+{
+    client.BaseAddress = new Uri("https://api.openai.com/v1/");
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+builder.Services.AddScoped<IChatbotService, ChatbotService>();
+builder.Services.AddRateLimiter(options => options.AddPolicy("chat", context =>
+    RateLimitPartition.GetFixedWindowLimiter(
+        context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 15,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 2,
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+        })));
 builder.Services.AddResponseCompression(options =>
 {
     options.EnableForHttps = true;
@@ -138,6 +158,7 @@ app.UseStaticFiles(new StaticFileOptions
 app.MapStaticAssets();
 
 app.UseRouting();
+app.UseRateLimiter();
 
 // Xác thực
 app.UseAuthentication();
@@ -181,6 +202,7 @@ using (var scope = app.Services.CreateScope())
 
         context.Database.Migrate();
         DbInitializer.Seed(context);
+        ChatKnowledgeSeeder.Seed(context);
 
         var logger =
             services.GetRequiredService<ILogger<Program>>();

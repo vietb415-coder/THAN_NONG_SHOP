@@ -22,6 +22,7 @@ namespace THAN_NONG_SHOP.Controllers
         private readonly THAN_NONG_SHOP_DbContext _context;
         private readonly IConfiguration _configuration;
         private readonly IDataProtector _cartProtector;
+        private readonly ILogger<CartController> _logger;
         private const string CartSessionKey = "CartItems";
         private const int MaxQuantityPerProduct = 999;
 
@@ -31,11 +32,12 @@ namespace THAN_NONG_SHOP.Controllers
             public int Quantity { get; set; }
         }
 
-        public CartController(THAN_NONG_SHOP_DbContext context, IConfiguration configuration, IDataProtectionProvider dataProtectionProvider)
+        public CartController(THAN_NONG_SHOP_DbContext context, IConfiguration configuration, IDataProtectionProvider dataProtectionProvider, ILogger<CartController> logger)
         {
             _context = context;
             _configuration = configuration;
             _cartProtector = dataProtectionProvider.CreateProtector("THAN_NONG_SHOP.Cart.v1");
+            _logger = logger;
         }
 
         private readonly SystemTextJson.JsonSerializerOptions _jsonOptions = new SystemTextJson.JsonSerializerOptions
@@ -213,6 +215,24 @@ namespace THAN_NONG_SHOP.Controllers
         }
 
         [Authorize(Roles = "User")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult RemoveFromCart(int productId)
+        {
+            var cartItems = GetCartItems();
+            var removedCount = cartItems.RemoveAll(item =>
+                item.Product != null && item.Product.Id == productId);
+
+            if (removedCount > 0)
+            {
+                SaveCartItems(cartItems);
+                TempData["CartSuccess"] = "Đã xóa sản phẩm khỏi giỏ hàng.";
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        [Authorize(Roles = "User")]
         [HttpGet]
         public async Task<IActionResult> Checkout(CancellationToken cancellationToken)
         {
@@ -313,6 +333,9 @@ namespace THAN_NONG_SHOP.Controllers
                 PhoneNumber = shippingPhone.Trim(),
                 TotalPrice = cartItems.Sum(item => (item.Product?.price ?? 0) * item.Quantity),
                 Status = isPayOS ? OrderStatus.AwaitingPayment : OrderStatus.Pending,
+                // PayOS yêu cầu orderCode duy nhất trên toàn bộ kênh thanh toán.
+                // Không dùng Id của DB vì Id có thể lặp lại khi tạo lại database.
+                PayOSOrderCode = isPayOS ? DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() : null,
             };
 
             _context.Add(order);
@@ -350,7 +373,7 @@ namespace THAN_NONG_SHOP.Controllers
                     var payOS = new PayOSClient(clientId!, apiKey!, checksumKey!);
                     var paymentRequest = new CreatePaymentLinkRequest
                     {
-                        OrderCode = order.Id,
+                        OrderCode = order.PayOSOrderCode!.Value,
                         Amount = decimal.ToInt32(order.TotalPrice),
                         Description = $"Don hang {order.Id}",
                         ReturnUrl = $"{baseUrl}/Payment/Return",
@@ -359,8 +382,9 @@ namespace THAN_NONG_SHOP.Controllers
                     var paymentLink = await payOS.PaymentRequests.CreateAsync(paymentRequest);
                     return Redirect(paymentLink.CheckoutUrl);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    _logger.LogError(ex, "PayOS không thể tạo link thanh toán cho đơn {OrderId}, orderCode {PayOSOrderCode}.", order.Id, order.PayOSOrderCode);
                     order.Status = OrderStatus.Cancelled;
                     foreach (var item in cartItems)
                     {

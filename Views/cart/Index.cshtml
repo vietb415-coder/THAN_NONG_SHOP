@@ -12,6 +12,11 @@
         <div style="padding:12px 16px; margin-bottom:18px; color:#8a1c1c; background:#fff1f1; border:1px solid #efb4b4; border-radius:7px;">@TempData["CartError"]</div>
     }
 
+    @if (TempData["CartSuccess"] != null)
+    {
+        <div style="padding:12px 16px; margin-bottom:18px; color:#245719; background:#f0faed; border:1px solid #a9d6a0; border-radius:7px;">@TempData["CartSuccess"]</div>
+    }
+
     @if (Model == null || !Model.Any())
     {
         <div style="text-align: center; padding: 40px; border: 1px dashed #ccc; border-radius: 8px;">
@@ -31,6 +36,7 @@
                     <th style="padding: 12px;">Giá</th>
                     <th style="padding: 12px; text-align: center;">Số lượng</th>
                     <th style="padding: 12px; text-align: right;">Thành tiền</th>
+                    <th style="padding: 12px; text-align: center; width: 90px;">Thao tác</th>
                 </tr>
             </thead>
             <tbody>
@@ -67,6 +73,17 @@
                             </td>
                             <td style="padding: 12px; text-align: right; font-weight: bold; color: #2e5a1c;">
                                 @((item.Product.price * item.Quantity).ToString("N0")) đ
+                            </td>
+                            <td style="padding: 12px; text-align: center;">
+                                <form asp-controller="Cart" asp-action="RemoveFromCart" method="post" style="display:inline;"
+                                      onsubmit="return confirm('Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?');">
+                                    <input type="hidden" name="productId" value="@item.Product.Id" />
+                                    <button type="submit"
+                                            aria-label="Xóa @item.Product.Name khỏi giỏ hàng"
+                                            style="display:inline-flex; align-items:center; gap:4px; padding:7px 10px; border:0; border-radius:5px; background:#8b5a2b; color:#fff; font-weight:700; cursor:pointer; white-space:nowrap;">
+                                        <svg class="app-icon"><use href="#icon-trash"></use></svg>Xóa
+                                    </button>
+                                </form>
                             </td>
                         </tr>
                     }
