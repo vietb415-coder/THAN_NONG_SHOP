@@ -12,8 +12,8 @@ using THAN_NONG_SHOP.Data;
 namespace THAN_NONG_SHOP.Migrations
 {
     [DbContext(typeof(THAN_NONG_SHOP_DbContext))]
-    [Migration("20260825035857_UpgradeCustomerCareChatbot")]
-    partial class UpgradeCustomerCareChatbot
+    [Migration("20260827020641_AddProductReviews")]
+    partial class AddProductReviews
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -182,6 +182,7 @@ namespace THAN_NONG_SHOP.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("TotalPrice")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("UserName")
@@ -208,6 +209,7 @@ namespace THAN_NONG_SHOP.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("ProductId")
@@ -251,6 +253,7 @@ namespace THAN_NONG_SHOP.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("price")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("stockQuantity")
@@ -261,6 +264,47 @@ namespace THAN_NONG_SHOP.Migrations
                     b.HasIndex("categoryId");
 
                     b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("THAN_NONG_SHOP.Models.ProductReview", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Comment")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsVerifiedPurchase")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId", "UserName")
+                        .IsUnique();
+
+                    b.ToTable("ProductReviews");
                 });
 
             modelBuilder.Entity("THAN_NONG_SHOP.Models.Role", b =>
@@ -362,6 +406,17 @@ namespace THAN_NONG_SHOP.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("THAN_NONG_SHOP.Models.ProductReview", b =>
+                {
+                    b.HasOne("THAN_NONG_SHOP.Models.Product", "Product")
+                        .WithMany("Reviews")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("THAN_NONG_SHOP.Models.user", b =>
                 {
                     b.HasOne("THAN_NONG_SHOP.Models.Role", "Role")
@@ -376,6 +431,11 @@ namespace THAN_NONG_SHOP.Migrations
             modelBuilder.Entity("THAN_NONG_SHOP.Models.ChatConversation", b =>
                 {
                     b.Navigation("Messages");
+                });
+
+            modelBuilder.Entity("THAN_NONG_SHOP.Models.Product", b =>
+                {
+                    b.Navigation("Reviews");
                 });
 #pragma warning restore 612, 618
         }

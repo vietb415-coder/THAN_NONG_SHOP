@@ -9,6 +9,7 @@ using System.Linq;
 using System.Data;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using SystemTextJson = System.Text.Json;
 using THAN_NONG_SHOP.Data;
 using THAN_NONG_SHOP.Models;
@@ -262,6 +263,11 @@ namespace THAN_NONG_SHOP.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Checkout(string customerName, string shippingAddress, string shippingPhone, string paymentMethod, CancellationToken cancellationToken)
         {
+            customerName = customerName?.Trim() ?? string.Empty;
+            shippingAddress = shippingAddress?.Trim() ?? string.Empty;
+            shippingPhone = shippingPhone?.Trim() ?? string.Empty;
+            paymentMethod = paymentMethod?.Trim() ?? string.Empty;
+
             var cartItems = GetCartItems();
 
             if (cartItems == null || cartItems.Count == 0)
@@ -296,9 +302,25 @@ namespace THAN_NONG_SHOP.Controllers
                 return NotFound("Không tìm thấy thông tin tài khoản.");
             }
 
-            if (string.IsNullOrWhiteSpace(customerName) || string.IsNullOrWhiteSpace(shippingPhone) || string.IsNullOrWhiteSpace(shippingAddress))
+            if (customerName.Length is < 2 or > 100)
             {
-                TempData["CheckoutError"] = "Vui lòng nhập đầy đủ thông tin nhận hàng.";
+                TempData["CheckoutError"] = "Tên người nhận phải có từ 2 đến 100 ký tự.";
+                return RedirectToAction(nameof(Checkout));
+            }
+            if (!Regex.IsMatch(shippingPhone, @"^0\d{9}$"))
+            {
+                TempData["CheckoutError"] = "Số điện thoại phải gồm 10 chữ số và bắt đầu bằng số 0.";
+                return RedirectToAction(nameof(Checkout));
+            }
+            if (shippingAddress.Length is < 5 or > 500)
+            {
+                TempData["CheckoutError"] = "Địa chỉ nhận hàng phải có từ 5 đến 500 ký tự.";
+                return RedirectToAction(nameof(Checkout));
+            }
+            if (!string.Equals(paymentMethod, "cod", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(paymentMethod, "payos", StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["CheckoutError"] = "Phương thức thanh toán không hợp lệ.";
                 return RedirectToAction(nameof(Checkout));
             }
 
@@ -328,9 +350,9 @@ namespace THAN_NONG_SHOP.Controllers
             {
                 OrderDate = DateTime.Now,
                 UserName = currentUsername,
-                CustomerName = customerName.Trim(),
-                Address = shippingAddress.Trim(),
-                PhoneNumber = shippingPhone.Trim(),
+                CustomerName = customerName,
+                Address = shippingAddress,
+                PhoneNumber = shippingPhone,
                 TotalPrice = cartItems.Sum(item => (item.Product?.price ?? 0) * item.Quantity),
                 Status = isPayOS ? OrderStatus.AwaitingPayment : OrderStatus.Pending,
                 // PayOS yêu cầu orderCode duy nhất trên toàn bộ kênh thanh toán.

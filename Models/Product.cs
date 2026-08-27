@@ -19,6 +19,7 @@ namespace THAN_NONG_SHOP.Models
         public int categoryId { get; set; }
         [ForeignKey ("categoryId")]
         public virtual Category? Category { get; set; }
+        public ICollection<ProductReview> Reviews { get; set; } = [];
 
     }
 

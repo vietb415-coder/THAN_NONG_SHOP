@@ -17,13 +17,13 @@
             <h3 style="margin-top:0; color:#2c3e50;">Thông tin giao hàng</h3>
 
             <label style="display:block; margin:15px 0 6px; font-weight:700;">Họ và tên người nhận</label>
-            <input type="text" name="customerName" value="@ViewBag.UserFullName" required style="width:100%; padding:11px; border:1px solid #cbd5e0; border-radius:6px; box-sizing:border-box;" />
+            <input type="text" name="customerName" value="@ViewBag.UserFullName" minlength="2" maxlength="100" required style="width:100%; padding:11px; border:1px solid #cbd5e0; border-radius:6px; box-sizing:border-box;" />
 
             <label style="display:block; margin:15px 0 6px; font-weight:700;">Số điện thoại</label>
-            <input type="tel" name="shippingPhone" value="@ViewBag.UserPhone" required style="width:100%; padding:11px; border:1px solid #cbd5e0; border-radius:6px; box-sizing:border-box;" />
+            <input type="tel" name="shippingPhone" value="@ViewBag.UserPhone" pattern="0[0-9]{9}" maxlength="10" required style="width:100%; padding:11px; border:1px solid #cbd5e0; border-radius:6px; box-sizing:border-box;" />
 
             <label style="display:block; margin:15px 0 6px; font-weight:700;">Địa chỉ nhận hàng</label>
-            <textarea name="shippingAddress" rows="4" required style="width:100%; padding:11px; border:1px solid #cbd5e0; border-radius:6px; box-sizing:border-box;"></textarea>
+            <textarea name="shippingAddress" rows="4" minlength="5" maxlength="500" required style="width:100%; padding:11px; border:1px solid #cbd5e0; border-radius:6px; box-sizing:border-box;"></textarea>
 
             <h3 style="margin:24px 0 12px; color:#2c3e50;">Phương thức thanh toán</h3>
             <label style="display:flex; gap:10px; padding:14px; border:1px solid #cbd5e0; border-radius:8px; margin-bottom:10px; cursor:pointer;">

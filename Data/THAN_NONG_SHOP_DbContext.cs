@@ -18,6 +18,7 @@ namespace THAN_NONG_SHOP.Data
         public DbSet<ChatKnowledge> ChatKnowledge { get; set; }
         public DbSet<ChatConversation> ChatConversations { get; set; }
         public DbSet<ChatStoredMessage> ChatMessages { get; set; }
+        public DbSet<ProductReview> ProductReviews { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -27,6 +28,12 @@ namespace THAN_NONG_SHOP.Data
                 .HasIndex(order => order.PayOSOrderCode)
                 .IsUnique()
                 .HasFilter("[PayOSOrderCode] IS NOT NULL");
+            modelBuilder.Entity<Oder>().Property(order => order.TotalPrice).HasPrecision(18, 2);
+            modelBuilder.Entity<OderDetail>().Property(detail => detail.Price).HasPrecision(18, 2);
+            modelBuilder.Entity<Product>().Property(product => product.price).HasPrecision(18, 2);
+            modelBuilder.Entity<ProductReview>().HasIndex(review => new { review.ProductId, review.UserName }).IsUnique();
+            modelBuilder.Entity<ProductReview>().HasOne(review => review.Product).WithMany(product => product.Reviews)
+                .HasForeignKey(review => review.ProductId).OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<ChatConversation>().HasMany(c => c.Messages).WithOne(m => m.Conversation)
                 .HasForeignKey(m => m.ConversationId).OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<ChatConversation>().HasIndex(c => c.LastMessageAt);

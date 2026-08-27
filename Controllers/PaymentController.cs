@@ -131,9 +131,7 @@ public class PaymentController : Controller
     private Task<Oder?> FindOrderAsync(long orderCode, bool asTracking)
     {
         var orders = asTracking ? _context.Oders.AsQueryable() : _context.Oders.AsNoTracking();
-        return orders.FirstOrDefaultAsync(order =>
-            order.PayOSOrderCode == orderCode ||
-            (order.PayOSOrderCode == null && order.Id == orderCode));
+        return orders.FirstOrDefaultAsync(order => order.PayOSOrderCode == orderCode);
     }
 
     private async Task RestoreInventoryAsync(int orderId)

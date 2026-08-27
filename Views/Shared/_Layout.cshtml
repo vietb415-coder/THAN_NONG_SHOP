@@ -192,7 +192,9 @@
                     @if (User.Identity?.IsAuthenticated == true)
                     {
                         <span style="font-weight: 600;"><svg class="app-icon"><use href="#icon-user"></use></svg>@User.Identity.Name</span>
-                        <a asp-controller="Account" asp-action="Logout" class="btn-auth" style="color: #e53e3e">Đăng xuất</a>
+                        <form asp-controller="Account" asp-action="Logout" method="post" style="display:inline; margin:0;">
+                            <button type="submit" class="btn-auth" style="color:#e53e3e; border:0; background:none; cursor:pointer;">Đăng xuất</button>
+                        </form>
                     }
                     else
                     {

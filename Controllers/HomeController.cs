@@ -23,19 +23,8 @@ namespace THAN_NONG_SHOP.Controllers
 
         public async Task<IActionResult> Details(int id, CancellationToken cancellationToken)
         {
-            if (id == 0)
-            {
-                return NotFound();
-            }
-            var product = await _context.Products.AsNoTracking().Include(p => p.Category).FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
-            if (product == null)
-            {
-                return NotFound();
-            }
-            else
-            {
-                return View(product);
-            }
+            if (!await _context.Products.AsNoTracking().AnyAsync(product => product.Id == id, cancellationToken)) return NotFound();
+            return RedirectToAction("Details", "Products", new { id });
         }
 
         public IActionResult Privacy()

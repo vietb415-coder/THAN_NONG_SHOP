@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using THAN_NONG_SHOP.Data;
+using THAN_NONG_SHOP.Models;
+using System.Security.Claims;
 
 namespace THAN_NONG_SHOP.Controllers
 {
@@ -72,7 +74,23 @@ namespace THAN_NONG_SHOP.Controllers
                 return NotFound();
             }
 
-            return View(product);
+            var reviews = await _context.ProductReviews.AsNoTracking()
+                .Where(review => review.ProductId == id)
+                .OrderByDescending(review => review.UpdatedAt ?? review.CreatedAt)
+                .ToListAsync(cancellationToken);
+            var userName = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var canReview = !string.IsNullOrWhiteSpace(userName) && await _context.OderDetails.AsNoTracking().AnyAsync(detail =>
+                detail.ProductId == id && detail.Oder != null && detail.Oder.UserName == userName &&
+                detail.Oder.Status == OrderStatus.Completed, cancellationToken);
+
+            return View(new ProductDetailsViewModel
+            {
+                Product = product,
+                Reviews = reviews,
+                AverageRating = reviews.Count == 0 ? 0 : reviews.Average(review => review.Rating),
+                CanReview = canReview,
+                CurrentUserReview = reviews.FirstOrDefault(review => review.UserName == userName)
+            });
         }
     }
 }

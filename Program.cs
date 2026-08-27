@@ -25,6 +25,7 @@ builder.Services.AddHttpClient("OpenAI", client =>
     client.Timeout = TimeSpan.FromSeconds(30);
 });
 builder.Services.AddScoped<IChatbotService, ChatbotService>();
+builder.Services.AddHostedService<PayOSOrderReconciliationService>();
 builder.Services.AddRateLimiter(options => options.AddPolicy("chat", context =>
     RateLimitPartition.GetFixedWindowLimiter(
         context.Connection.RemoteIpAddress?.ToString() ?? "unknown",

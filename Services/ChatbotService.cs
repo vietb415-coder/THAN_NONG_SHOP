@@ -34,6 +34,8 @@ public sealed class ChatbotService(IHttpClientFactory clients, THAN_NONG_SHOP_Db
         var knowledge = await db.ChatKnowledge.AsNoTracking().Where(k => k.IsActive).OrderBy(k => k.Category).Take(60).ToListAsync(ct);
         var suggestions = FindProducts(request.Message, products);
         var orders = await FindOrdersAsync(request.Message, ct);
+        var hasKnowledgeMatch = HasKnowledgeMatch(request.Message, knowledge);
+        var confirmedOutOfCatalog = IsSpecificProductRequest(request.Message) && suggestions.Count == 0 && !hasKnowledgeMatch;
         var needsHuman = ShouldHandoff(request.Message);
         if (needsHuman) conversation.NeedsHuman = true;
 
@@ -41,9 +43,15 @@ public sealed class ChatbotService(IHttpClientFactory clients, THAN_NONG_SHOP_Db
         var isAi = false;
         if (IsUnsafe(request.Message))
             reply = GetUnsafeReply(request.Message);
+        else if (confirmedOutOfCatalog)
+            reply = GetProductNotFoundReply(request.Message);
         else if (!string.IsNullOrWhiteSpace(_options.ApiKey))
         {
-            var aiReply = await AskAiAsync(request, products, knowledge, orders, ct);
+            var suggestedIds = suggestions.Select(product => product.Id).ToHashSet();
+            var aiProducts = IsCatalogRequest(request.Message)
+                ? products
+                : products.Where(product => suggestedIds.Contains(product.Id)).ToList();
+            var aiReply = await AskAiAsync(request.Message, conversation.Id, aiProducts, knowledge, orders, ct);
             isAi = !string.IsNullOrWhiteSpace(aiReply);
             reply = aiReply ?? BuildFallback(request.Message, suggestions, orders, knowledge);
         }
@@ -105,18 +113,54 @@ public sealed class ChatbotService(IHttpClientFactory clients, THAN_NONG_SHOP_Db
         return id;
     }
 
-    private async Task<string?> AskAiAsync(ChatRequest request, List<Product> products, List<ChatKnowledge> knowledge, List<ChatOrderSummary> orders, CancellationToken ct)
+    private async Task<string?> AskAiAsync(string currentMessage, Guid conversationId, List<Product> products,
+        List<ChatKnowledge> knowledge, List<ChatOrderSummary> orders, CancellationToken ct)
     {
         var catalog = string.Join("\n", products.Select(p => $"- #{p.Id} {p.Name}; giá {p.price:N0}đ; tồn {p.stockQuantity}; {p.Category?.Name}; {p.Description}"));
         var faq = string.Join("\n", knowledge.Select(k => $"- [{k.Category}] {k.Title}: {k.Content}"));
         var orderText = orders.Count == 0 ? "Không có dữ liệu đơn được phép xem." : string.Join("\n", orders.Select(o => $"- Đơn #{o.Id}, {o.OrderDate:dd/MM/yyyy}, {o.TotalPrice:N0}đ, {o.Status}"));
-        var input = request.History.Where(m => (m.Role is "user" or "assistant") && !string.IsNullOrWhiteSpace(m.Content))
-            .TakeLast(10).Select(m => new { role = m.Role, content = Limit(m.Content, 1200) }).Cast<object>().ToList();
-        input.Add(new { role = "user", content = request.Message });
+        var storedHistory = await db.ChatMessages.AsNoTracking()
+            .Where(message => message.ConversationId == conversationId && (message.Role == "user" || message.Role == "assistant"))
+            .OrderByDescending(message => message.CreatedAt)
+            .Take(10)
+            .OrderBy(message => message.CreatedAt)
+            .Select(message => new { role = message.Role, content = message.Content })
+            .ToListAsync(ct);
+        var input = storedHistory.Select(message => new { message.role, content = Limit(message.content, 1200) }).Cast<object>().ToList();
+        input.Add(new { role = "user", content = currentMessage });
         var payload = new
         {
             model = _options.Model, store = false, max_output_tokens = 650,
-            instructions = "Bạn là trợ lý CSKH THẦN NÔNG SHOP. Tự động nhận diện ngôn ngữ của tin nhắn mới nhất và luôn trả lời cùng ngôn ngữ đó. Hỗ trợ tiếng Việt, tiếng Anh, tiếng Trung giản thể/phồn thể, tiếng Hàn và tiếng Nhật; nếu không rõ thì dùng tiếng Việt. Giữ nguyên tên sản phẩm nhưng dịch tự nhiên mọi giải thích, giá, tồn kho, chính sách và hướng dẫn. Trả lời thân thiện, rõ ràng và ngắn gọn. Hỏi thêm nhu cầu/ngân sách/số lượng khi cần. Chỉ dùng dữ liệu dưới đây, tuyệt đối không bịa giá, tồn kho, chính sách hay trạng thái đơn. Không nói đã thêm giỏ hàng; hướng dẫn khách bấm nút Thêm vào giỏ. Không yêu cầu mật khẩu, OTP, số thẻ. Khi có khiếu nại, hoàn tiền, khách tức giận hoặc dữ liệu không đủ thì đề nghị gặp nhân viên.\n\nCHÍNH SÁCH CƠ BẢN:\n" + _options.StorePolicies + "\n\nKHO KIẾN THỨC:\n" + faq + "\n\nSẢN PHẨM:\n" + catalog + "\n\nĐƠN HÀNG ĐƯỢC PHÉP XEM:\n" + orderText,
+            text = new
+            {
+                format = new
+                {
+                    type = "json_schema",
+                    name = "customer_support_reply",
+                    strict = true,
+                    schema = new
+                    {
+                        type = "object",
+                        properties = new
+                        {
+                            reply = new { type = "string", description = "Câu trả lời cuối cùng gửi cho khách hàng." }
+                        },
+                        required = new[] { "reply" },
+                        additionalProperties = false
+                    }
+                }
+            },
+            instructions = "Bạn là trợ lý bán hàng và CSKH của THẦN NÔNG SHOP, một cửa hàng nông sản. " +
+                "Trả lời đúng ngôn ngữ của khách, thân thiện, ngắn gọn và thực tế. " +
+                "QUY TẮC BẮT BUỘC: Chỉ xác nhận hoặc đề xuất sản phẩm xuất hiện trong mục SẢN PHẨM PHÙ HỢP. " +
+                "Nếu mục đó trống, phải nói shop chưa tìm thấy/không bán sản phẩm khách hỏi; tuyệt đối không thay bằng một sản phẩm không liên quan. " +
+                "Không tự bịa sản phẩm, giá, tồn kho, công dụng y tế, chính sách hoặc trạng thái đơn. " +
+                "Không tuyên bố đã thêm giỏ hàng hay đã sửa/hủy đơn. Không xin mật khẩu, OTP, số thẻ hoặc dữ liệu nhạy cảm. " +
+                "Chỉ đọc các đơn trong mục ĐƠN HÀNG ĐƯỢC PHÉP XEM. Với khiếu nại, hoàn tiền, nguy cơ sức khỏe hoặc thông tin không đủ, đề nghị gặp nhân viên. " +
+                "Nếu tư vấn thực phẩm, không đưa chẩn đoán y khoa; chỉ cung cấp thông tin chung và khuyên hỏi chuyên gia khi cần.\n\n" +
+                "CHÍNH SÁCH ĐÃ XÁC THỰC:\n" + _options.StorePolicies + "\n\nKHO KIẾN THỨC ĐÃ XÁC THỰC:\n" + faq +
+                "\n\nSẢN PHẨM PHÙ HỢP ĐÃ XÁC THỰC:\n" + (string.IsNullOrWhiteSpace(catalog) ? "(không có sản phẩm phù hợp)" : catalog) +
+                "\n\nĐƠN HÀNG ĐƯỢC PHÉP XEM:\n" + orderText,
             input, safety_identifier = GetVisitorId()
         };
         try
@@ -134,7 +178,7 @@ public sealed class ChatbotService(IHttpClientFactory clients, THAN_NONG_SHOP_Db
                 return null;
             }
             using var json = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync(ct), cancellationToken: ct);
-            var result = ExtractText(json.RootElement);
+            var result = ParseStructuredReply(ExtractText(json.RootElement));
             if (string.IsNullOrWhiteSpace(result))
                 logger.LogWarning("OpenAI chatbot returned no output text. Response ID: {ResponseId}",
                     json.RootElement.TryGetProperty("id", out var id) ? id.GetString() : "unknown");
@@ -156,20 +200,7 @@ public sealed class ChatbotService(IHttpClientFactory clients, THAN_NONG_SHOP_Db
 
     private static List<ChatProductSuggestion> FindProducts(string message, List<Product> products)
     {
-        var words = SearchTokens(message);
-        var ranked = products.Where(p => p.stockQuantity > 0).Select(p =>
-        {
-            var nameTokens = SearchTokens(p.Name, removeStopWords: false).ToHashSet();
-            var categoryTokens = SearchTokens(p.Category?.Name ?? "", removeStopWords: false).ToHashSet();
-            var descriptionTokens = SearchTokens(p.Description, removeStopWords: false).ToHashSet();
-            var score = words.Sum(w => nameTokens.Contains(w) ? 12 : categoryTokens.Contains(w) ? 4 : descriptionTokens.Contains(w) ? 1 : 0);
-            return new { Product = p, Score = score };
-        })
-            .Where(x => x.Score > 0).OrderByDescending(x => x.Score).ThenBy(x => x.Product.price).Take(4).Select(x => x.Product).ToList();
-        var normalized = Normalize(message);
-        if (ranked.Count == 0 && IsCatalogRequest(message))
-            ranked = products.OrderByDescending(p => p.stockQuantity > 0)
-                .ThenByDescending(p => p.stockQuantity).ThenBy(p => p.price).Take(4).ToList();
+        var ranked = CatalogMatcher.Find(message, products, IsCatalogRequest(message));
         return ranked.Select(p => new ChatProductSuggestion(p.Id, p.Name, p.price, p.stockQuantity, p.ImageUrl)).ToList();
     }
 
@@ -186,6 +217,7 @@ public sealed class ChatbotService(IHttpClientFactory clients, THAN_NONG_SHOP_Db
         if (IsPaymentRequest(message)) return GetPaymentReply(message);
         if (IsShippingRequest(message)) return GetShippingReply(message);
         if (products.Count > 0) return GetProductReply(message);
+        if (IsSpecificProductRequest(message)) return GetProductNotFoundReply(message);
         var normalized = Normalize(message);
         if (searchWords.Length > 0 && ContainsAny(normalized, " co ", "mua", "shop co", "ban co", "buy", "looking for"))
             return GetProductNotFoundReply(message);
@@ -297,6 +329,7 @@ public sealed class ChatbotService(IHttpClientFactory clients, THAN_NONG_SHOP_Db
         if (text.Any(c => c is >= '\uAC00' and <= '\uD7AF')) return "ko";
         if (text.Any(c => c is >= '\u3040' and <= '\u30FF')) return "ja";
         if (text.Any(c => c is >= '\u3400' and <= '\u9FFF')) return "zh";
+        if (text.Any(c => "ăâđêôơưáàảãạấầẩẫậắằẳẵặéèẻẽẹếềểễệíìỉĩịóòỏõọốồổỗộớờởỡợúùủũụứừửữựýỳỷỹỵ".Contains(char.ToLowerInvariant(c)))) return "vi";
         var normalized = Normalize(text);
         if (ContainsAny(normalized, " the ", " what ", " how ", " product ", " products ", " order ", " shipping ",
             " hello ", " hi ", " please ", " can ", " could ", " want ", " need ", " payment ", " delivery ",
@@ -326,6 +359,31 @@ public sealed class ChatbotService(IHttpClientFactory clients, THAN_NONG_SHOP_Db
                 "你们有什么产品", "你們有什麼產品", "有什么产品", "有什麼產品", "卖什么", "賣什麼",
                 "어떤 제품", "무슨 제품", "판매하나요", "판매합니까",
                 "どんな商品", "何の商品", "商品があります", "何を売");
+    }
+
+    private static bool IsSpecificProductRequest(string text)
+    {
+        if (IsCatalogRequest(text) || IsOrderRequest(text) || IsPaymentRequest(text) ||
+            IsShippingRequest(text) || IsGreeting(text) || ShouldHandoff(text)) return false;
+
+        var normalized = Normalize(text);
+        if (ContainsAny(normalized,
+            " mua ", " tim ", " can ", " muon ", " co ban ", " shop co ", " gia ", " bao nhieu ",
+            " buy ", " looking for ", " do you sell ", " have a ", " price ", " available ")) return true;
+
+        // Một tên mặt hàng ngắn như "tivi", "laptop" hoặc "cà rốt" cũng được coi là
+        // truy vấn sản phẩm. Điều này giúp trả lời không có hàng thay vì để AI đoán bừa.
+        var tokens = SearchTokens(text);
+        return tokens.Length is > 0 and <= 4 && !ContainsAny(normalized,
+            " cam on ", " thank ", " tam biet ", " goodbye ", " help ", " ho tro ");
+    }
+
+    private static bool HasKnowledgeMatch(string message, List<ChatKnowledge> knowledge)
+    {
+        var tokens = SearchTokens(message);
+        if (tokens.Length == 0) return false;
+        return knowledge.Any(item => SearchTokens(item.Title + " " + item.Category + " " + item.Content)
+            .Intersect(tokens).Count() >= Math.Min(2, tokens.Length));
     }
 
     private static bool ShouldHandoff(string text) => ContainsAny(text,
@@ -366,5 +424,19 @@ public sealed class ChatbotService(IHttpClientFactory clients, THAN_NONG_SHOP_Db
         foreach (var item in output.EnumerateArray()) if (item.TryGetProperty("content", out var content)) foreach (var part in content.EnumerateArray())
             if (part.TryGetProperty("type", out var type) && type.GetString() == "output_text" && part.TryGetProperty("text", out var text)) return text.GetString() ?? string.Empty;
         return string.Empty;
+    }
+
+    private static string ParseStructuredReply(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return string.Empty;
+        try
+        {
+            using var json = JsonDocument.Parse(value);
+            return json.RootElement.TryGetProperty("reply", out var reply) ? reply.GetString() ?? string.Empty : string.Empty;
+        }
+        catch (JsonException)
+        {
+            return string.Empty;
+        }
     }
 }
