@@ -92,6 +92,12 @@ public sealed class PayOSOrderReconciliationService(
         if (paid)
         {
             order.Status = OrderStatus.Paid;
+            var voucher = await db.PromotionVouchers.FirstOrDefaultAsync(item => item.OrderId == orderId, cancellationToken);
+            if (voucher != null)
+            {
+                voucher.UsedAt = DateTime.UtcNow;
+                db.PromotionVoucherEvents.Add(new PromotionVoucherEvent { VoucherId=voucher.Id, EventType=VoucherEventTypes.Used, UserName=voucher.UserName, OrderId=orderId, CreatedAt=DateTime.UtcNow, Note="Đối soát PayOS xác nhận thanh toán" });
+            }
         }
         else
         {
@@ -107,6 +113,13 @@ public sealed class PayOSOrderReconciliationService(
                 if (product != null) product.stockQuantity += quantity.Quantity;
             }
             order.Status = OrderStatus.Cancelled;
+            var voucher = await db.PromotionVouchers.FirstOrDefaultAsync(item => item.OrderId == orderId, cancellationToken);
+            if (voucher != null)
+            {
+                db.PromotionVoucherEvents.Add(new PromotionVoucherEvent { VoucherId=voucher.Id, EventType=VoucherEventTypes.Released, UserName=voucher.UserName, OrderId=orderId, CreatedAt=DateTime.UtcNow, Note="Đối soát hủy đơn PayOS" });
+                voucher.OrderId = null;
+                voucher.UsedAt = null;
+            }
         }
 
         await db.SaveChangesAsync(cancellationToken);

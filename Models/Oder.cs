@@ -35,6 +35,10 @@ namespace THAN_NONG_SHOP.Models
         public string Address { get; set; }
         public DateTime OrderDate { get; set; }
         public decimal TotalPrice { get; set; }
+        public decimal Subtotal { get; set; }
+        public decimal ShippingFee { get; set; }
+        public decimal DiscountAmount { get; set; }
+        [MaxLength(30)] public string? PromotionTemplateCode { get; set; }
         public string Status { get; set; } = OrderStatus.Pending;
         public long? PayOSOrderCode { get; set; }
         public string? UserName { get; internal set; }

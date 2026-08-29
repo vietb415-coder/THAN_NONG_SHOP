@@ -1,0 +1,23 @@
+@model THAN_NONG_SHOP.Models.AccountProfileViewModel
+@{ ViewData["Title"] = "Hồ sơ tài khoản"; }
+<main class="account-profile">
+    <header class="account-profile__hero"><div class="account-profile__avatar">@Model.User.Fullname.Trim().Substring(0, 1).ToUpperInvariant()</div><div><span>Thành viên Thần Nông</span><h1>@Model.User.Fullname</h1><p>@@@Model.User.UserName · @Model.User.Email</p></div></header>
+    @if (TempData["ProfileSuccess"] != null) { <div class="profile-alert profile-alert--success">@TempData["ProfileSuccess"]</div> }
+    @if (TempData["ProfileError"] != null) { <div class="profile-alert profile-alert--error">@TempData["ProfileError"]</div> }
+    <div class="account-profile__grid">
+        <section class="profile-panel"><div class="profile-panel__heading"><span>01</span><div><h2>Thông tin cá nhân</h2><p>Cập nhật thông tin nhận hàng và liên hệ.</p></div></div>
+            <form asp-action="UpdateProfile" method="post" class="profile-form"><label>Tên đăng nhập<input value="@Model.User.UserName" disabled /></label><label>Họ và tên<input name="fullName" value="@Model.User.Fullname" minlength="2" maxlength="100" required /></label><label>Email<input name="email" type="email" value="@Model.User.Email" required /></label><label>Số điện thoại<input name="phoneNumber" value="@Model.User.Phone" pattern="0[0-9]{9}" maxlength="10" required /></label><button type="submit">Lưu thay đổi</button></form>
+        </section>
+        <section class="profile-panel"><div class="profile-panel__heading"><span>02</span><div><h2>Đổi mật khẩu</h2><p>Nên sử dụng mật khẩu riêng và khó đoán.</p></div></div>
+            <form asp-action="ChangePassword" method="post" class="profile-form"><label>Mật khẩu hiện tại<input name="currentPassword" type="password" autocomplete="current-password" required /></label><label>Mật khẩu mới<input name="newPassword" type="password" minlength="8" autocomplete="new-password" required /></label><label>Xác nhận mật khẩu<input name="confirmPassword" type="password" minlength="8" autocomplete="new-password" required /></label><button type="submit">Đổi mật khẩu</button></form>
+        </section>
+    </div>
+    <section class="profile-panel profile-vouchers"><div class="profile-panel__heading"><span>03</span><div><h2>Ví voucher của tôi</h2><p>Tất cả mã được bảo vệ và chỉ sử dụng được bởi tài khoản này.</p></div></div>
+        @if (!Model.Vouchers.Any()) { <div class="profile-empty"><p>Bạn chưa có voucher nào.</p><a asp-controller="Home" asp-action="Promotions">Khám phá khuyến mãi</a></div> }
+        else { <div class="profile-voucher-grid">@foreach (var voucher in Model.Vouchers) { var statusClass = voucher.Status == "Có thể sử dụng" ? "active" : voucher.Status == "Đã sử dụng" ? "used" : "expired";<article class="profile-voucher profile-voucher--@statusClass"><div class="profile-voucher__top"><span>@voucher.Benefit</span><b>@voucher.Status</b></div><code>@voucher.Code</code><div class="profile-voucher__bottom"><small>HSD: @voucher.ExpiresAt.ToLocalTime().ToString("dd/MM/yyyy")</small>@if (voucher.Status == "Có thể sử dụng" && !voucher.Code.StartsWith("Mã cũ") && !voucher.Code.StartsWith("Không thể")) { <button type="button" data-profile-copy="@voucher.Code">Sao chép</button> }@if (voucher.OrderId.HasValue) { <small>Đơn #@voucher.OrderId</small> }</div></article> }</div> }
+    </section>
+    <section class="profile-panel profile-orders"><div class="profile-panel__heading"><span>04</span><div><h2>Đơn hàng gần đây</h2><p>Theo dõi 8 đơn hàng mới nhất của bạn.</p></div></div>
+        @if (!Model.RecentOrders.Any()) { <div class="profile-empty"><p>Bạn chưa có đơn hàng nào.</p></div> } else { <div class="profile-order-list">@foreach (var order in Model.RecentOrders) { <div><strong>#@order.Id</strong><span>@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</span><b>@order.TotalPrice.ToString("N0")đ</b><em>@order.Status</em></div> }</div> }
+    </section>
+</main>
+@section Scripts { <script>document.querySelectorAll('[data-profile-copy]').forEach(button=>button.addEventListener('click',async()=>{await navigator.clipboard.writeText(button.dataset.profileCopy);button.textContent='Đã sao chép ✓';setTimeout(()=>button.textContent='Sao chép',1600)}));</script> }

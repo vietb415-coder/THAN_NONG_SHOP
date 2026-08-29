@@ -17,6 +17,15 @@
         <div style="padding:12px 16px; margin-bottom:18px; color:#245719; background:#f0faed; border:1px solid #a9d6a0; border-radius:7px;">@TempData["CartSuccess"]</div>
     }
 
+    @if (TempData["PromotionError"] != null)
+    {
+        <div style="padding:12px 16px; margin-bottom:18px; color:#8a1c1c; background:#fff1f1; border:1px solid #efb4b4; border-radius:7px;">@TempData["PromotionError"]</div>
+    }
+    @if (TempData["PromotionSuccess"] != null)
+    {
+        <div style="padding:12px 16px; margin-bottom:18px; color:#245719; background:#f0faed; border:1px solid #a9d6a0; border-radius:7px;">@TempData["PromotionSuccess"]</div>
+    }
+
     @if (Model == null || !Model.Any())
     {
         <div style="text-align: center; padding: 40px; border: 1px dashed #ccc; border-radius: 8px;">
@@ -91,13 +100,45 @@
             </tbody>
         </table>
 
-        <div style="display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; padding: 20px; border-radius: 8px;">
-            <div>
+        @if (!string.IsNullOrWhiteSpace(ViewBag.PromotionGift as string))
+        {
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:15px; margin:-14px 0 22px; padding:14px 17px; border:1px solid #d8c27a; border-radius:9px; background:#fff9e7; color:#35542c;">
+                <span><b style="color:#9a6813;">🎁 Quà tặng kèm · </b>@ViewBag.PromotionGift</span>
+                <strong style="white-space:nowrap; color:#2e7d32;">0 đ</strong>
+            </div>
+        }
+
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; gap:25px; background: #f8f9fa; padding: 20px; border-radius: 8px; flex-wrap:wrap;">
+            <div style="flex:1; min-width:280px;">
                 <a asp-controller="Products" asp-action="Index" style="text-decoration: none; color: #4a5568; font-weight: bold;">← Mua thêm sản phẩm khác</a>
+                <div style="margin-top:20px; max-width:420px;">
+                    <label style="display:block; margin-bottom:7px; color:#2d3748; font-weight:700;">Mã khuyến mãi</label>
+                    @if (!string.IsNullOrWhiteSpace(ViewBag.PromotionCode as string))
+                    {
+                        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:11px 13px; border:1px solid #9bc38e; border-radius:7px; background:#f1faee;">
+                            <span><strong>@ViewBag.PromotionCode</strong><small style="display:block; color:#55704e; margin-top:3px;">@ViewBag.PromotionMessage</small></span>
+                            <form asp-controller="Cart" asp-action="RemovePromotion" method="post"><button type="submit" style="border:0; background:none; color:#a33b2d; font-weight:700; cursor:pointer;">Bỏ mã</button></form>
+                        </div>
+                    }
+                    else
+                    {
+                        <form asp-controller="Cart" asp-action="ApplyPromotion" method="post" style="display:flex; gap:8px;">
+                            <input name="promotionCode" maxlength="30" placeholder="Nhập mã của bạn" required style="min-width:0; flex:1; padding:10px 12px; border:1px solid #cbd5e0; border-radius:6px; text-transform:uppercase;" />
+                            <button type="submit" style="border:0; border-radius:6px; padding:10px 18px; background:#2e5a1c; color:#fff; font-weight:700; cursor:pointer;">Áp dụng</button>
+                        </form>
+                    }
+                </div>
             </div>
             <div style="text-align: right;">
-                <h3 style="margin: 0 0 15px 0; color: #2d3748;">
-                    Tổng tiền thanh toán:
+                <div style="color:#5f6b64; line-height:1.9; margin-bottom:8px;">
+                    <div>Tạm tính: <strong>@(((decimal?)ViewBag.Subtotal ?? 0).ToString("N0")) đ</strong></div>
+                    <div>Phí vận chuyển: <strong>@(((decimal?)ViewBag.ShippingFee ?? 0).ToString("N0")) đ</strong></div>
+                    @if (((decimal?)ViewBag.Discount ?? 0) > 0)
+                    {
+                        <div style="color:#2e7d32;">Khuyến mãi: <strong>-@(((decimal?)ViewBag.Discount ?? 0).ToString("N0")) đ</strong></div>
+                    }
+                </div>
+                <h3 style="margin: 0 0 15px 0; color: #2d3748;">Tổng thanh toán:
                     <span style="color: #e53e3e; font-size: 24px;">
                         @(ViewBag.Total != null ? ViewBag.Total.ToString("N0") : "0") đ
                     </span>

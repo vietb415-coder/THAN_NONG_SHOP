@@ -20,6 +20,12 @@ namespace THAN_NONG_SHOP.Areas.Admin.Controllers
         public async Task<IActionResult> Index()
         {
             var orders = await _db.Oders.OrderByDescending(o => o.OrderDate).ToListAsync();
+            var orderIds = orders.Select(order => order.Id).ToArray();
+            ViewBag.OrderPromotions = await _db.PromotionVouchers.AsNoTracking()
+                .Where(voucher => voucher.OrderId.HasValue && orderIds.Contains(voucher.OrderId.Value))
+                .ToDictionaryAsync(voucher => voucher.OrderId!.Value, voucher => voucher.TemplateCode);
+            ViewBag.OrderGifts = await _db.OrderGiftItems.AsNoTracking().Where(item => orderIds.Contains(item.OrderId))
+                .GroupBy(item => item.OrderId).ToDictionaryAsync(group => group.Key, group => string.Join(", ", group.Select(item => item.Name)));
             return View(orders);
         }
         [HttpPost]
@@ -44,6 +50,13 @@ namespace THAN_NONG_SHOP.Areas.Admin.Controllers
             if (newStatus == OrderStatus.Cancelled && order.Status != OrderStatus.Cancelled)
             {
                 await RestoreInventoryAsync(order.Id);
+                var voucher = await _db.PromotionVouchers.FirstOrDefaultAsync(item => item.OrderId == order.Id);
+                if (voucher != null)
+                {
+                    _db.PromotionVoucherEvents.Add(new PromotionVoucherEvent { VoucherId=voucher.Id, EventType=VoucherEventTypes.Released, UserName=voucher.UserName, OrderId=order.Id, CreatedAt=DateTime.UtcNow, Note="Quản trị viên hủy đơn" });
+                    voucher.OrderId = null;
+                    voucher.UsedAt = null;
+                }
             }
 
             order.Status = newStatus;

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using THAN_NONG_SHOP.Data;
 
@@ -11,9 +12,11 @@ using THAN_NONG_SHOP.Data;
 namespace THAN_NONG_SHOP.Migrations
 {
     [DbContext(typeof(THAN_NONG_SHOP_DbContext))]
-    partial class THAN_NONG_SHOP_DbContextModelSnapshot : ModelSnapshot
+    [Migration("20260829132327_AddSecurePromotionVouchers")]
+    partial class AddSecurePromotionVouchers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -164,9 +167,6 @@ namespace THAN_NONG_SHOP.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("DiscountAmount")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("datetime2");
 
@@ -177,19 +177,9 @@ namespace THAN_NONG_SHOP.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("PromotionTemplateCode")
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
-
-                    b.Property<decimal>("ShippingFee")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("Subtotal")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("TotalPrice")
                         .HasPrecision(18, 2)
@@ -235,41 +225,6 @@ namespace THAN_NONG_SHOP.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("OderDetails");
-                });
-
-            modelBuilder.Entity("THAN_NONG_SHOP.Models.OrderGiftItem", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("nvarchar(120)");
-
-                    b.Property<int>("OrderId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PromotionVoucherId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("UnitPrice")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OrderId");
-
-                    b.HasIndex("PromotionVoucherId");
-
-                    b.ToTable("OrderGiftItems");
                 });
 
             modelBuilder.Entity("THAN_NONG_SHOP.Models.Product", b =>
@@ -352,117 +307,6 @@ namespace THAN_NONG_SHOP.Migrations
                     b.ToTable("ProductReviews");
                 });
 
-            modelBuilder.Entity("THAN_NONG_SHOP.Models.PromotionReward", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("BenefitMessage")
-                        .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<decimal>("FixedDiscount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("GiftName")
-                        .HasMaxLength(120)
-                        .HasColumnType("nvarchar(120)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsFreeShipping")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsGift")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsPublicOffer")
-                        .HasColumnType("bit");
-
-                    b.Property<decimal>("MaximumDiscount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("MinimumSubtotal")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("PercentageDiscount")
-                        .HasPrecision(8, 4)
-                        .HasColumnType("decimal(8,4)");
-
-                    b.Property<int?>("StockRemaining")
-                        .HasColumnType("int");
-
-                    b.Property<string>("TemplateCode")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("WheelWeight")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TemplateCode")
-                        .IsUnique();
-
-                    b.ToTable("PromotionRewards");
-                });
-
-            modelBuilder.Entity("THAN_NONG_SHOP.Models.PromotionSpin", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("RewardId")
-                        .HasColumnType("int");
-
-                    b.Property<DateOnly>("SpinDate")
-                        .HasColumnType("date");
-
-                    b.Property<string>("UserName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("VoucherId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RewardId");
-
-                    b.HasIndex("VoucherId");
-
-                    b.HasIndex("UserName", "SpinDate")
-                        .IsUnique();
-
-                    b.ToTable("PromotionSpins");
-                });
-
             modelBuilder.Entity("THAN_NONG_SHOP.Models.PromotionVoucher", b =>
                 {
                     b.Property<int>("Id")
@@ -485,13 +329,6 @@ namespace THAN_NONG_SHOP.Migrations
                     b.Property<int?>("OrderId")
                         .HasColumnType("int");
 
-                    b.Property<string>("ProtectedCode")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<int?>("RewardId")
-                        .HasColumnType("int");
-
                     b.Property<string>("TemplateCode")
                         .IsRequired()
                         .HasMaxLength(30)
@@ -510,49 +347,9 @@ namespace THAN_NONG_SHOP.Migrations
                     b.HasIndex("CodeHash")
                         .IsUnique();
 
-                    b.HasIndex("RewardId");
-
                     b.HasIndex("UserName", "UsedAt");
 
                     b.ToTable("PromotionVouchers");
-                });
-
-            modelBuilder.Entity("THAN_NONG_SHOP.Models.PromotionVoucherEvent", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("EventType")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
-
-                    b.Property<string>("Note")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<int?>("OrderId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("VoucherId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("VoucherId", "CreatedAt");
-
-                    b.ToTable("PromotionVoucherEvents");
                 });
 
             modelBuilder.Entity("THAN_NONG_SHOP.Models.Role", b =>
@@ -643,25 +440,6 @@ namespace THAN_NONG_SHOP.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("THAN_NONG_SHOP.Models.OrderGiftItem", b =>
-                {
-                    b.HasOne("THAN_NONG_SHOP.Models.Oder", "Order")
-                        .WithMany()
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("THAN_NONG_SHOP.Models.PromotionVoucher", "PromotionVoucher")
-                        .WithMany()
-                        .HasForeignKey("PromotionVoucherId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Order");
-
-                    b.Navigation("PromotionVoucher");
-                });
-
             modelBuilder.Entity("THAN_NONG_SHOP.Models.Product", b =>
                 {
                     b.HasOne("THAN_NONG_SHOP.Models.Category", "Category")
@@ -682,46 +460,6 @@ namespace THAN_NONG_SHOP.Migrations
                         .IsRequired();
 
                     b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("THAN_NONG_SHOP.Models.PromotionSpin", b =>
-                {
-                    b.HasOne("THAN_NONG_SHOP.Models.PromotionReward", "Reward")
-                        .WithMany()
-                        .HasForeignKey("RewardId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("THAN_NONG_SHOP.Models.PromotionVoucher", "Voucher")
-                        .WithMany()
-                        .HasForeignKey("VoucherId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Reward");
-
-                    b.Navigation("Voucher");
-                });
-
-            modelBuilder.Entity("THAN_NONG_SHOP.Models.PromotionVoucher", b =>
-                {
-                    b.HasOne("THAN_NONG_SHOP.Models.PromotionReward", "Reward")
-                        .WithMany()
-                        .HasForeignKey("RewardId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Reward");
-                });
-
-            modelBuilder.Entity("THAN_NONG_SHOP.Models.PromotionVoucherEvent", b =>
-                {
-                    b.HasOne("THAN_NONG_SHOP.Models.PromotionVoucher", "Voucher")
-                        .WithMany()
-                        .HasForeignKey("VoucherId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Voucher");
                 });
 
             modelBuilder.Entity("THAN_NONG_SHOP.Models.user", b =>

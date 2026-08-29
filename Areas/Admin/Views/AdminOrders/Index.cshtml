@@ -3,6 +3,8 @@
 @{
     ViewData["Title"] = "Quản Lý Đơn Hàng Thành Viên";
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml"; // Sử dụng Layout Admin dùng chung
+    var orderPromotions = ViewBag.OrderPromotions as IDictionary<int, string> ?? new Dictionary<int, string>();
+    var orderGifts = ViewBag.OrderGifts as IDictionary<int, string> ?? new Dictionary<int, string>();
 }
 
 <div style="background: #ffffff; padding: 30px; border-radius: 12px; border: 1px solid #eaddca; box-shadow: 0 4px 20px rgba(92,64,51,0.03);">
@@ -24,6 +26,7 @@
                 <th>Ngày Đặt</th>
                 <th>Địa Chỉ Giao Hàng</th>
                 <th style="text-align: right; padding-right: 20px;">Tổng Tiền</th>
+                <th>Khuyến mãi / Quà</th>
                 <th style="text-align: center; width: 160px;">Trạng Thái</th>
                 <th style="text-align: center; width: 160px;">Thao Tác</th>
             </tr>
@@ -51,6 +54,19 @@
 
                     <td style="text-align: right; padding-right: 20px; font-weight: bold; color: #8b5a2b; font-size: 15px;">
                         @order.TotalPrice.ToString("N0") đ
+                        <small style="display:block;color:#8b9490;font-weight:400;line-height:1.5;">Tạm tính @order.Subtotal.ToString("N0") · Ship @order.ShippingFee.ToString("N0")<br />Giảm @order.DiscountAmount.ToString("N0")</small>
+                    </td>
+
+                    <td>
+                        @if (orderPromotions.TryGetValue(order.Id, out var promotionType))
+                        {
+                            <span style="display:inline-block; padding:5px 9px; border-radius:6px; background:#eef7e9; color:#2e5a1c; font-size:12px; font-weight:700;">@promotionType</span>
+                            @if (orderGifts.TryGetValue(order.Id, out var giftNames)) { <small style="display:block;margin-top:5px;color:#9a6813;">🎁 @giftNames</small> }
+                        }
+                        else
+                        {
+                            <span style="color:#a0aec0;">—</span>
+                        }
                     </td>
 
                     <td style="text-align: center;">

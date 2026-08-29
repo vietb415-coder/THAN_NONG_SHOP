@@ -25,6 +25,7 @@ namespace THAN_NONG_SHOP.Controllers
         private readonly IDataProtector _cartProtector;
         private readonly ILogger<CartController> _logger;
         private const string CartSessionKey = "CartItems";
+        private const string PromotionSessionKey = "AppliedPromotionCode";
         private const int MaxQuantityPerProduct = 999;
 
         private sealed class CartCookieItem
@@ -124,14 +125,104 @@ namespace THAN_NONG_SHOP.Controllers
             cartItems.RemoveAll(item => item.Product == null);
         }
 
+        private async Task<PromotionResult> BuildPromotionSummaryAsync(decimal subtotal, CancellationToken cancellationToken = default)
+        {
+            var code = HttpContext.Session.GetString(PromotionSessionKey);
+            if (string.IsNullOrWhiteSpace(code))
+            {
+                return PromotionCatalog.Calculate((string?)null, subtotal) with
+                {
+                    Message = string.Empty
+                };
+            }
+
+            var userName = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var codeHash = VoucherSecurity.HashCode(code);
+            var voucher = await _context.PromotionVouchers.AsNoTracking().Include(item => item.Reward).FirstOrDefaultAsync(item =>
+                item.CodeHash == codeHash && item.UserName == userName && item.UsedAt == null && item.OrderId == null && item.ExpiresAt >= DateTime.UtcNow,
+                cancellationToken);
+            if (voucher == null)
+            {
+                HttpContext.Session.Remove(PromotionSessionKey);
+                return PromotionCatalog.Calculate((string?)null, subtotal) with { Message = string.Empty };
+            }
+
+            var reward = voucher.Reward ?? await _context.PromotionRewards.AsNoTracking().FirstOrDefaultAsync(item => item.TemplateCode == voucher.TemplateCode, cancellationToken);
+            var result = reward == null ? PromotionCatalog.Calculate(voucher.TemplateCode, subtotal) : PromotionCatalog.Calculate(reward, subtotal);
+            result = result with { Code = code };
+            if (!result.IsValid) HttpContext.Session.Remove(PromotionSessionKey);
+            return result;
+        }
+
+        private void PopulatePriceViewData(decimal subtotal, PromotionResult promotion)
+        {
+            ViewBag.Subtotal = subtotal;
+            ViewBag.ShippingFee = promotion.ShippingFee;
+            ViewBag.Discount = promotion.DiscountAmount;
+            ViewBag.Total = promotion.FinalTotal;
+            ViewBag.PromotionCode = promotion.IsValid ? promotion.Code : string.Empty;
+            ViewBag.PromotionMessage = promotion.IsValid ? promotion.Message : string.Empty;
+            ViewBag.PromotionGift = promotion.IsValid && promotion.DiscountAmount == 0
+                ? promotion.Message
+                : string.Empty;
+        }
+
         // Trang danh sách giỏ hàng công khai công khai
         public async Task<IActionResult> Index(CancellationToken cancellationToken)
         {
             var cartItems = GetCartItems();
             await LoadCartProductsAsync(cartItems, cancellationToken);
 
-            ViewBag.Total = cartItems.Sum(item => (item.Product?.price ?? 0) * item.Quantity);
+            var subtotal = cartItems.Sum(item => (item.Product?.price ?? 0) * item.Quantity);
+            PopulatePriceViewData(subtotal, await BuildPromotionSummaryAsync(subtotal, cancellationToken));
             return View(cartItems);
+        }
+
+        [Authorize(Roles = "User")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApplyPromotion(string? promotionCode, string? returnTo, CancellationToken cancellationToken)
+        {
+            var cartItems = GetCartItems();
+            await LoadCartProductsAsync(cartItems, cancellationToken);
+            var subtotal = cartItems.Sum(item => (item.Product?.price ?? 0) * item.Quantity);
+            var normalizedCode = (promotionCode ?? string.Empty).Trim().ToUpperInvariant();
+            var userName = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var codeHash = VoucherSecurity.HashCode(normalizedCode);
+            var voucher = await _context.PromotionVouchers.AsNoTracking().Include(item => item.Reward).FirstOrDefaultAsync(item =>
+                item.CodeHash == codeHash && item.UserName == userName && item.UsedAt == null && item.OrderId == null && item.ExpiresAt >= DateTime.UtcNow,
+                cancellationToken);
+            var result = voucher == null
+                ? new PromotionResult(false, normalizedCode, "Voucher không tồn tại, đã hết hạn, đã sử dụng hoặc không thuộc tài khoản của bạn.", 0, subtotal > 0 ? PromotionCatalog.StandardShippingFee : 0, subtotal + (subtotal > 0 ? PromotionCatalog.StandardShippingFee : 0))
+                : (voucher.Reward == null ? PromotionCatalog.Calculate(voucher.TemplateCode, subtotal) : PromotionCatalog.Calculate(voucher.Reward, subtotal)) with { Code = normalizedCode };
+
+            if (!result.IsValid)
+            {
+                TempData["PromotionError"] = result.Message;
+            }
+            else
+            {
+                HttpContext.Session.SetString(PromotionSessionKey, result.Code);
+                TempData["PromotionSuccess"] = $"Đã áp dụng {result.Code}: {result.Message}";
+                _context.PromotionVoucherEvents.Add(new PromotionVoucherEvent { VoucherId=voucher!.Id, EventType=VoucherEventTypes.Applied, UserName=userName!, CreatedAt=DateTime.UtcNow });
+                await _context.SaveChangesAsync(cancellationToken);
+            }
+
+            return RedirectToAction(string.Equals(returnTo, "checkout", StringComparison.OrdinalIgnoreCase)
+                ? nameof(Checkout)
+                : nameof(Index));
+        }
+
+        [Authorize(Roles = "User")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult RemovePromotion(string? returnTo)
+        {
+            HttpContext.Session.Remove(PromotionSessionKey);
+            TempData["CartSuccess"] = "Đã bỏ mã khuyến mãi.";
+            return RedirectToAction(string.Equals(returnTo, "checkout", StringComparison.OrdinalIgnoreCase)
+                ? nameof(Checkout)
+                : nameof(Index));
         }
 
         [HttpPost]
@@ -253,7 +344,8 @@ namespace THAN_NONG_SHOP.Controllers
 
             ViewBag.UserFullName = userProfile?.Fullname ?? "";
             ViewBag.UserPhone = userProfile?.Phone ?? "";
-            ViewBag.Total = cartItems.Sum(item => (item.Product?.price ?? 0) * item.Quantity);
+            var subtotal = cartItems.Sum(item => (item.Product?.price ?? 0) * item.Quantity);
+            PopulatePriceViewData(subtotal, await BuildPromotionSummaryAsync(subtotal, cancellationToken));
 
             return View(cartItems); // Nên truyền danh sách mặt hàng để hiển thị tóm tắt đơn hàng
         }
@@ -325,6 +417,8 @@ namespace THAN_NONG_SHOP.Controllers
             }
 
             var isPayOS = string.Equals(paymentMethod, "payos", StringComparison.OrdinalIgnoreCase);
+            var subtotal = cartItems.Sum(item => (item.Product?.price ?? 0) * item.Quantity);
+            var promotion = await BuildPromotionSummaryAsync(subtotal, cancellationToken);
 
             string? clientId = null;
             string? apiKey = null;
@@ -353,7 +447,10 @@ namespace THAN_NONG_SHOP.Controllers
                 CustomerName = customerName,
                 Address = shippingAddress,
                 PhoneNumber = shippingPhone,
-                TotalPrice = cartItems.Sum(item => (item.Product?.price ?? 0) * item.Quantity),
+                TotalPrice = promotion.FinalTotal,
+                Subtotal = subtotal,
+                ShippingFee = promotion.ShippingFee,
+                DiscountAmount = promotion.DiscountAmount,
                 Status = isPayOS ? OrderStatus.AwaitingPayment : OrderStatus.Pending,
                 // PayOS yêu cầu orderCode duy nhất trên toàn bộ kênh thanh toán.
                 // Không dùng Id của DB vì Id có thể lặp lại khi tạo lại database.
@@ -362,6 +459,30 @@ namespace THAN_NONG_SHOP.Controllers
 
             _context.Add(order);
             await _context.SaveChangesAsync(); // Lưu để lấy được order.Id tự tăng
+
+            if (promotion.IsValid)
+            {
+                var voucherHash = VoucherSecurity.HashCode(promotion.Code);
+                var voucher = await _context.PromotionVouchers.Include(item => item.Reward).FirstOrDefaultAsync(item =>
+                    item.CodeHash == voucherHash && item.UserName == currentUsername && item.UsedAt == null && item.OrderId == null && item.ExpiresAt >= DateTime.UtcNow,
+                    cancellationToken);
+                if (voucher == null)
+                {
+                    await transaction.RollbackAsync(cancellationToken);
+                    HttpContext.Session.Remove(PromotionSessionKey);
+                    TempData["CheckoutError"] = "Voucher vừa hết hiệu lực hoặc đã được sử dụng. Vui lòng kiểm tra lại đơn hàng.";
+                    return RedirectToAction(nameof(Checkout));
+                }
+                voucher.OrderId = order.Id;
+                voucher.UsedAt = isPayOS ? null : DateTime.UtcNow;
+                order.PromotionTemplateCode = voucher.TemplateCode;
+                _context.PromotionVoucherEvents.Add(new PromotionVoucherEvent { VoucherId=voucher.Id, EventType=isPayOS ? VoucherEventTypes.Reserved : VoucherEventTypes.Used, UserName=currentUsername!, OrderId=order.Id, CreatedAt=DateTime.UtcNow });
+                var reward = voucher.Reward ?? await _context.PromotionRewards.FirstOrDefaultAsync(item => item.TemplateCode == voucher.TemplateCode, cancellationToken);
+                if (reward?.IsGift == true)
+                {
+                    _context.OrderGiftItems.Add(new OrderGiftItem { OrderId=order.Id, PromotionVoucherId=voucher.Id, Name=reward.GiftName ?? reward.Title, Quantity=1, UnitPrice=0 });
+                }
+            }
 
             foreach (var item in cartItems)
             {
@@ -414,6 +535,13 @@ namespace THAN_NONG_SHOP.Controllers
                         var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == item.Product.Id);
                         if (product != null) product.stockQuantity += item.Quantity;
                     }
+                    var usedVoucher = await _context.PromotionVouchers.FirstOrDefaultAsync(voucher => voucher.OrderId == order.Id);
+                    if (usedVoucher != null)
+                    {
+                        usedVoucher.UsedAt = null;
+                        usedVoucher.OrderId = null;
+                        _context.PromotionVoucherEvents.Add(new PromotionVoucherEvent { VoucherId=usedVoucher.Id, EventType=VoucherEventTypes.Released, UserName=currentUsername!, OrderId=order.Id, CreatedAt=DateTime.UtcNow, Note="Không tạo được liên kết PayOS" });
+                    }
                     await _context.SaveChangesAsync();
                     TempData["CheckoutError"] = "Không thể tạo liên kết thanh toán PayOS. Vui lòng kiểm tra khóa cấu hình và thử lại.";
                     return RedirectToAction(nameof(Checkout));
@@ -422,6 +550,7 @@ namespace THAN_NONG_SHOP.Controllers
 
             // Xóa sạch giỏ hàng sau khi đặt thành công
             HttpContext.Response.Cookies.Delete(CartSessionKey);
+            HttpContext.Session.Remove(PromotionSessionKey);
 
             return RedirectToAction("OrderSuccess");
         }

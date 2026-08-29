@@ -63,6 +63,7 @@ public class PaymentController : Controller
                 if (order != null && order.Status == OrderStatus.AwaitingPayment)
                 {
                     await RestoreInventoryAsync(order.Id);
+                    await ReleaseVoucherAsync(order.Id);
                     order.Status = OrderStatus.Cancelled;
                     await _context.SaveChangesAsync();
                 }
@@ -109,11 +110,13 @@ public class PaymentController : Controller
                 if (order.Status == OrderStatus.AwaitingPayment)
                 {
                     order.Status = OrderStatus.Paid;
+                    await MarkVoucherUsedAsync(order.Id);
                 }
             }
             else if (order.Status == OrderStatus.AwaitingPayment)
             {
                 await RestoreInventoryAsync(order.Id);
+                await ReleaseVoucherAsync(order.Id);
                 order.Status = OrderStatus.Cancelled;
             }
 
@@ -149,6 +152,25 @@ public class PaymentController : Controller
             var product = products.FirstOrDefault(candidate => candidate.Id == item.ProductId);
             if (product != null) product.stockQuantity += item.Quantity;
         }
+    }
+
+    private async Task MarkVoucherUsedAsync(int orderId)
+    {
+        var voucher = await _context.PromotionVouchers.FirstOrDefaultAsync(item => item.OrderId == orderId);
+        if (voucher != null)
+        {
+            voucher.UsedAt = DateTime.UtcNow;
+            _context.PromotionVoucherEvents.Add(new PromotionVoucherEvent { VoucherId=voucher.Id, EventType=VoucherEventTypes.Used, UserName=voucher.UserName, OrderId=orderId, CreatedAt=DateTime.UtcNow, Note="PayOS xác nhận thanh toán" });
+        }
+    }
+
+    private async Task ReleaseVoucherAsync(int orderId)
+    {
+        var voucher = await _context.PromotionVouchers.FirstOrDefaultAsync(item => item.OrderId == orderId);
+        if (voucher == null) return;
+        _context.PromotionVoucherEvents.Add(new PromotionVoucherEvent { VoucherId=voucher.Id, EventType=VoucherEventTypes.Released, UserName=voucher.UserName, OrderId=orderId, CreatedAt=DateTime.UtcNow, Note="Thanh toán bị hủy" });
+        voucher.OrderId = null;
+        voucher.UsedAt = null;
     }
 
     private PayOSClient CreateClient()

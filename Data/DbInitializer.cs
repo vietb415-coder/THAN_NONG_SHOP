@@ -11,6 +11,21 @@ namespace THAN_NONG_SHOP.Data
     {
         public static void Seed(THAN_NONG_SHOP_DbContext context, bool runCatalogSecondPass = true)
         {
+            if (!context.PromotionRewards.Any())
+            {
+                context.PromotionRewards.AddRange(
+                    new PromotionReward { TemplateCode="LUCKY10", Title="Mã giảm 10%", Description="Giảm 10% cho đơn hàng từ 199.000đ.", BenefitMessage="Giảm 10% giá trị sản phẩm (tối đa 100.000đ).", MinimumSubtotal=199000, PercentageDiscount=.10m, MaximumDiscount=100000, WheelWeight=25, IsActive=true },
+                    new PromotionReward { TemplateCode="FREESHIP", Title="Miễn phí vận chuyển", Description="Miễn phí giao hàng cho đơn từ 199.000đ.", BenefitMessage="Miễn phí vận chuyển 30.000đ.", MinimumSubtotal=199000, IsFreeShipping=true, IsPublicOffer=true, WheelWeight=25, IsActive=true },
+                    new PromotionReward { TemplateCode="QUA500K", Title="Giỏ quà 500.000đ", Description="Giỏ nông sản sạch tuyển chọn trị giá 500.000đ.", BenefitMessage="Giỏ quà trị giá 500.000đ sẽ được gắn với đơn hàng này.", IsGift=true, GiftName="Giỏ quà mùa vàng 500.000đ", WheelWeight=3, StockRemaining=30, IsActive=true },
+                    new PromotionReward { TemplateCode="LUCKY30K", Title="Mã giảm 30.000đ", Description="Giảm 30.000đ cho đơn hàng từ 299.000đ.", BenefitMessage="Giảm trực tiếp 30.000đ.", MinimumSubtotal=299000, FixedDiscount=30000, WheelWeight=18, IsActive=true },
+                    new PromotionReward { TemplateCode="THANNONG15", Title="Mã giảm 15%", Description="Giảm 15% cho đơn hàng từ 299.000đ.", BenefitMessage="Giảm 15% giá trị sản phẩm (tối đa 150.000đ).", MinimumSubtotal=299000, PercentageDiscount=.15m, MaximumDiscount=150000, IsPublicOffer=true, WheelWeight=12, IsActive=true },
+                    new PromotionReward { TemplateCode="MATONG0D", Title="Mật ong nguyên chất 0đ", Description="Tặng một chai mật ong khi mua đơn từ 499.000đ.", BenefitMessage="Tặng kèm 1 chai mật ong nguyên chất 0đ trong đơn hàng.", MinimumSubtotal=499000, IsGift=true, GiftName="Mật ong nguyên chất", WheelWeight=6, StockRemaining=100, IsActive=true },
+                    new PromotionReward { TemplateCode="MUAVANG50", Title="Mã giảm 50.000đ", Description="Giảm 50.000đ cho đơn hàng từ 499.000đ.", BenefitMessage="Giảm trực tiếp 50.000đ.", MinimumSubtotal=499000, FixedDiscount=50000, IsPublicOffer=true, WheelWeight=10, IsActive=true },
+                    new PromotionReward { TemplateCode="DACBIET1TR", Title="Giỏ quà 1.000.000đ", Description="Giải đặc biệt gồm giỏ nông sản cao cấp.", BenefitMessage="Giỏ quà đặc biệt trị giá 1.000.000đ sẽ được gắn với đơn hàng này.", IsGift=true, GiftName="Giỏ quà đặc biệt 1.000.000đ", WheelWeight=1, StockRemaining=10, IsActive=true }
+                );
+                context.SaveChanges();
+            }
+
             // Chuẩn hóa dữ liệu cũ từng dùng trạng thái khác với danh sách hiện tại.
             var legacyPendingOrders = context.Oders
                 .Where(order => order.Status == "Đang chờ xử lý")
