@@ -2,6 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Thần Nông Quản Trị</title>
     <style>
             :root {
@@ -98,11 +99,12 @@
                 margin-right: 0.4em;
             }
     </style>
+    <link rel="stylesheet" href="~/css/admin-responsive.css" asp-append-version="true" />
 </head>
 <body>
     @await Html.PartialAsync("~/Views/Shared/_IconSprite.cshtml")
 
-    <div style="display: flex; min-height: 100vh;">
+    <div class="admin-shell" style="display: flex; min-height: 100vh;">
         <div class="sidebar">
             <div class="sidebar-brand"><svg class="app-icon"><use href="#icon-leaf"></use></svg>THẦN NÔNG</div>
             <a href="/Admin/Home/Index"><svg class="app-icon"><use href="#icon-dashboard"></use></svg>Tổng Quan</a>

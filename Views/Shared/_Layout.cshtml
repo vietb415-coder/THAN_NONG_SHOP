@@ -164,6 +164,7 @@
                         color: var(--earth-gold);
                     }
     </style>
+    <link rel="stylesheet" href="~/css/responsive.css" asp-append-version="true" />
 </head>
 <body>
     @await Html.PartialAsync("~/Views/Shared/_IconSprite.cshtml")
@@ -211,7 +212,7 @@
         </nav>
     }
 
-    <div class="container" style="padding-top:80px">
+    <div class="container site-main" style="padding-top:80px">
         @RenderBody()
     </div>
 
