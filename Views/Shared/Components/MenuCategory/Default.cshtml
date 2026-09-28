@@ -1,0 +1,25 @@
+﻿@model IEnumerable<THAN_NONG_SHOP.Models.Category>
+
+<ul class="nav-menu">
+    <li class="nav-item"><a href="/">Trang Chủ</a></li>
+
+    <li class="nav-item nav-item--promotion">
+        <a asp-area="" asp-controller="Home" asp-action="Promotions"><span aria-hidden="true">✦</span> Khuyến Mãi</a>
+    </li>
+
+    <li class="nav-item">
+        <a asp-area="" asp-controller="Products" asp-action="Index">Tất Cả Sản Phẩm</a>
+    </li>
+
+    @if (Model != null)
+    {
+        foreach (var category in Model)
+        {
+            <li class="nav-item">
+                <a asp-area="" asp-controller="Products" asp-action="Index" asp-route-categoryId="@category.Id">@category.Name</a>
+            </li>
+        }
+    }
+
+    <li class="nav-item"><a asp-controller="Home" asp-action="About">Về Chúng Tôi</a></li>
+</ul>

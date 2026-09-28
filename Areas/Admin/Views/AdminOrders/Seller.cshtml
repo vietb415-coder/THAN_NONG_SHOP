@@ -1,0 +1,7 @@
+@model List<THAN_NONG_SHOP.Models.OderDetail>
+@{Layout="~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";}
+<h1>Đơn hàng của Seller</h1><p>Chỉ hiển thị dòng hàng thuộc gian hàng của bạn.</p>
+@foreach(var line in Model){<article class="commerce-panel"><h2>Đơn #@line.OderId — @line.Product?.Name × @line.Quantity</h2><p>@((line.Price*line.Quantity).ToString("N0")) đ · @line.FulfillmentStatus · Đơn: @line.Oder?.Status</p><p>@line.Oder?.CustomerName — @line.Oder?.PhoneNumber — @line.Oder?.Address</p>
+@if(line.Oder?.Status is not (OrderStatus.AwaitingPayment or OrderStatus.Cancelled)){
+<form asp-action="UpdateStatus" method="post"><input type="hidden" name="orderId" value="@line.OderId"/><input type="hidden" name="detailId" value="@line.Id"/><select name="newStatus">@foreach(var status in OrderStatus.Next(line.FulfillmentStatus).Where(s=>s!=OrderStatus.Cancelled)){<option selected="@(status==line.FulfillmentStatus)">@status</option>}</select><button>Cập nhật</button></form>}
+</article>}

@@ -1,0 +1,96 @@
+@model IEnumerable<THAN_NONG_SHOP.Models.Product>
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    ViewBag.AdminPageTitle = "Quản lý sản phẩm";
+}
+
+<div style="padding:20px">
+    <h2 style="margin-bottom: 10px; color: #2c3e50;">
+        Danh Sách Sản Phẩm
+        @if (ViewBag.SelectedCategory != null)
+        {
+            <span style="font-size: 16px; color: #718096;">— @ViewBag.SelectedCategory</span>
+        }
+    </h2>
+
+    <div style="margin-bottom: 20px;">
+        <a asp-area="Admin" asp-controller="Product" asp-action="Create"
+           style="background: #23cc72; color: white; padding: 10px 15px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">
+            Thêm sản phẩm
+        </a>
+        <a asp-area="Admin" asp-controller="Home" asp-action="Index"
+           style="margin-left: 8px; background: #718096; color: white; padding: 10px 15px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">
+            ← Về trang quản trị
+        </a>
+        @if (ViewBag.SelectedCategory != null)
+        {
+            <a asp-area="Admin" asp-controller="Product" asp-action="Index"
+               style="margin-left: 8px; color: #5c4033; padding: 9px 14px; text-decoration: none; border: 1px solid #d2b48c; border-radius: 4px; font-weight: bold; display: inline-block;">
+                Xem tất cả sản phẩm
+            </a>
+        }
+    </div>
+
+    <div style="width: 100%; overflow-x: auto; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+    <table style="width:100%; min-width: 1050px; border-collapse: collapse; background-color: white;">
+        <thead>
+            <tr style="background:#34495e; color: white;">
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd; width: 15%;">Hình ảnh</th>
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd; width: 20%;">Tên sản phẩm</th>
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd; width: 15%;">Danh mục</th>
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd; width: 25%;">Mô tả</th>
+                <th style="padding: 12px; text-align: left; border: 1px solid #ddd; width: 10%;">Giá</th>
+                <th style="padding: 12px; text-align: center; border: 1px solid #ddd; width: 10%;">Tồn kho</th>
+                <th style="padding: 12px; text-align: center; border: 1px solid #ddd; width: 150px; min-width: 150px; white-space: nowrap;">Chức năng</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var product in Model)
+            {
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 12px; border: 1px solid #ddd; text-align: center;">
+                        @if (!string.IsNullOrEmpty(product.ImageUrl))
+                        {
+                            <img src="@product.ImageUrl" alt="@product.Name" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px;" />
+                        }
+                        else
+                        {
+                            <span style="color:#aaa; font-size:12px;">Không có ảnh</span>
+                        }
+                    </td>
+
+                    <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold;">@product.Name</td>
+
+                    <td style="padding: 12px; border: 1px solid #ddd;">@product.Category?.Name</td>
+
+                    <td style="padding: 12px; border: 1px solid #ddd; font-size: 14px; color: #555;">@product.Description</td>
+
+                    <td style="padding: 12px; border: 1px solid #ddd; color: #e74c3c; font-weight: bold;">
+                        @product.price.ToString("N0") đ
+                    </td>
+
+                    <td style="padding:12px; border:1px solid #ddd; text-align:center; font-weight:bold; color:@(product.stockQuantity > 0 ? "#2f855a" : "#c53030")">
+                        @product.stockQuantity
+                    </td>
+
+                    <td style="padding: 12px; border: 1px solid #ddd; text-align: center; width: 150px; min-width: 150px; white-space: nowrap;">
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: nowrap;">
+                        <a asp-area="Admin" asp-controller="Product" asp-action="Edit" asp-route-id="@product.Id"
+                           style="display: inline-flex; align-items: center; gap: 3px; background-color: #fbf9f6; color: #5c4033; padding: 6px 10px; text-decoration: none; border-radius: 4px; font-size: 13px; font-weight: bold; white-space: nowrap;">
+                            <svg class="app-icon"><use href="#icon-edit"></use></svg>Sửa
+                        </a>
+                        <a asp-area="Admin" asp-controller="Product" asp-action="Delete" asp-route-id="@product.Id"
+                           style="display: inline-flex; align-items: center; gap: 3px; background-color:#8b5a2b ; color: white; padding: 6px 10px; text-decoration: none; border-radius: 4px; font-size: 13px; font-weight: bold; white-space: nowrap;">
+                            <svg class="app-icon"><use href="#icon-trash"></use></svg>Xóa
+                        </a>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    </div>
+</div>
+
+@if(TempData["ProductError"] != null){<p role="alert">@TempData["ProductError"]</p>}

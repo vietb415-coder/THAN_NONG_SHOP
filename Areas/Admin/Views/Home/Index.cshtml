@@ -1,0 +1,20 @@
+@model THAN_NONG_SHOP.Models.SalesReport
+@{Layout="~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";var max=Math.Max(1,Model.Points.Select(p=>p.Revenue).DefaultIfEmpty().Max());}
+<h1>Báo cáo bán hàng</h1>
+<form method="get" class="commerce-panel"><label>Kỳ báo cáo <select name="period">
+@foreach(var option in new Dictionary<string,string>{{"day","Ngày"},{"week","Tuần"},{"month","Tháng"},{"quarter","Quý"}}){<option value="@option.Key" selected="@(Model.Period==option.Key)">@option.Value</option>}
+</select></label><label>Ngày trong kỳ <input type="date" name="date" value="@Model.Start.ToString("yyyy-MM-dd")"/></label><button>Xem báo cáo</button></form>
+<p>Từ @Model.Start.ToString("dd/MM/yyyy") đến @Model.End.AddDays(-1).ToString("dd/MM/yyyy") · @Model.Orders đơn đã giao</p>
+<h2>@(User.IsInRole("Seller")?"Giá trị sản phẩm đã giao của gian hàng":"Tổng thu đơn đã giao (sau giảm giá, gồm vận chuyển)"): @Model.Revenue.ToString("N0") đ</h2>
+<p>Doanh thu được ghi nhận theo ngày giao xong. Đơn chưa hoàn tất và đơn hủy không được tính.</p>
+<div class="revenue-chart" role="img" aria-label="Biểu đồ doanh thu theo ngày">
+@foreach(var point in Model.Points){<div class="revenue-column" title="@point.Label: @point.Revenue.ToString("N0") đ"><span>@point.Revenue.ToString("N0")</span><div style="height:@((point.Revenue/max*150).ToString("0.##",System.Globalization.CultureInfo.InvariantCulture))px"></div><small>@point.Label</small></div>}
+</div>
+<h2>Top 5 sản phẩm bán chạy trong kỳ</h2>
+<div class="table-responsive"><table class="table-admin"><thead><tr><th>Sản phẩm</th><th>Số lượng</th><th>Giá trị sản phẩm</th></tr></thead><tbody>
+@foreach(var p in Model.TopProducts){<tr><td>@p.Name</td><td>@p.Quantity</td><td>@p.Revenue.ToString("N0") đ</td></tr>}
+</tbody></table></div>
+@if(Model.TopProducts.Count==0){<p>Chưa có đơn đã giao trong kỳ này.</p>}
+<h2>Lô hàng sắp hết hạn (&lt;3 ngày)</h2>
+@if(Model.NearExpiry.Count==0){<p>Không có lô sắp hết hạn.</p>}
+@foreach(var batch in Model.NearExpiry){<p><a asp-controller="Product" asp-action="Batches" asp-route-id="@batch.ProductId">@batch.Product.Name — @batch.Code</a> · Còn @batch.RemainingQuantity · Hạn @batch.ExpiryDate?.ToString("dd/MM/yyyy")</p>}

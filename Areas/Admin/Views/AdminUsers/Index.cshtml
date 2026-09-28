@@ -1,0 +1,95 @@
+@model IEnumerable<THAN_NONG_SHOP.Models.user>
+@{
+    ViewBag.AdminPageTitle = "Quản Lý Tài Khoản Thành Viên";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";}
+
+<div style="background: #ffffff; padding: 30px; border-radius: 12px; border: 1px solid #eaddca; box-shadow: 0 4px 20px rgba(92,64,51,0.03); font-family: 'Segoe UI', sans-serif;">
+
+    @if (TempData["UserError"] != null)
+    {
+        <div style="padding:10px 14px; margin-bottom:15px; color:#9b2c2c; background:#fff5f5; border:1px solid #fed7d7; border-radius:6px;">@TempData["UserError"]</div>
+    }
+    @if (TempData["UserSuccess"] != null)
+    {
+        <div style="padding:10px 14px; margin-bottom:15px; color:#276749; background:#f0fff4; border:1px solid #c6f6d5; border-radius:6px;">@TempData["UserSuccess"]</div>
+    }
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid #f5f0e6; padding-bottom: 15px;">
+        <div style="color: #8b5a2b; font-size: 15px; font-weight: 500;">
+            👥 Tổng số người dùng đăng ký: <strong style="color: #2e5a1c; font-size: 18px;">@Model.Count()</strong> tài khoản
+        </div>
+        <div style="font-size: 13px; color: #718096; font-style: italic;">
+            * Hãy cẩn trọng khi thay đổi hoặc phân chia quyền hạn hệ thống quản trị.
+        </div>
+    </div>
+
+    <table class="table-admin" style="width: 100%; border-collapse: collapse; text-align: left;">
+        <thead>
+            <tr>
+                <th style="padding-left: 20px;">Tên Đăng Nhập</th>
+                <th>Tên người dùng</th>
+                <th>Địa Chỉ Email</th>
+                <th style="text-align: center;">Số Điện Thoại</th>
+                <th style="text-align: center; width: 160px;">Quyền Hạn</th>
+                <th style="text-align: center; width: 120px;">Trạng thái</th>
+                <th style="text-align: center; width: 140px;">Thao Tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var account in Model)
+            {
+                <tr style="transition: background 0.2s;" onmouseenter="this.style.background='#fdfcfb'" onmouseleave="this.style.background='transparent'">
+
+                    <td style="padding-left: 20px; font-weight: bold; color: #5c4033;">
+                        @account.UserName
+                    </td>
+
+                    <td style="font-weight: 500; color: #2d3748;">
+                        @account.Fullname 
+                    </td>
+
+                    <td style="color: #718096; font-size: 14px;">
+                        @account.Email <small>@(account.EmailConfirmed ? "Đã xác nhận" : "Chưa xác nhận")</small><small>@(account.SellerRequested ? account.SellerApproved ? "Seller đã duyệt" : "Yêu cầu Seller chờ duyệt" : "")</small>
+                    </td>
+
+                    <td style="text-align: center; color: #8b5a2b; font-weight: 500; font-size: 14px;">
+                        <span style="color:#a0aec0; margin-right: 3px;">📞</span>@account.Phone
+                    </td>
+
+                    <td style="text-align: center;">
+                        @if (account.RoleId == 1) 
+                        {
+                            <span style="display: inline-block; padding: 4px 10px; background: #fff5f5; color: #c53030; border: 1px solid #fed7d7; border-radius: 4px; font-size: 12px; font-weight: bold; letter-spacing: 0.5px;">
+                                 Quản trị viên
+                            </span>
+                        }
+                        else
+                        {
+                            <span style="display: inline-block; padding: 4px 10px; background: #f0fff4; color: #2f855a; border: 1px solid #c6f6d5; border-radius: 4px; font-size: 12px; font-weight: 500;">
+                                 @(account.SellerApproved ? "Seller" : "Khách hàng")
+                            </span>
+                        }
+                    </td>
+
+                    <td style="text-align:center; font-weight:600; color:@(account.IsActive ? "#2f855a" : "#c53030")">
+                        @(account.IsActive ? "Hoạt động" : "Đã khóa")
+                    </td>
+                    <td style="text-align:center;">
+                        <form asp-area="Admin" asp-controller="AdminUsers" asp-action="Update" method="post" style="display:flex; gap:5px; justify-content:center; align-items:center; flex-wrap:wrap;">
+                            <input type="hidden" name="id" value="@account.Id" />
+                            <select name="roleId" aria-label="Quyền của @account.UserName" style="padding:5px; border:1px solid #d2b48c; border-radius:4px;">
+                                <option value="1" selected="@(account.RoleId == 1 ? "selected" : null)">Admin</option>
+                                <option value="3" selected="@(account.RoleId == 3)">Seller (duyệt yêu cầu)</option><option value="2" selected="@(account.RoleId == 2 ? "selected" : null)">User</option>
+                            </select>
+                            <select name="isActive" aria-label="Trạng thái của @account.UserName" style="padding:5px; border:1px solid #d2b48c; border-radius:4px;">
+                                <option value="true" selected="@(account.IsActive ? "selected" : null)">Mở</option>
+                                <option value="false" selected="@(!account.IsActive ? "selected" : null)">Khóa</option>
+                            </select>
+                            <button type="submit" style="padding:6px 9px; border:0; border-radius:4px; background:#8b5a2b; color:white; cursor:pointer;">Lưu</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

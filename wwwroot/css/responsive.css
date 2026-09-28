@@ -1,0 +1,88 @@
+/* Mobile overrides for the storefront and legacy inline page layouts. */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { width: 100%; max-width: 100%; overflow-x: clip; }
+img, video, iframe, svg { max-width: 100%; }
+input, select, textarea, button { max-width: 100%; font: inherit; }
+.site-main { width: 100%; max-width: none; padding-inline: 0; }
+
+@media (max-width: 900px) {
+  .header-top { gap: 16px; padding: 12px 20px; }
+  .logo-text { font-size: 21px; }
+  .logo-sub { font-size: 9px; letter-spacing: 1px; }
+  .auth-buttons { gap: 10px; }
+  .nav-menu { justify-content: flex-start; overflow-x: auto; overscroll-behavior-inline: contain; scrollbar-width: none; }
+  .nav-menu::-webkit-scrollbar { display: none; }
+  .nav-item { flex: 0 0 auto; }
+  .nav-item a { padding: 13px 17px; white-space: nowrap; }
+  .footer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; }
+  .site-main div[style*="grid-template-columns: minmax(280px"],
+  .site-main form[style*="grid-template-columns:minmax(0,1fr)"],
+  .site-main div[style*="grid-template-columns: 250px"] { grid-template-columns: minmax(0, 1fr) !important; }
+  .site-main aside[style*="position: sticky"] { position: static !important; }
+  .site-main table { display: block; width: 100% !important; overflow-x: auto; overscroll-behavior-inline: contain; }
+}
+
+@media (max-width: 600px) {
+  body { margin-bottom: 0; }
+  .header-top { align-items: flex-start; flex-wrap: wrap; padding: 10px 14px; }
+  .logo-area { min-width: 0; flex: 1 1 100%; }
+  .logo-area img { height: 42px !important; }
+  .logo-area > div { min-width: 0; }
+  .logo-text { font-size: 19px; line-height: 1.2; }
+  .logo-sub { white-space: normal; line-height: 1.35; }
+  .auth-buttons { width: 100%; justify-content: space-between; gap: 7px; overflow-x: auto; padding-bottom: 2px; }
+  .auth-buttons > span { display: none; }
+  .auth-buttons .btn-auth, .auth-buttons .btn-cart { flex: 0 0 auto; font-size: 13px; }
+  .auth-buttons .btn-auth[style*="padding"] { padding: 7px 10px !important; }
+  .nav-item a { padding: 12px 14px; font-size: 13px; }
+  .site-main { padding-top: 34px !important; }
+  /* Login/register use the shared body without a header. */
+  .site-main > div[style*="max-width: 400px"],
+  .site-main > div[style*="max-width: 450px"] { width: auto; margin: 18px 14px !important; padding: 22px 18px !important; }
+  .site-main > div[style*="max-width: 400px"] h3,
+  .site-main > div[style*="max-width: 450px"] h3 { font-size: 20px !important; }
+  footer { margin-top: 32px; padding: 36px 18px 18px; }
+  .footer-grid { grid-template-columns: 1fr; gap: 18px; }
+  .footer-title { margin-bottom: 10px; }
+  .site-main h1 { overflow-wrap: anywhere; }
+  .site-main section[style*="min-height: 420px"] { min-height: 360px !important; padding: 24px 18px !important; }
+  .site-main section[style*="min-height: 420px"] h1 { font-size: clamp(32px, 10vw, 42px) !important; }
+  .site-main section[style*="min-height: 420px"] p { font-size: 16px !important; }
+  .site-main section[style*="padding: 42px 20px"] h1 { font-size: 30px !important; }
+  .site-main div[style*="max-width: 1200px"], .site-main div[style*="max-width: 1000px"],
+  .site-main div[style*="max-width: 950px"], .site-main div[style*="max-width: 920px"] { margin-block: 22px !important; padding-inline: 14px !important; }
+  .site-main section[style*="padding:24px"], .site-main aside[style*="padding:24px"] { padding: 18px !important; }
+  .site-main div[style*="min-width:280px"] { min-width: 0 !important; width: 100%; }
+  .site-main form[style*="display:flex"] { flex-wrap: wrap; }
+  .site-main form[style*="display:flex"] input { flex-basis: 170px; }
+  .site-main table { font-size: 13px; }
+  .site-main table th, .site-main table td { padding: 9px !important; white-space: nowrap; }
+  .site-main table img { width: 58px !important; height: 58px !important; }
+  .site-main div[style*="align-items: flex-end"] { align-items: stretch !important; flex-direction: column; }
+  .site-main div[style*="text-align: right"] { text-align: left !important; }
+  .site-main a[style*="padding: 12px 30px"] { width: 100%; padding-inline: 16px !important; }
+  .account-profile { padding-inline: 14px; }
+  .profile-order-list > div > * { overflow-wrap: anywhere; }
+  .promotion-hero { min-height: 440px; padding: 42px 18px 48px; }
+  .promotion-hero h1 { font-size: clamp(38px, 13vw, 50px); letter-spacing: -1px; }
+  .promotion-hero p { font-size: 15px; }
+  .promotion-countdown { gap: 5px; }
+  .promotion-countdown > span { min-width: 0; width: 56px; }
+  .lucky-section, .grand-prizes, .voucher-section { padding-inline: 18px; }
+  .lucky-wheel { width: min(82vw, 340px); }
+  .voucher-card__body { min-width: 0; }
+  .voucher-card__body code { overflow-wrap: anywhere; }
+  .spin-login div { flex-wrap: wrap; }
+  .ai-chat { right: 10px; bottom: max(10px, env(safe-area-inset-bottom)); }
+  .ai-chat__panel { inset: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom)); }
+  .ai-chat__social { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 380px) {
+  .logo-text { font-size: 17px; }
+  .auth-buttons .btn-auth, .auth-buttons .btn-cart { font-size: 12px; }
+  .promotion-hero__badge { display: none; }
+  .promotion-countdown > span { width: 49px; padding-inline: 3px; }
+  .voucher-card { grid-template-columns: 68px minmax(0, 1fr); }
+  .voucher-card::before, .voucher-card::after { left: 58px; }
+}

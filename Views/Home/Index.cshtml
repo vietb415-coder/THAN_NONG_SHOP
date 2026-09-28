@@ -1,0 +1,48 @@
+@{
+    ViewData["Title"] = "Trang chủ nông sản";
+}
+
+<section style="background: linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)), url('https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1600&q=80') center/cover; min-height: 420px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px; text-align: center; color: white;">
+    <h1 style="font-family: 'Playfair Display', serif; font-size: 46px; margin: 0 0 15px;">Tinh hoa quà tặng từ đất mẹ</h1>
+    <p style="font-size: 19px; line-height: 1.7; max-width: 680px; margin: 0;">
+        Thần Nông Shop kết nối nông sản sạch từ những vùng trồng uy tín đến với mọi gia đình Việt.
+    </p>
+
+    <a asp-area="" asp-controller="Products" asp-action="Index"
+       style="display: inline-block; margin-top: 28px; padding: 13px 25px; border-radius: 7px; background: #c5a059; color: #fff; text-decoration: none; font-weight: 700; box-shadow: 0 5px 15px rgba(0,0,0,.2);">
+        <svg class="app-icon"><use href="#icon-product"></use></svg>Xem sản phẩm
+    </a>
+
+    @if (User.IsInRole("Admin"))
+    {
+        <a asp-area="Admin" asp-controller="Product" asp-action="Index"
+           style="display: inline-block; margin: 28px 0 0 10px; padding: 13px 25px; border-radius: 7px; border: 1px solid rgba(255,255,255,.75); color: #fff; text-decoration: none; font-weight: 700;">
+            <svg class="app-icon"><use href="#icon-settings"></use></svg>Quản lý sản phẩm
+        </a>
+    }
+</section>
+
+<section style="max-width: 1100px; margin: 55px auto; padding: 0 25px; text-align: center;">
+    <h2 style="font-family: 'Playfair Display', serif; color: #2e5a1c; font-size: 32px; margin-bottom: 12px;">Giá trị của Thần Nông Shop</h2>
+    <p style="color: #718096; line-height: 1.7; max-width: 720px; margin: 0 auto 35px;">
+        Chúng tôi trân trọng giá trị bản địa, quy trình canh tác an toàn và công sức của người nông dân.
+    </p>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px;">
+        <article style="padding: 28px 22px; border: 1px solid #eaddca; border-radius: 12px; background: #fdfbf7;">
+            <div style="color: #2e5a1c;"><svg class="app-icon" style="width: 38px; height: 38px; margin: 0;"><use href="#icon-sprout"></use></svg></div>
+            <h3 style="color: #5c4033;">Canh tác an toàn</h3>
+            <p style="color: #718096; line-height: 1.6;">Sản phẩm có nguồn gốc rõ ràng và quy trình sản xuất đáng tin cậy.</p>
+        </article>
+        <article style="padding: 28px 22px; border: 1px solid #eaddca; border-radius: 12px; background: #fdfbf7;">
+            <div style="color: #2e5a1c;"><svg class="app-icon" style="width: 38px; height: 38px; margin: 0;"><use href="#icon-truck"></use></svg></div>
+            <h3 style="color: #5c4033;">Tươi mới mỗi ngày</h3>
+            <p style="color: #718096; line-height: 1.6;">Nông sản được bảo quản cẩn thận để giữ trọn độ tươi ngon tự nhiên.</p>
+        </article>
+        <article style="padding: 28px 22px; border: 1px solid #eaddca; border-radius: 12px; background: #fdfbf7;">
+            <div style="color: #2e5a1c;"><svg class="app-icon" style="width: 38px; height: 38px; margin: 0;"><use href="#icon-heart"></use></svg></div>
+            <h3 style="color: #5c4033;">Đồng hành cùng nhà nông</h3>
+            <p style="color: #718096; line-height: 1.6;">Nâng cao giá trị nông sản và tạo đầu ra bền vững cho người trồng.</p>
+        </article>
+    </div>
+</section>

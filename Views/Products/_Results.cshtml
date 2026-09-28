@@ -1,0 +1,43 @@
+@model IEnumerable<THAN_NONG_SHOP.Models.Product>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; gap: 15px;">
+            <h2 style="font-family: 'Playfair Display', serif; color: #2d3748; font-size: 25px; margin: 0;">Danh sách sản phẩm</h2>
+            <span style="color: #718096;">@Model.Count() sản phẩm</span>
+        </div>
+
+        @if (!Model.Any())
+        {
+            <div style="padding: 35px; background: #fff8ed; color: #8b5a2b; border: 1px solid #eed7b5; border-radius: 10px; text-align: center;">
+                Không tìm thấy sản phẩm phù hợp. Hãy thử thay đổi bộ lọc.
+            </div>
+        }
+        else
+        {
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 24px;">
+                @foreach (var product in Model)
+                {
+                    <article style="border: 1px solid #edf2f7; border-radius: 10px; overflow: hidden; background: #fff; box-shadow: 0 5px 16px rgba(0,0,0,.05); display: flex; flex-direction: column;">
+                        @if (!string.IsNullOrWhiteSpace(product.ImageUrl))
+                        {
+                            <img src="@product.ImageUrl" alt="@product.Name" loading="lazy" decoding="async" width="320" height="205" style="width: 100%; height: 205px; object-fit: cover; background: #f7f5ef;" />
+                        }
+                        else
+                        {
+                            <div style="height: 205px; display: grid; place-items: center; background: #f7f5ef; color: #a0aec0;">Chưa có hình ảnh</div>
+                        }
+
+                        <div style="padding: 16px; display: flex; flex-direction: column; flex-grow: 1;">
+                            <span style="color: #2e5a1c; font-size: 12px; font-weight: 700; text-transform: uppercase;">@product.Category?.Name</span>
+                            <h3 style="margin: 7px 0 12px; color: #2d3748; font-size: 17px;">@product.Name</h3>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto; margin-bottom: 14px;">
+                                <strong style="color: #b54708; font-size: 18px;">@product.price.ToString("N0") đ</strong>
+                                <span style="color: #718096; font-size: 13px;">Kho: @product.stockQuantity</span>
+                            </div>
+                            <a asp-area="" asp-controller="Products" asp-action="Details" asp-route-id="@product.Id" style="display: block; padding: 9px; border-radius: 6px; background: #2e5a1c; color: #fff; text-align: center; text-decoration: none; font-weight: 700;">Xem chi tiết</a>
+                        </div>
+                    </article>
+                }
+            </div>
+        }
+
+@if(!Model.Any() && ViewBag.Suggestions is List<Product> suggestions && suggestions.Count>0){<section><h2>Sản phẩm bán chạy gợi ý</h2><div class="product-suggestions">@foreach(var p in suggestions){<article><a asp-controller="Products" asp-action="Details" asp-route-id="@p.Id"><img src="@p.ImageUrl" alt="@p.Name" width="180" height="140" loading="lazy"/><h3>@p.Name</h3></a><p>@p.price.ToString("N0") đ / @p.Unit</p></article>}</div></section>}

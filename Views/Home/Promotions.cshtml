@@ -1,0 +1,119 @@
+@{
+    ViewData["Title"] = "Khuyến mãi & Vòng quay may mắn";
+}
+
+<div class="promotion-page" id="promotionPage"
+     data-authenticated="@(User.Identity?.IsAuthenticated == true ? "true" : "false")"
+     data-member="@(User.Identity?.Name ?? "guest")"
+     data-spin-url="@Url.Action("SpinPromotion", "Home")"
+     data-claim-url="@Url.Action("ClaimPromotion", "Home")"
+     data-login-url="@Url.Action("Login", "Account", new { returnUrl = Url.Action("Promotions", "Home") })">
+    <section class="promotion-hero">
+        <div class="promotion-hero__glow promotion-hero__glow--one"></div>
+        <div class="promotion-hero__glow promotion-hero__glow--two"></div>
+        <div class="promotion-hero__content">
+            <span class="promotion-eyebrow">Đặc quyền thành viên Thần Nông</span>
+            <h1>Vòng quay <em>mùa vàng</em></h1>
+            <p>Thử vận may mỗi ngày để săn quà nông sản và mã giảm giá hấp dẫn.</p>
+            <div class="promotion-countdown" aria-label="Thời gian còn lại của chương trình">
+                <span><strong id="countdownDays">00</strong><small>Ngày</small></span>
+                <i>:</i><span><strong id="countdownHours">00</strong><small>Giờ</small></span>
+                <i>:</i><span><strong id="countdownMinutes">00</strong><small>Phút</small></span>
+                <i>:</i><span><strong id="countdownSeconds">00</strong><small>Giây</small></span>
+            </div>
+        </div>
+        <div class="promotion-hero__badge"><b>100%</b><span>Có quà</span></div>
+    </section>
+
+    <section class="lucky-section" aria-labelledby="luckyTitle">
+        <div class="lucky-copy">
+            <span class="section-kicker">Quay là trúng</span>
+            <h2 id="luckyTitle">Hôm nay bạn nhận được gì?</h2>
+            <p>Mỗi khách hàng có 1 lượt quay mỗi ngày. Nhấn nút ở giữa vòng quay và chờ món quà dành riêng cho bạn.</p>
+            <ul class="lucky-highlights">
+                <li><span>01</span><div><b>Quà tặng thật</b><small>Nông sản sạch giao tận nhà</small></div></li>
+                <li><span>02</span><div><b>Mã dùng ngay</b><small>Áp dụng cho đơn hàng tiếp theo</small></div></li>
+                <li><span>03</span><div><b>Cơ hội mỗi ngày</b><small>Lượt quay mới vào 00:00</small></div></li>
+            </ul>
+        </div>
+
+        <div class="wheel-stage">
+            <div class="wheel-pointer" aria-hidden="true"></div>
+            <div class="lucky-wheel" id="luckyWheel" aria-label="Vòng quay gồm 8 phần thưởng">
+                <div class="wheel-label" style="--i:0"><span>Giảm<br><b>10%</b></span></div>
+                <div class="wheel-label" style="--i:1"><span>Freeship</span></div>
+                <div class="wheel-label" style="--i:2"><span>Giỏ quà<br><b>500K</b></span></div>
+                <div class="wheel-label" style="--i:3"><span>Giảm<br><b>30K</b></span></div>
+                <div class="wheel-label" style="--i:4"><span>Giảm<br><b>15%</b></span></div>
+                <div class="wheel-label" style="--i:5"><span>Mật ong<br><b>0đ</b></span></div>
+                <div class="wheel-label" style="--i:6"><span>Giảm<br><b>50K</b></span></div>
+                <div class="wheel-label" style="--i:7"><span>Giỏ quà<br><b>1 TRIỆU</b></span></div>
+                <button class="wheel-spin" id="spinButton" type="button" disabled="@(User.Identity?.IsAuthenticated != true)"><span>QUAY</span><small>NGAY</small></button>
+            </div>
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <p class="wheel-note" id="spinStatus" aria-live="polite">Bạn có <b>1 lượt quay</b> hôm nay</p>
+            }
+            else
+            {
+                <div class="spin-login" id="spinStatus">
+                    <b>Đăng nhập để mở lượt quay</b>
+                    <span>Mỗi thành viên nhận 1 lượt quay may mắn mỗi ngày.</span>
+                    <div>
+                        <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Url.Action("Promotions", "Home")">Đăng nhập</a>
+                        <a asp-controller="Account" asp-action="Register" asp-route-returnUrl="@Url.Action("Promotions", "Home")" class="spin-login__register">Đăng ký ngay</a>
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+
+    <section class="grand-prizes" aria-labelledby="grandTitle">
+        <div class="section-heading">
+            <span class="section-kicker">Giải thưởng lớn</span>
+            <h2 id="grandTitle">Quà xịn đang chờ chủ nhân</h2>
+            <p>Mỗi lượt quay đều có cơ hội chạm tới những phần quà giá trị nhất mùa này.</p>
+        </div>
+        <div class="prize-grid">
+            <article class="prize-card prize-card--featured">
+                <span class="prize-rank">Giải đặc biệt</span><div class="prize-emoji">🏆</div>
+                <h3>Giỏ nông sản cao cấp</h3><strong>Trị giá 1.000.000đ</strong><p>Tuyển chọn đặc sản sạch từ các vùng miền.</p>
+            </article>
+            <article class="prize-card">
+                <span class="prize-rank">Giải nhất</span><div class="prize-emoji">🎁</div>
+                <h3>Giỏ quà mùa vàng</h3><strong>Trị giá 500.000đ</strong><p>Đầy ắp rau củ, trái cây và đặc sản.</p>
+            </article>
+            <article class="prize-card">
+                <span class="prize-rank">Quà may mắn</span><div class="prize-emoji">🍯</div>
+                <h3>Mật ong nguyên chất</h3><strong>Miễn phí 100%</strong><p>Chai mật ong rừng thơm ngon, tự nhiên.</p>
+            </article>
+        </div>
+    </section>
+
+    <section class="voucher-section" aria-labelledby="voucherTitle">
+        <div class="section-heading section-heading--light">
+            <span class="section-kicker">Ưu đãi dùng ngay</span><h2 id="voucherTitle">Kho mã giảm giá</h2>
+            <p>Sao chép mã và nhập ở bước thanh toán. Số lượng có hạn mỗi ngày.</p>
+        </div>
+        <div class="voucher-grid">
+            <article class="voucher-card"><div class="voucher-card__value"><small>GIẢM</small><b>15%</b></div><div class="voucher-card__body"><span>Đơn từ 299K</span><code>Mã dành riêng</code><small>HSD: 30/09/2026</small></div><button type="button" data-claim-code="THANNONG15">Nhận mã</button></article>
+            <article class="voucher-card"><div class="voucher-card__value"><small>GIẢM</small><b>50K</b></div><div class="voucher-card__body"><span>Đơn từ 499K</span><code>Mã dành riêng</code><small>HSD: 30/09/2026</small></div><button type="button" data-claim-code="MUAVANG50">Nhận mã</button></article>
+            <article class="voucher-card"><div class="voucher-card__value"><small>MIỄN</small><b>SHIP</b></div><div class="voucher-card__body"><span>Đơn từ 199K</span><code>Mã dành riêng</code><small>HSD: 30/09/2026</small></div><button type="button" data-claim-code="FREESHIP">Nhận mã</button></article>
+        </div>
+    </section>
+</div>
+
+<div class="reward-modal" id="rewardModal" hidden>
+    <div class="reward-modal__backdrop" data-close-reward></div>
+    <div class="reward-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="rewardTitle">
+        <button class="reward-modal__close" type="button" data-close-reward aria-label="Đóng">×</button>
+        <div class="reward-modal__icon">🎉</div><span>Chúc mừng bạn!</span>
+        <h2 id="rewardTitle">Bạn đã trúng quà</h2><p id="rewardDescription"></p>
+        <div class="reward-modal__code"><small>MÃ CỦA BẠN</small><strong id="rewardCode"></strong></div>
+        <button class="reward-modal__action" id="copyReward" type="button">Sao chép mã</button>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/promotions.js" asp-append-version="true"></script>
+}

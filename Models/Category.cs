@@ -1,0 +1,13 @@
+﻿using System.ComponentModel.DataAnnotations;
+namespace THAN_NONG_SHOP.Models
+{
+    public class Category
+    {
+        
+        [Key]
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+
+    }
+}

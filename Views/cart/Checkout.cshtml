@@ -1,0 +1,115 @@
+@model IEnumerable<THAN_NONG_SHOP.Models.CartItem>
+@{
+    ViewData["Title"] = "Thanh toán";
+}
+
+<div style="max-width: 920px; margin: 35px auto; font-family: Arial, sans-serif;">
+    <h2 style="color:#245719; text-align:center; margin-bottom:25px;">THANH TOÁN ĐƠN HÀNG</h2>
+
+    @if (TempData["CheckoutError"] != null)
+    {
+        <div style="padding:12px 16px; margin-bottom:18px; color:#8a1c1c; background:#fff1f1; border:1px solid #efb4b4; border-radius:7px;">@TempData["CheckoutError"]</div>
+    }
+
+    @if (TempData["PromotionError"] != null)
+    {
+        <div style="padding:12px 16px; margin-bottom:18px; color:#8a1c1c; background:#fff1f1; border:1px solid #efb4b4; border-radius:7px;">@TempData["PromotionError"]</div>
+    }
+    @if (TempData["PromotionSuccess"] != null)
+    {
+        <div style="padding:12px 16px; margin-bottom:18px; color:#245719; background:#f0faed; border:1px solid #a9d6a0; border-radius:7px;">@TempData["PromotionSuccess"]</div>
+    }
+
+    <div style="max-width:520px; margin:0 0 18px auto; padding:14px; border:1px solid #dfe8dc; border-radius:10px; background:#f8fbf7;">
+        @if (!string.IsNullOrWhiteSpace(ViewBag.PromotionCode as string))
+        {
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                <span><strong style="color:#245719;">@ViewBag.PromotionCode</strong><small style="display:block; color:#61715f; margin-top:3px;">@ViewBag.PromotionMessage</small></span>
+                <form asp-controller="Cart" asp-action="RemovePromotion" method="post"><input type="hidden" name="returnTo" value="checkout" /><button type="submit" style="border:0; background:none; color:#a33b2d; font-weight:700; cursor:pointer;">Bỏ mã</button></form>
+            </div>
+        }
+        else
+        {
+            <form asp-controller="Cart" asp-action="ApplyPromotion" method="post" style="display:flex; gap:8px;">
+                <input type="hidden" name="returnTo" value="checkout" />
+                <input name="promotionCode" maxlength="30" placeholder="Nhập mã khuyến mãi" required style="min-width:0; flex:1; padding:10px 12px; border:1px solid #cbd5e0; border-radius:6px; text-transform:uppercase;" />
+                <button type="submit" style="border:0; border-radius:6px; padding:10px 16px; background:#2e5a1c; color:#fff; font-weight:700; cursor:pointer;">Áp dụng</button>
+            </form>
+        }
+    </div>
+
+    <form asp-controller="Cart" asp-action="SetShipping" method="post" class="commerce-panel">
+        <label>Giao hàng <select name="shippingMethod">
+        @foreach(var method in ShippingMethods.Names){<option value="@method.Key" selected="@(ViewBag.ShippingMethod == method.Key)">@method.Value — @ShippingMethods.Fee(method.Key).ToString("N0") đ</option>}
+        </select></label><button>Cập nhật phí giao hàng</button>
+    </form>
+    <form asp-controller="Cart" asp-action="Checkout" method="post" style="display:grid; grid-template-columns:minmax(0,1fr) minmax(300px,.8fr); gap:24px;">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="checkoutToken" value="@ViewBag.CheckoutToken" />
+        <input type="hidden" name="shippingMethod" value="@ViewBag.ShippingMethod" />
+        <section style="padding:24px; border:1px solid #dfe8dc; border-radius:12px; background:#fff; box-shadow:0 5px 18px rgba(34,85,24,.07);">
+            <h3 style="margin-top:0; color:#2c3e50;">Thông tin giao hàng</h3>
+
+            <label style="display:block; margin:15px 0 6px; font-weight:700;">Họ và tên người nhận</label>
+            <input type="text" name="customerName" value="@ViewBag.UserFullName" minlength="2" maxlength="100" required style="width:100%; padding:11px; border:1px solid #cbd5e0; border-radius:6px; box-sizing:border-box;" />
+
+            <label style="display:block; margin:15px 0 6px; font-weight:700;">Số điện thoại</label>
+            <input type="tel" name="shippingPhone" value="@ViewBag.UserPhone" pattern="0[0-9]{9}" maxlength="10" required style="width:100%; padding:11px; border:1px solid #cbd5e0; border-radius:6px; box-sizing:border-box;" />
+
+            <label style="display:block; margin:15px 0 6px; font-weight:700;">Địa chỉ nhận hàng</label>
+            <textarea name="shippingAddress" rows="4" minlength="5" maxlength="500" required style="width:100%; padding:11px; border:1px solid #cbd5e0; border-radius:6px; box-sizing:border-box;"></textarea>
+
+            <label><input type="radio" name="paymentMethod" value="momo" /> Ví MoMo</label>
+            <label><input type="radio" name="paymentMethod" value="vnpay" /> VNPay</label>
+            <p>Đơn thanh toán trực tuyến được giữ hàng trong 15 phút.</p>
+            <h3 style="margin:24px 0 12px; color:#2c3e50;">Phương thức thanh toán</h3>
+            <label style="display:flex; gap:10px; padding:14px; border:1px solid #cbd5e0; border-radius:8px; margin-bottom:10px; cursor:pointer;">
+                <input type="radio" name="paymentMethod" value="cod" checked />
+                <span><strong>Thanh toán khi nhận hàng</strong><br /><small style="color:#65727e;">Trả tiền mặt khi đơn hàng được giao tới.</small></span>
+            </label>
+            <label style="display:flex; gap:10px; padding:14px; border:1px solid #8fb885; border-radius:8px; cursor:pointer; background:#f5fbf2;">
+                <input type="radio" name="paymentMethod" value="payos" />
+                <span><strong>Chuyển khoản ngân hàng qua PayOS</strong><br /><small style="color:#65727e;">Quét mã VietQR hoặc mở ứng dụng ngân hàng.</small></span>
+            </label>
+        </section>
+
+        <aside style="padding:24px; border:1px solid #dfe8dc; border-radius:12px; background:#f8fbf7; height:max-content;">
+            <h3 style="margin-top:0; color:#2c3e50;">Đơn hàng của bạn</h3>
+            @foreach (var item in Model)
+            {
+                <div style="display:flex; justify-content:space-between; gap:15px; padding:11px 0; border-bottom:1px solid #e1e8df;">
+                    <span>@item.Product?.Name × @item.Quantity</span>
+                    <strong>@(((item.Product?.price ?? 0) * item.Quantity).ToString("N0")) đ</strong>
+                </div>
+            }
+            @if (!string.IsNullOrWhiteSpace(ViewBag.PromotionGift as string))
+            {
+                <div style="display:flex; justify-content:space-between; gap:15px; margin-top:10px; padding:13px; border:1px solid #d8c27a; border-radius:9px; background:#fff9e7; color:#35542c;">
+                    <span><b style="display:block; margin-bottom:3px; color:#9a6813;">🎁 Quà tặng kèm</b>@ViewBag.PromotionGift</span>
+                    <strong style="white-space:nowrap; color:#2e7d32;">0 đ</strong>
+                </div>
+            }
+            <div style="display:grid; gap:8px; margin-top:18px; color:#5e6a62; font-size:14px;">
+                <div style="display:flex; justify-content:space-between;"><span>Tạm tính</span><strong>@(((decimal?)ViewBag.Subtotal ?? 0).ToString("N0")) đ</strong></div>
+                <div style="display:flex; justify-content:space-between;"><span>Phí vận chuyển</span><strong>@(((decimal?)ViewBag.ShippingFee ?? 0).ToString("N0")) đ</strong></div>
+                @if (((decimal?)ViewBag.Discount ?? 0) > 0)
+                {
+                    <div style="display:flex; justify-content:space-between; color:#2e7d32;"><span>Khuyến mãi (@ViewBag.PromotionCode)</span><strong>-@(((decimal?)ViewBag.Discount ?? 0).ToString("N0")) đ</strong></div>
+                }
+            </div>
+            <div style="display:flex; justify-content:space-between; margin:15px 0 20px; padding-top:14px; border-top:2px solid #d9e2d7; font-size:20px; color:#b54708;">
+                <strong>Tổng cộng</strong>
+                <strong>@(((decimal?)ViewBag.Total ?? 0).ToString("N0")) đ</strong>
+            </div>
+            <button type="submit" style="width:100%; border:0; border-radius:7px; padding:13px; background:#2e5a1c; color:white; font-size:16px; font-weight:700; cursor:pointer;">XÁC NHẬN THANH TOÁN</button>
+            <a asp-controller="Cart" asp-action="Index" style="display:block; margin-top:10px; padding:11px; border:1px solid #cbd5e0; border-radius:7px; color:#52606d; text-align:center; text-decoration:none; font-weight:600;">← Quay lại giỏ hàng</a>
+            <p style="font-size:12px; color:#65727e; line-height:1.5; margin-bottom:0;">Thông tin thanh toán được xử lý trên trang của cổng thanh toán đã chọn. Shop không lưu thông tin tài khoản ngân hàng của bạn.</p>
+        </aside>
+    </form>
+</div>
+
+<style>
+@@media (max-width: 760px) {
+    form { grid-template-columns: 1fr !important; }
+}
+</style>

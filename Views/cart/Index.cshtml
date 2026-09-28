@@ -1,0 +1,153 @@
+@model IEnumerable<THAN_NONG_SHOP.Models.CartItem>
+
+@{
+    ViewData["Title"] = "Giỏ Hàng Của Bạn";
+}
+
+<div style="max-width: 1000px; margin: 30px auto; padding: 20px; font-family: Arial, sans-serif;">
+    <h2 style="color: #2c3e50; margin-bottom: 20px;"><svg class="app-icon"><use href="#icon-cart"></use></svg>GIỎ HÀNG CỦA BẠN</h2>
+
+    @if (TempData["CartError"] != null)
+    {
+        <div style="padding:12px 16px; margin-bottom:18px; color:#8a1c1c; background:#fff1f1; border:1px solid #efb4b4; border-radius:7px;">@TempData["CartError"]</div>
+    }
+
+    @if (TempData["CartSuccess"] != null)
+    {
+        <div style="padding:12px 16px; margin-bottom:18px; color:#245719; background:#f0faed; border:1px solid #a9d6a0; border-radius:7px;">@TempData["CartSuccess"]</div>
+    }
+
+    @if (TempData["PromotionError"] != null)
+    {
+        <div style="padding:12px 16px; margin-bottom:18px; color:#8a1c1c; background:#fff1f1; border:1px solid #efb4b4; border-radius:7px;">@TempData["PromotionError"]</div>
+    }
+    @if (TempData["PromotionSuccess"] != null)
+    {
+        <div style="padding:12px 16px; margin-bottom:18px; color:#245719; background:#f0faed; border:1px solid #a9d6a0; border-radius:7px;">@TempData["PromotionSuccess"]</div>
+    }
+
+    @if (Model == null || !Model.Any())
+    {
+        <div style="text-align: center; padding: 40px; border: 1px dashed #ccc; border-radius: 8px;">
+            <p style="color: #7f8c8d; font-size: 18px;">Giỏ hàng của bạn đang trống.</p>
+            <a asp-controller="Products" asp-action="Index" style="display: inline-block; background: #2e5a1c; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px; transition: background 0.2s;" onmouseenter="this.style.background='#1e3d12'" onmouseleave="this.style.background='#2e5a1c'">
+                ← Tiếp tục mua sắm
+            </a>
+        </div>
+    }
+    else
+    {
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
+            <thead>
+                <tr style="background-color: #f8f9fa; border-bottom: 2px solid #dee2e6; text-align: left;">
+                    <th style="padding: 12px;">Hình ảnh</th>
+                    <th style="padding: 12px;">Sản phẩm</th>
+                    <th style="padding: 12px;">Giá</th>
+                    <th style="padding: 12px; text-align: center;">Số lượng</th>
+                    <th style="padding: 12px; text-align: right;">Thành tiền</th>
+                    <th style="padding: 12px; text-align: center; width: 90px;">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    if (item.Product != null)
+                    {
+                        <tr style="border-bottom: 1px solid #dee2e6; vertical-align: middle;">
+                            <td style="padding: 12px; width: 100px;">
+                                <img src="@item.Product.ImageUrl" alt="@item.Product.Name" loading="lazy" decoding="async" width="80" height="80" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px;" />
+                            </td>
+                            <td style="padding: 12px;">
+                                <strong style="color: #2d3748; font-size: 16px;">@item.Product.Name</strong>
+                            </td>
+                            <td style="padding: 12px;">@item.Product.price.ToString("N0") đ</td>
+                            <td style="padding: 12px; text-align: center;">
+                                <div style="display: inline-flex; align-items: center; border: 1px solid #d2b48c; border-radius: 4px; overflow: hidden; background: #fff;">
+                                    <form asp-controller="Cart" asp-action="UpdateQuantity" method="post" style="display:inline">
+                                        <input type="hidden" name="productId" value="@item.Product.Id" />
+                                        <input type="hidden" name="quantity" value="@(item.Quantity - 1)" />
+                                        <button type="submit" style="padding:5px 12px; border:0; background:#fbf9f6; color:#5c4033; font-weight:bold; font-size:16px; cursor:pointer;">-</button>
+                                    </form>
+
+                                    <span style="padding: 5px 15px; font-weight: bold; min-width: 20px; text-align: center; color: #2d3748; background: #ffffff;">
+                                        @item.Quantity
+                                    </span>
+
+                                    <form asp-controller="Cart" asp-action="UpdateQuantity" method="post" style="display:inline">
+                                        <input type="hidden" name="productId" value="@item.Product.Id" />
+                                        <input type="hidden" name="quantity" value="@(item.Quantity + 1)" />
+                                        <button type="submit" style="padding:5px 12px; border:0; background:#fbf9f6; color:#5c4033; font-weight:bold; font-size:16px; cursor:pointer;">+</button>
+                                    </form>
+                                </div>
+                            </td>
+                            <td style="padding: 12px; text-align: right; font-weight: bold; color: #2e5a1c;">
+                                @((item.Product.price * item.Quantity).ToString("N0")) đ
+                            </td>
+                            <td style="padding: 12px; text-align: center;">
+                                <form asp-controller="Cart" asp-action="RemoveFromCart" method="post" style="display:inline;"
+                                      onsubmit="return confirm('Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?');">
+                                    <input type="hidden" name="productId" value="@item.Product.Id" />
+                                    <button type="submit"
+                                            aria-label="Xóa @item.Product.Name khỏi giỏ hàng"
+                                            style="display:inline-flex; align-items:center; gap:4px; padding:7px 10px; border:0; border-radius:5px; background:#8b5a2b; color:#fff; font-weight:700; cursor:pointer; white-space:nowrap;">
+                                        <svg class="app-icon"><use href="#icon-trash"></use></svg>Xóa
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+
+        @if (!string.IsNullOrWhiteSpace(ViewBag.PromotionGift as string))
+        {
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:15px; margin:-14px 0 22px; padding:14px 17px; border:1px solid #d8c27a; border-radius:9px; background:#fff9e7; color:#35542c;">
+                <span><b style="color:#9a6813;">🎁 Quà tặng kèm · </b>@ViewBag.PromotionGift</span>
+                <strong style="white-space:nowrap; color:#2e7d32;">0 đ</strong>
+            </div>
+        }
+
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; gap:25px; background: #f8f9fa; padding: 20px; border-radius: 8px; flex-wrap:wrap;">
+            <div style="flex:1; min-width:280px;">
+                <a asp-controller="Products" asp-action="Index" style="text-decoration: none; color: #4a5568; font-weight: bold;">← Mua thêm sản phẩm khác</a>
+                <div style="margin-top:20px; max-width:420px;">
+                    <label style="display:block; margin-bottom:7px; color:#2d3748; font-weight:700;">Mã khuyến mãi</label>
+                    @if (!string.IsNullOrWhiteSpace(ViewBag.PromotionCode as string))
+                    {
+                        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:11px 13px; border:1px solid #9bc38e; border-radius:7px; background:#f1faee;">
+                            <span><strong>@ViewBag.PromotionCode</strong><small style="display:block; color:#55704e; margin-top:3px;">@ViewBag.PromotionMessage</small></span>
+                            <form asp-controller="Cart" asp-action="RemovePromotion" method="post"><button type="submit" style="border:0; background:none; color:#a33b2d; font-weight:700; cursor:pointer;">Bỏ mã</button></form>
+                        </div>
+                    }
+                    else
+                    {
+                        <form asp-controller="Cart" asp-action="ApplyPromotion" method="post" style="display:flex; gap:8px;">
+                            <input name="promotionCode" maxlength="30" placeholder="Nhập mã của bạn" required style="min-width:0; flex:1; padding:10px 12px; border:1px solid #cbd5e0; border-radius:6px; text-transform:uppercase;" />
+                            <button type="submit" style="border:0; border-radius:6px; padding:10px 18px; background:#2e5a1c; color:#fff; font-weight:700; cursor:pointer;">Áp dụng</button>
+                        </form>
+                    }
+                </div>
+            </div>
+            <div style="text-align: right;">
+                <div style="color:#5f6b64; line-height:1.9; margin-bottom:8px;">
+                    <div>Tạm tính: <strong>@(((decimal?)ViewBag.Subtotal ?? 0).ToString("N0")) đ</strong></div>
+                    <div>Phí vận chuyển: <strong>@(((decimal?)ViewBag.ShippingFee ?? 0).ToString("N0")) đ</strong></div>
+                    @if (((decimal?)ViewBag.Discount ?? 0) > 0)
+                    {
+                        <div style="color:#2e7d32;">Khuyến mãi: <strong>-@(((decimal?)ViewBag.Discount ?? 0).ToString("N0")) đ</strong></div>
+                    }
+                </div>
+                <h3 style="margin: 0 0 15px 0; color: #2d3748;">Tổng thanh toán:
+                    <span style="color: #e53e3e; font-size: 24px;">
+                        @(ViewBag.Total != null ? ViewBag.Total.ToString("N0") : "0") đ
+                    </span>
+                </h3>
+
+                <a asp-controller="Cart" asp-action="Checkout" style="display: inline-block; background: #e53e3e; color: white; padding: 12px 30px; font-size: 16px; font-weight: bold; border-radius: 4px; text-decoration: none; text-align: center;">
+                    Tiến Hành Đặt Hàng →
+                </a>
+            </div>
+        </div>  
+    }
+</div>

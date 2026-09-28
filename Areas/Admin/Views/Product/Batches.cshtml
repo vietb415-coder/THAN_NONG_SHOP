@@ -1,0 +1,10 @@
+@model THAN_NONG_SHOP.Models.Product
+@{Layout="~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";ViewData["Title"]="Lô hàng";}
+<h1>Lô hàng — @Model.Name</h1><p>Tồn có thể bán: @Model.stockQuantity @Model.Unit</p>
+@if(TempData["BatchError"]!=null){<p role="alert">@TempData["BatchError"]</p>}
+<div class="table-responsive"><table class="table-admin"><thead><tr><th>Mã lô</th><th>Thu hoạch</th><th>Hạn dùng</th><th>Tồn lô</th><th>Tình trạng</th></tr></thead><tbody>
+@foreach(var batch in Model.Batches.OrderBy(b=>b.ExpiryDate)){<tr><td>@batch.Code</td><td>@batch.HarvestDate?.ToString("dd/MM/yyyy")</td><td>@batch.ExpiryDate?.ToString("dd/MM/yyyy")</td><td>@batch.RemainingQuantity</td><td>@(batch.IsLegacy ? "Dữ liệu cũ — chưa có ngày" : batch.ExpiryDate < ShopRules.Today ? "Hết hạn — không bán" : ShopRules.NearExpiry(batch.ExpiryDate,ShopRules.Today) ? "Sắp hết hạn (<3 ngày)" : "Còn hạn")</td></tr>}
+</tbody></table></div>
+<form asp-action="AddBatch" method="post" class="commerce-panel"><h2>Nhập lô mới</h2><input type="hidden" name="id" value="@Model.Id"/>
+<label>Mã lô <input name="code" maxlength="60" required/></label><label>Ngày thu hoạch <input type="date" name="harvestDate" required/></label><label>Hạn dùng <input type="date" name="expiryDate" required/></label><label>Số lượng <input type="number" name="quantity" min="1" max="1000000" required/></label><button>Nhập lô</button></form>
+<a asp-action="Edit" asp-route-id="@Model.Id">Quay lại sản phẩm</a>

@@ -1,0 +1,35 @@
+*, *::before, *::after { box-sizing: border-box; }
+html, body { width: 100%; max-width: 100%; overflow-x: clip; }
+img, svg { max-width: 100%; }
+input, select, textarea, button { max-width: 100%; font: inherit; }
+.content table { display: block; width: 100% !important; overflow-x: auto; overscroll-behavior-inline: contain; }
+
+@media (max-width: 800px) {
+  .admin-shell { display: block !important; min-height: 100dvh !important; }
+  .sidebar { width: 100% !important; padding-top: 0 !important; display: flex !important; flex-direction: row !important; align-items: stretch; overflow-x: auto; position: sticky; top: 0; z-index: 1000; scrollbar-width: none; }
+  .sidebar::-webkit-scrollbar { display: none; }
+  .sidebar-brand { display: flex; align-items: center; flex: 0 0 auto; margin: 0 !important; padding: 12px 16px !important; border: 0 !important; font-size: 16px !important; }
+  .sidebar a { display: flex !important; align-items: center; flex: 0 0 auto; padding: 12px 14px !important; white-space: nowrap; font-size: 13px; }
+  .sidebar a:hover, .sidebar a.active { border-left: 0 !important; border-bottom: 3px solid var(--leaf-green); padding-left: 14px !important; }
+  .sidebar form { display: flex; flex: 0 0 auto; margin: 0 !important; }
+  .sidebar form button { width: auto !important; padding: 12px 14px; white-space: nowrap; }
+  .main-container > nav { overflow-x: auto; white-space: nowrap; padding: 9px 14px !important; font-size: 13px; }
+  .header { height: auto !important; min-height: 62px; padding: 12px 16px !important; gap: 12px; }
+  .header h2 { font-size: 1.15rem !important; min-width: 0; overflow-wrap: anywhere; }
+  .user-info { flex: 0 0 auto; font-size: 12px; }
+  .content { padding: 18px 14px !important; overflow-x: hidden !important; }
+  .content table { font-size: 12px; }
+  .content table th, .content table td { padding: 9px !important; white-space: nowrap; }
+  .content form, .content input, .content select, .content textarea { min-width: 0; }
+  .content [style*="grid-template-columns"] { grid-template-columns: minmax(0, 1fr) !important; }
+  .content [style*="display:flex"], .content [style*="display: flex"] { flex-wrap: wrap; }
+  .content [style*="min-width"] { min-width: 0 !important; }
+  .content [style*="width: 500px"], .content [style*="width:500px"], .content [style*="width: 600px"], .content [style*="width:600px"] { width: 100% !important; }
+}
+
+@media (max-width: 420px) {
+  .sidebar-brand { font-size: 0 !important; }
+  .sidebar-brand .app-icon { width: 22px; height: 22px; margin: 0; }
+  .header { align-items: flex-start !important; flex-direction: column; }
+  .content { padding-inline: 10px !important; }
+}

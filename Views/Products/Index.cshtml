@@ -1,0 +1,55 @@
+@model IEnumerable<THAN_NONG_SHOP.Models.Product>
+
+@{
+    ViewData["Title"] = "Danh sách sản phẩm";
+    var categories = ViewBag.Categories as IEnumerable<THAN_NONG_SHOP.Models.Category>;
+    int? selectedCategoryId = ViewBag.CategoryId;
+}
+
+<section style="background: #f7f5ef; border-bottom: 1px solid #eaddca; padding: 42px 20px; text-align: center;">
+    <h1 style="font-family: 'Playfair Display', serif; color: #2e5a1c; font-size: 36px; margin: 0 0 10px;">Nông sản Thần Nông</h1>
+    <p style="color: #718096; margin: 0;">Khám phá những sản phẩm tươi ngon, rõ nguồn gốc từ các vùng trồng uy tín.</p>
+</section>
+
+<div style="max-width: 1200px; margin: 38px auto; padding: 0 20px; display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 30px; align-items: start;">
+    <aside style="background: #fbf9f6; border-radius: 12px; padding: 20px; border: 1px solid #eaddca; position: sticky; top: 85px;">
+        <h2 style="color: #5c4033; font-family: 'Playfair Display', serif; font-size: 20px; margin: 0 0 20px; border-bottom: 2px solid #8b5a2b; padding-bottom: 8px;">Tìm kiếm sản phẩm</h2>
+
+        <form id="product-filters" asp-area="" asp-controller="Products" asp-action="Index" method="get">
+            <label style="display: block; color: #8b5a2b; font-weight: 600; margin-bottom: 6px;">Tên hoặc mô tả sản phẩm</label>
+            <input type="text" name="searchString" value="@ViewBag.SearchString" placeholder="Nhập từ khóa..." style="width: 100%; padding: 9px; border: 1px solid #d2b48c; border-radius: 6px; box-sizing: border-box; margin-bottom: 15px;" />
+
+            <label style="display: block; color: #8b5a2b; font-weight: 600; margin-bottom: 6px;">Danh mục</label>
+            <select name="categoryId" style="width: 100%; padding: 9px; border: 1px solid #d2b48c; border-radius: 6px; margin-bottom: 15px;">
+                <option value="">Tất cả sản phẩm</option>
+                @if (categories != null)
+                {
+                    foreach (var category in categories)
+                    {
+                        <option value="@category.Id" selected="@(selectedCategoryId == category.Id)">@category.Name</option>
+                    }
+                }
+            </select>
+
+            <label style="display: block; color: #8b5a2b; font-weight: 600; margin-bottom: 6px;">Khoảng giá (VNĐ)</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 18px;">
+                <input type="number" name="minPrice" value="@ViewBag.MinPrice" min="0" placeholder="Từ" style="min-width: 0; padding: 8px; border: 1px solid #d2b48c; border-radius: 6px;" />
+                <input type="number" name="maxPrice" value="@ViewBag.MaxPrice" min="0" placeholder="Đến" style="min-width: 0; padding: 8px; border: 1px solid #d2b48c; border-radius: 6px;" />
+            </div>
+
+            <button type="submit" style="width: 100%; background: #2e5a1c; color: #fff; border: 0; padding: 10px; border-radius: 6px; font-weight: 700; cursor: pointer;">Áp dụng</button>
+            <a asp-area="" asp-controller="Products" asp-action="Index" style="display: block; margin-top: 10px; color: #718096; text-align: center; text-decoration: none; font-size: 14px;">Xóa bộ lọc</a>
+        </form>
+    </aside>
+
+    <main id="product-results" aria-live="polite">@await Html.PartialAsync("_Results",Model)</main>
+</div>
+
+<style>
+    @@media (max-width: 760px) {
+        div[style*="grid-template-columns: 250px"] { grid-template-columns: 1fr !important; }
+        aside[style*="position: sticky"] { position: static !important; }
+    }
+</style>
+
+@section Scripts {<script src="~/js/product-filters.js" asp-append-version="true"></script>}
