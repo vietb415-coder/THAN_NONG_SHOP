@@ -14,7 +14,7 @@
   const previous = (() => { try { return JSON.parse(localStorage.getItem(storageKey)); } catch { return null; } })();
   if (page.dataset.authenticated === "true" && previous?.date === today) {
     spinButton.disabled = true;
-    status.innerHTML = `Hôm nay bạn đã nhận <b>${previous.title}</b>`;
+    status.textContent = `Hôm nay bạn đã nhận ${previous.title}`;
   }
 
   function showReward(prize) {
@@ -61,7 +61,7 @@
     spinButton.style.transform = `translate(-50%, -50%) rotate(${-degrees}deg)`;
     window.setTimeout(() => {
       localStorage.setItem(storageKey, JSON.stringify({ date: today, ...prize }));
-      status.innerHTML = `Chúc mừng! Bạn nhận được <b>${prize.title}</b>`;
+      status.textContent = `Chúc mừng! Bạn nhận được ${prize.title}`;
       spinning = false;
       showReward(prize);
     }, 4600);

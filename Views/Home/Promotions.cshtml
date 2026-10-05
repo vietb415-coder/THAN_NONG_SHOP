@@ -1,4 +1,5 @@
 @{
+    var campaignEnded = PromotionCatalog.HasCampaignEnded();
     ViewData["Title"] = "Khuyến mãi & Vòng quay may mắn";
 }
 
@@ -8,6 +9,7 @@
      data-spin-url="@Url.Action("SpinPromotion", "Home")"
      data-claim-url="@Url.Action("ClaimPromotion", "Home")"
      data-login-url="@Url.Action("Login", "Account", new { returnUrl = Url.Action("Promotions", "Home") })">
+    @if (campaignEnded) { <p role="status" class="alert alert-info">Chương trình đã kết thúc ngày 30/09/2026. Hiện không nhận mã hoặc quay thưởng mới.</p> }
     <section class="promotion-hero">
         <div class="promotion-hero__glow promotion-hero__glow--one"></div>
         <div class="promotion-hero__glow promotion-hero__glow--two"></div>
@@ -48,7 +50,7 @@
                 <div class="wheel-label" style="--i:5"><span>Mật ong<br><b>0đ</b></span></div>
                 <div class="wheel-label" style="--i:6"><span>Giảm<br><b>50K</b></span></div>
                 <div class="wheel-label" style="--i:7"><span>Giỏ quà<br><b>1 TRIỆU</b></span></div>
-                <button class="wheel-spin" id="spinButton" type="button" disabled="@(User.Identity?.IsAuthenticated != true)"><span>QUAY</span><small>NGAY</small></button>
+                <button class="wheel-spin" id="spinButton" type="button" disabled="@(campaignEnded || User.Identity?.IsAuthenticated != true)"><span>QUAY</span><small>NGAY</small></button>
             </div>
             @if (User.Identity?.IsAuthenticated == true)
             {
@@ -96,9 +98,9 @@
             <p>Sao chép mã và nhập ở bước thanh toán. Số lượng có hạn mỗi ngày.</p>
         </div>
         <div class="voucher-grid">
-            <article class="voucher-card"><div class="voucher-card__value"><small>GIẢM</small><b>15%</b></div><div class="voucher-card__body"><span>Đơn từ 299K</span><code>Mã dành riêng</code><small>HSD: 30/09/2026</small></div><button type="button" data-claim-code="THANNONG15">Nhận mã</button></article>
-            <article class="voucher-card"><div class="voucher-card__value"><small>GIẢM</small><b>50K</b></div><div class="voucher-card__body"><span>Đơn từ 499K</span><code>Mã dành riêng</code><small>HSD: 30/09/2026</small></div><button type="button" data-claim-code="MUAVANG50">Nhận mã</button></article>
-            <article class="voucher-card"><div class="voucher-card__value"><small>MIỄN</small><b>SHIP</b></div><div class="voucher-card__body"><span>Đơn từ 199K</span><code>Mã dành riêng</code><small>HSD: 30/09/2026</small></div><button type="button" data-claim-code="FREESHIP">Nhận mã</button></article>
+            <article class="voucher-card"><div class="voucher-card__value"><small>GIẢM</small><b>15%</b></div><div class="voucher-card__body"><span>Đơn từ 299K</span><code>Mã dành riêng</code><small>HSD: 30/09/2026</small></div><button type="button" disabled="@campaignEnded" data-claim-code="THANNONG15">Nhận mã</button></article>
+            <article class="voucher-card"><div class="voucher-card__value"><small>GIẢM</small><b>50K</b></div><div class="voucher-card__body"><span>Đơn từ 499K</span><code>Mã dành riêng</code><small>HSD: 30/09/2026</small></div><button type="button" disabled="@campaignEnded" data-claim-code="MUAVANG50">Nhận mã</button></article>
+            <article class="voucher-card"><div class="voucher-card__value"><small>MIỄN</small><b>SHIP</b></div><div class="voucher-card__body"><span>Đơn từ 199K</span><code>Mã dành riêng</code><small>HSD: 30/09/2026</small></div><button type="button" disabled="@campaignEnded" data-claim-code="FREESHIP">Nhận mã</button></article>
         </div>
     </section>
 </div>

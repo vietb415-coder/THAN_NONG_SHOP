@@ -98,6 +98,11 @@ namespace THAN_NONG_SHOP.Controllers
                 return RedirectToAction(nameof(Profile));
             }
             var changedEmail = !string.Equals(account.Email, email, StringComparison.OrdinalIgnoreCase);
+            if (changedEmail && !_email.CanConfirm)
+            {
+                TempData["ProfileError"] = EmailConfiguration.UnavailableMessage;
+                return RedirectToAction(nameof(Profile));
+            }
             account.Fullname = fullName; account.Email = email; account.Phone = phoneNumber;
             if (changedEmail) { account.EmailConfirmed = false; _email.Confirmation(account); }
             try { await _context.SaveChangesAsync(); }
@@ -326,6 +331,12 @@ namespace THAN_NONG_SHOP.Controllers
                 return View();
             }
 
+            if (!_email.CanConfirm)
+            {
+                ModelState.AddModelError("", EmailConfiguration.UnavailableMessage);
+                ViewData["ReturnUrl"] = returnUrl;
+                return View();
+            }
             var newUser = new Models.user
             {
                 UserName = username,
@@ -345,7 +356,7 @@ namespace THAN_NONG_SHOP.Controllers
             _email.Confirmation(newUser);
             try { await _context.SaveChangesAsync(); }
             catch (DbUpdateException) { ModelState.AddModelError("email", "Tên đăng nhập, Email hoặc Số điện thoại đã được đăng ký."); return View(); }
-            TempData["AccountMessage"]="Đã tạo tài khoản. Vui lòng mở email xác nhận để kích hoạt trước khi đăng nhập.";
+            TempData["AccountMessage"]="Đã tạo tài khoản và đưa thư xác nhận vào hàng đợi. Vui lòng kiểm tra hộp thư và thư rác để kích hoạt trước khi đăng nhập.";
             return RedirectToAction("Login", new { returnUrl });
         }
 
@@ -364,11 +375,16 @@ namespace THAN_NONG_SHOP.Controllers
         [HttpPost, ValidateAntiForgeryToken, EnableRateLimiting("account")]
         public async Task<IActionResult> ResendConfirmation(string email)
         {
+            if (!_email.CanConfirm)
+            {
+                TempData["AccountMessage"] = EmailConfiguration.UnavailableMessage;
+                return RedirectToAction(nameof(Login));
+            }
             var normalized = ShopRules.NormalizeEmail(email ?? "");
             var account = await _context.Users.FirstOrDefaultAsync(u => u.NormalizedEmail == normalized && !u.EmailConfirmed);
             if (account != null && (account.ConfirmationExpiresAt == null || account.ConfirmationExpiresAt < DateTime.UtcNow.AddHours(24).AddMinutes(-5)))
             { _email.Confirmation(account); await _context.SaveChangesAsync(); }
-            TempData["AccountMessage"]="Nếu email có tài khoản chưa kích hoạt, liên kết xác nhận sẽ được gửi. Vui lòng kiểm tra hộp thư.";
+            TempData["AccountMessage"]="Nếu email có tài khoản chưa kích hoạt và đã qua 5 phút từ yêu cầu trước, thư sẽ được đưa vào hàng đợi. Vui lòng kiểm tra hộp thư và thư rác.";
             return RedirectToAction(nameof(Login));
         }
         [Authorize(Roles="User"), HttpPost, ValidateAntiForgeryToken]

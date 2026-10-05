@@ -10,9 +10,12 @@ public sealed record PromotionResult(
 
 public static class PromotionCatalog
 {
+    public static readonly DateTimeOffset CampaignEnd = new(2026, 10, 1, 0, 0, 0, TimeSpan.FromHours(7));
+    public static bool HasCampaignEnded(DateTimeOffset? now = null) => (now ?? DateTimeOffset.UtcNow) >= CampaignEnd;
+
     public const decimal StandardShippingFee = 30_000m;
 
-    public static PromotionResult Calculate(string? rawCode, decimal subtotal, decimal? shippingFee = null)
+    public static PromotionResult Calculate(string? rawCode, decimal subtotal, decimal? shippingFee = null, DateTimeOffset? now = null)
     {
         var code = (rawCode ?? string.Empty).Trim().ToUpperInvariant();
         var shipping = subtotal > 0 ? shippingFee ?? StandardShippingFee : 0m;
@@ -70,8 +73,7 @@ public static class PromotionCatalog
                 return new(false, code, "Mã không tồn tại hoặc không dùng để giảm tiền tại bước thanh toán.", 0, shipping, totalBeforeDiscount);
         }
 
-        var vietnamToday = DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(7)).Date;
-        if (vietnamToday > new DateTime(2026, 9, 30))
+        if (HasCampaignEnded(now))
         {
             return new(false, code, "Mã khuyến mãi đã hết hạn sử dụng.", 0, shipping, totalBeforeDiscount);
         }

@@ -55,6 +55,8 @@ namespace THAN_NONG_SHOP.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SpinPromotion(CancellationToken cancellationToken)
         {
+            if (PromotionCatalog.HasCampaignEnded())
+                return BadRequest(new { message = "Chương trình đã kết thúc ngày 30/09/2026. Không thể cấp voucher mới." });
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.Identity?.Name ?? "member";
             var today = DateOnly.FromDateTime(DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(7)).DateTime);
             await using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken);
@@ -85,6 +87,8 @@ namespace THAN_NONG_SHOP.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ClaimPromotion(string templateCode, CancellationToken cancellationToken)
         {
+            if (PromotionCatalog.HasCampaignEnded())
+                return BadRequest(new { message = "Chương trình đã kết thúc ngày 30/09/2026. Không thể cấp voucher mới." });
             templateCode = (templateCode ?? string.Empty).Trim().ToUpperInvariant();
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
             await using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken);
@@ -126,7 +130,7 @@ namespace THAN_NONG_SHOP.Controllers
                 TemplateCode = reward.TemplateCode,
                 RewardId = reward.Id,
                 CreatedAt = DateTime.UtcNow,
-                ExpiresAt = new DateTime(2026, 9, 30, 16, 59, 59, DateTimeKind.Utc)
+                ExpiresAt = PromotionCatalog.CampaignEnd.UtcDateTime.AddSeconds(-1)
             };
             _context.PromotionVouchers.Add(voucher);
             await _context.SaveChangesAsync(cancellationToken);

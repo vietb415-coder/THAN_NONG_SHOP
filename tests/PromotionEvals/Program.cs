@@ -19,7 +19,7 @@ var cases = new[]
 var failures = 0;
 foreach (var test in cases)
 {
-    var actual = PromotionCatalog.Calculate(test.Code, test.Subtotal);
+    var actual = PromotionCatalog.Calculate(test.Code, test.Subtotal, now: new DateTimeOffset(2026, 9, 15, 12, 0, 0, TimeSpan.FromHours(7)));
     var passed = actual.IsValid == test.Valid && actual.DiscountAmount == test.Discount && actual.FinalTotal == test.Total;
     Console.WriteLine($"{(passed ? "PASS" : "FAIL")}  {test.Name}: giảm {actual.DiscountAmount:N0}đ, tổng {actual.FinalTotal:N0}đ");
     if (!passed) failures++;
@@ -49,3 +49,10 @@ configuredReward.IsActive=false;
 if (PromotionCatalog.Calculate(configuredReward, 500_000m).IsValid)
     throw new Exception("Phần thưởng đã tắt vẫn được áp dụng.");
 Console.WriteLine("PASS  Cấu hình động: phần trăm, mức tối đa và trạng thái bật/tắt.");
+
+var beforeExpiry = PromotionCatalog.CampaignEnd.AddTicks(-1);
+if (!PromotionCatalog.Calculate("THANNONG15", 300_000m, now: beforeExpiry).IsValid)
+    throw new Exception("Voucher must remain valid before campaign end.");
+if (PromotionCatalog.Calculate("THANNONG15", 300_000m, now: PromotionCatalog.CampaignEnd).IsValid)
+    throw new Exception("Voucher must expire at campaign end in Vietnam timezone.");
+Console.WriteLine("PASS  Expiry boundary in Vietnam timezone, independent of test execution date.");

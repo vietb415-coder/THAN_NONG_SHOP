@@ -1,0 +1,22 @@
+@model THAN_NONG_SHOP.Services.EmailDiagnosticsModel
+@{ ViewData["Title"] = "Chẩn đoán email"; }
+<section class="container" style="max-width:900px;padding:24px">
+<h1>Chẩn đoán email</h1>
+<p>Môi trường: <strong>@Model.EnvironmentName</strong></p>
+<p>Máy chủ SMTP: @Model.Host — Người gửi: @Model.Sender</p>
+@if (Model.Errors.Count > 0)
+{
+    <div role="alert"><h2>Cần sửa cấu hình</h2><ul>@foreach(var error in Model.Errors){<li>@error</li>}</ul></div>
+}
+else
+{
+    <p>Cấu hình có đủ thông tin. Đây chưa phải kết quả xác thực mật khẩu hoặc gửi thử SMTP.</p>
+}
+<table class="table"><thead><tr><th>Đang chờ</th><th>Trong đó đang thử lại</th><th>Đã xử lý thành công</th></tr></thead>
+<tbody><tr><td>@Model.Pending</td><td>@Model.Retrying</td><td>@Model.Sent</td></tr></tbody></table>
+@if(Model.Worker is { } worker){<p>Lần cập nhật: @worker.CheckedAtUtc.ToString("yyyy-MM-dd HH:mm:ss") UTC</p><p role="status">@worker.Message</p>}
+else{<p>Chưa có kết quả xử lý thư trong lần chạy ứng dụng này.</p>}
+<p>Trạng thái xử lý gần nhất được lưu trong bộ nhớ và sẽ mất khi ứng dụng khởi động lại. Nhấn tải lại trang để cập nhật.</p>
+<p>Sửa cấu hình trên host, khởi động lại website rồi yêu cầu gửi lại từ trang đăng nhập. Không chia sẻ mật khẩu hoặc liên kết xác nhận.</p>
+<a asp-area="Admin" asp-controller="Email" asp-action="Index">Tải lại</a>
+</section>

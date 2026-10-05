@@ -29,6 +29,7 @@ builder.Services.AddScoped<CartState>();
 builder.Services.AddScoped<InventoryService>();
 builder.Services.AddScoped<OrderLifecycle>();
 builder.Services.AddScoped<EmailDelivery>();
+builder.Services.AddSingleton<EmailWorkerStatus>();
 builder.Services.AddScoped<PaymentGateways>();
 builder.Services.AddHostedService<CommerceMaintenance>();
 builder.Services.AddHostedService<EmailOutboxWorker>();
