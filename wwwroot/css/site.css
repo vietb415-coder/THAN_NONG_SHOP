@@ -21,7 +21,9 @@ body {
   margin-bottom: 60px;
 }
 
-.ai-chat { position: fixed; right: 24px; bottom: 24px; z-index: 3000; font-family: Inter, sans-serif; }
+/* Reserve a bottom strip so the closed chat never covers page controls. */
+.site-viewport { height:calc(100vh - 80px - env(safe-area-inset-bottom,0px)); height:calc(100dvh - 80px - env(safe-area-inset-bottom,0px)); overflow-y:auto; overflow-x:hidden; }
+.ai-chat { position: fixed; right: 24px; bottom:calc(16px + env(safe-area-inset-bottom,0px)); z-index: 1000; font-family: Inter, sans-serif; }
 .ai-chat__launcher { border: 0; border-radius: 999px; padding: 8px 17px 8px 8px; color: #fff; background: linear-gradient(135deg,#214913,#4c832e); box-shadow:0 10px 30px rgba(46,90,28,.32),inset 0 1px rgba(255,255,255,.18); font-weight: 700; cursor: pointer; display:flex; gap:9px; align-items:center; }
 .ai-chat__launcher:hover { transform: translateY(-2px); }
 .ai-chat__logo{display:grid;place-items:center;width:38px;height:38px;flex:0 0 38px}.ai-chat__logo svg{display:block;width:100%;height:100%;filter:drop-shadow(0 3px 5px rgba(16,45,11,.22))}.ai-logo__halo{fill:#fff}.ai-logo__leaf{fill:#8ed35f}.ai-logo__stem{fill:none;stroke:#4f982e;stroke-width:2.2;stroke-linecap:round}.ai-logo__face{fill:#eaf7e3;stroke:#397523;stroke-width:1.5}.ai-logo__eye{fill:#28591a}.ai-logo__smile{fill:none;stroke:#28591a;stroke-width:1.8;stroke-linecap:round}.ai-logo__spark{fill:#f7c948}.ai-chat__identity{display:flex;align-items:center;gap:10px}.ai-chat__logo--header{width:40px;height:40px;flex-basis:40px}.ai-chat__logo--header .ai-logo__halo{fill:#f7fff3}
@@ -47,7 +49,7 @@ body {
 .ai-social--zalo { color:#0068ff!important;background:#edf5ff!important; }
 .ai-social--discord { color:#5865f2!important;background:#f0f1ff!important; }
 .ai-chat__notice { margin:0 12px 9px;text-align:center;color:#84917f;font-size:10px; }
-@media(max-width:520px){.ai-chat{right:16px;bottom:16px}.ai-chat__panel{position:fixed;inset:12px;width:auto;height:auto}.ai-chat__launcher-text{display:none}.ai-chat__launcher{width:56px;height:56px;padding:7px;justify-content:center}.ai-chat__logo{width:42px;height:42px;flex-basis:42px}}
+@media(max-width:520px){.ai-chat{right:16px}.ai-chat__panel{position:fixed;inset:12px;width:auto;height:auto}.ai-chat__launcher-text{display:none}.ai-chat__launcher{width:56px;height:56px;padding:7px;justify-content:center}.ai-chat__logo{width:42px;height:42px;flex-basis:42px}}
 
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
   color: var(--bs-secondary-color);

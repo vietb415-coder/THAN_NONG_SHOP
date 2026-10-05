@@ -102,7 +102,7 @@ public class CartController(THAN_NONG_SHOP_DbContext db,CartState cart,Inventory
         if(checkoutToken==null || checkoutToken!=HttpContext.Session.GetString("CheckoutToken")){TempData["CheckoutError"]="Phiên thanh toán đã thay đổi. Vui lòng kiểm tra lại đơn.";return RedirectToAction(nameof(Checkout));}
         if(customerName.Length is <2 or >100 || shippingAddress.Length is <5 or >500 || !Regex.IsMatch(shippingPhone,@"^0[0-9]{9}$")){
             TempData["CheckoutError"]="Vui lòng nhập đủ tên, địa chỉ hợp lệ và số điện thoại 10 chữ số.";return RedirectToAction(nameof(Checkout));}
-        if(!ShippingMethods.Names.ContainsKey(shippingMethod??"") || paymentMethod is not ("cod" or "payos" or "momo" or "vnpay"))return BadRequest("Phương thức không hợp lệ.");
+        if(!ShippingMethods.Names.ContainsKey(shippingMethod??"") || paymentMethod is not ("cod" or "payos" or "vnpay"))return BadRequest("Phương thức không hợp lệ.");
         if(!gateways.IsConfigured(paymentMethod)){TempData["CheckoutError"]="Cổng thanh toán chưa được cấu hình. Vui lòng chọn COD hoặc liên hệ cửa hàng.";return RedirectToAction(nameof(Checkout));}
         HttpContext.Session.SetString("ShippingMethod",shippingMethod);var items=await cart.ProductsAsync(ct);if(items.Count==0){TempData["CartError"]="Giỏ hàng rỗng. Vui lòng thêm sản phẩm trước khi đặt hàng.";return RedirectToAction(nameof(Index));}
         Oder order;

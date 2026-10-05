@@ -15,7 +15,6 @@ public sealed class PaymentGateways(IConfiguration config,IHttpClientFactory cli
     public string Setting(string key,string? environment=null) => !string.IsNullOrWhiteSpace(config[key]) ? config[key]! : environment==null?"":Environment.GetEnvironmentVariable(environment)??"";
     public bool IsConfigured(string method)=>method switch {
         "cod"=>true,"payos"=>new[]{Setting("PayOS:ClientId","PAYOS_CLIENT_ID"),Setting("PayOS:ApiKey","PAYOS_API_KEY"),Setting("PayOS:ChecksumKey","PAYOS_CHECKSUM_KEY")}.All(x=>!string.IsNullOrWhiteSpace(x)),
-        "momo"=>new[]{"PartnerCode","AccessKey","SecretKey"}.All(k=>!string.IsNullOrWhiteSpace(Setting("MoMo:"+k))),
         "vnpay"=>new[]{"TmnCode","HashSecret"}.All(k=>!string.IsNullOrWhiteSpace(Setting("VNPay:"+k))),_=>false};
     public PayOSClient PayOS()=>new(Setting("PayOS:ClientId","PAYOS_CLIENT_ID"),Setting("PayOS:ApiKey","PAYOS_API_KEY"),Setting("PayOS:ChecksumKey","PAYOS_CHECKSUM_KEY"));
     public static string Hmac(string data,string key,bool sha512=false)=>Convert.ToHexString(sha512?HMACSHA512.HashData(Encoding.UTF8.GetBytes(key),Encoding.UTF8.GetBytes(data)):HMACSHA256.HashData(Encoding.UTF8.GetBytes(key),Encoding.UTF8.GetBytes(data))).ToLowerInvariant();
@@ -24,12 +23,6 @@ public sealed class PaymentGateways(IConfiguration config,IHttpClientFactory cli
     public static string VnpData(IEnumerable<KeyValuePair<string,string>> values)=>string.Join("&",values.Where(k=>k.Key.StartsWith("vnp_",StringComparison.Ordinal)&&k.Key is not ("vnp_SecureHash" or "vnp_SecureHashType")&&!string.IsNullOrEmpty(k.Value)).OrderBy(k=>k.Key,StringComparer.Ordinal).Select(k=>$"{WebUtility.UrlEncode(k.Key)}={WebUtility.UrlEncode(k.Value)}"));
     public bool VerifyVnp(Dictionary<string,string> p)=>IsConfigured("vnpay") && p.GetValueOrDefault("vnp_TmnCode")==Setting("VNPay:TmnCode") && Matches(p.GetValueOrDefault("vnp_SecureHash")??"",Hmac(VnpData(p),Setting("VNPay:HashSecret"),true));
     public static string Value(JsonElement p,string name)=>p.TryGetProperty(name,out var v)?v.ToString():"";
-    public bool VerifyMomo(JsonElement p)
-    {
-        var keys=new[]{"amount","extraData","message","orderId","orderInfo","orderType","partnerCode","payType","requestId","responseTime","resultCode","transId"};
-        var data="accessKey="+Setting("MoMo:AccessKey")+"&"+string.Join("&",keys.Select(k=>$"{k}={Value(p,k)}"));
-        return IsConfigured("momo") && Value(p,"partnerCode")==Setting("MoMo:PartnerCode") && Matches(Value(p,"signature"),Hmac(data,Setting("MoMo:SecretKey")));
-    }
     public async Task<string> CreateAsync(Oder o,string ip,CancellationToken ct)
     {
         var site=Setting("Site:PublicBaseUrl").TrimEnd('/');if(!Uri.TryCreate(site,UriKind.Absolute,out _))throw new InvalidOperationException("Thiếu địa chỉ website.");
@@ -44,15 +37,6 @@ public sealed class PaymentGateways(IConfiguration config,IHttpClientFactory cli
             var p=new Dictionary<string,string> { ["vnp_Version"]="2.1.0",["vnp_Command"]="pay",["vnp_TmnCode"]=Setting("VNPay:TmnCode"),["vnp_Amount"]=(amount*100).ToString(CultureInfo.InvariantCulture),["vnp_CurrCode"]="VND",["vnp_TxnRef"]=o.PaymentReference!,["vnp_OrderInfo"]=$"Thanh toan don {o.Id}",["vnp_OrderType"]="other",["vnp_Locale"]="vn",["vnp_ReturnUrl"]=site+"/Payment/VNPayReturn",["vnp_IpAddr"]=ip,["vnp_CreateDate"]=now.ToString("yyyyMMddHHmmss"),["vnp_ExpireDate"]=now.AddMinutes(15).ToString("yyyyMMddHHmmss") };
             var query=VnpData(p);return (config["VNPay:PaymentUrl"]??"https://sandbox.vnpayment.vn/paymentv2/vpcpay.html")+"?"+query+"&vnp_SecureHash="+Hmac(query,Setting("VNPay:HashSecret"),true);
         }
-        if(o.PaymentMethod=="momo") {
-            if(amount is <1000 or >50000000)throw new InvalidOperationException("MoMo hỗ trợ đơn từ 1.000đ tới 50.000.000đ.");
-            var partner=Setting("MoMo:PartnerCode");var orderInfo=$"Thanh toan don {o.Id}";var redirect=site+"/Payment/MoMoReturn";var ipn=site+"/Payment/MoMoIpn";var reference=o.PaymentReference!;
-            var raw=$"accessKey={Setting("MoMo:AccessKey")}&amount={amount}&extraData=&ipnUrl={ipn}&orderId={reference}&orderInfo={orderInfo}&partnerCode={partner}&redirectUrl={redirect}&requestId={reference}&requestType=captureWallet";
-            var result=await PostAsync(config["MoMo:CreateUrl"]??"https://test-payment.momo.vn/v2/gateway/api/create",new {partnerCode=partner,requestId=reference,orderId=reference,amount,orderInfo,redirectUrl=redirect,ipnUrl=ipn,requestType="captureWallet",extraData="",autoCapture=true,lang="vi",signature=Hmac(raw,Setting("MoMo:SecretKey"))},ct);
-            if(Value(result,"resultCode")!="0" || Value(result,"orderId")!=reference)throw new InvalidOperationException("MoMo không tạo được liên kết thanh toán.");
-            var url=Value(result,"payUrl");if(!Uri.TryCreate(url,UriKind.Absolute,out var uri)||uri.Scheme!="https"||!(uri.Host=="momo.vn"||uri.Host.EndsWith(".momo.vn",StringComparison.OrdinalIgnoreCase)))throw new InvalidOperationException("Liên kết MoMo không hợp lệ.");
-            return url;
-        }
         throw new InvalidOperationException("Phương thức thanh toán không được hỗ trợ.");
     }
     private async Task<JsonElement> PostAsync(string url,object body,CancellationToken ct)
@@ -66,13 +50,6 @@ public sealed class PaymentGateways(IConfiguration config,IHttpClientFactory cli
         if(o.PaymentMethod=="payos") {
             var result=await PayOS().PaymentRequests.GetAsync(o.PayOSOrderCode!.Value);
             return new(true,result.Status.ToString().Equals("PAID",StringComparison.OrdinalIgnoreCase),result.Amount);
-        }
-        if(o.PaymentMethod=="momo") {
-            var request=Guid.NewGuid().ToString("N");var partner=Setting("MoMo:PartnerCode");
-            var raw=$"accessKey={Setting("MoMo:AccessKey")}&orderId={o.PaymentReference}&partnerCode={partner}&requestId={request}";
-            var r=await PostAsync(config["MoMo:QueryUrl"]??"https://test-payment.momo.vn/v2/gateway/api/query",new {partnerCode=partner,requestId=request,orderId=o.PaymentReference,lang="vi",signature=Hmac(raw,Setting("MoMo:SecretKey"))},ct);
-            var valid=Value(r,"partnerCode")==partner && Value(r,"orderId")==o.PaymentReference && Value(r,"requestId")==request;
-            return new(valid,valid && Value(r,"resultCode")=="0",decimal.TryParse(Value(r,"amount"),out var amount)?amount:0);
         }
         if(o.PaymentMethod=="vnpay") {
             var request=Guid.NewGuid().ToString("N");var now=DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(7)).ToString("yyyyMMddHHmmss");

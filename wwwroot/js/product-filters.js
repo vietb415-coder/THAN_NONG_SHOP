@@ -4,6 +4,13 @@
   if (!form || !results) return;
   let pending;
   async function update(push = true) {
+    clearTimeout(typing);
+    if (!form.reportValidity()) return;
+    const min = form.elements.minPrice;
+    const max = form.elements.maxPrice;
+    if (min.value !== '' && max.value !== '' && Number(min.value) > Number(max.value)) {
+      [min.value, max.value] = [max.value, min.value];
+    }
     pending?.abort(); pending = new AbortController();
     const url = new URL(form.action); url.search = new URLSearchParams(new FormData(form));
     results.setAttribute('aria-busy', 'true');

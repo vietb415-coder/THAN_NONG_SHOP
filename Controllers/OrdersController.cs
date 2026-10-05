@@ -21,9 +21,11 @@ public sealed class OrdersController(THAN_NONG_SHOP_DbContext db,OrderLifecycle 
         await using var tx=await db.Database.BeginTransactionAsync(IsolationLevel.Serializable,ct);
         var o=await db.Oders.FirstOrDefaultAsync(o=>o.Id==id && o.UserName==User.FindFirstValue(ClaimTypes.NameIdentifier),ct);
         if(o==null)return NotFound();
-        if(o.Status!=OrderStatus.Pending) {TempData["OrderMessage"]="Chỉ có thể tự hủy đơn đang chờ xác nhận. Vui lòng liên hệ cửa hàng để được hỗ trợ.";return RedirectToAction(nameof(Index));}
-        await lifecycle.CancelAsync(o,"Khách hàng hủy đơn đang chờ xác nhận",ct);
+        var lines=await db.OderDetails.Where(d=>d.OderId==o.Id).Select(d=>d.FulfillmentStatus).ToListAsync(ct);
+        if(!OrderStatus.CanCustomerCancel(o.Status,lines)) {TempData["OrderMessage"]="Chỉ có thể tự hủy đơn chờ xác nhận hoặc đang đóng gói khi chưa có hàng được giao cho vận chuyển. Vui lòng liên hệ cửa hàng để được hỗ trợ.";return RedirectToAction(nameof(Index));}
+        await lifecycle.CancelAsync(o,"Khách hàng hủy đơn trước khi giao cho vận chuyển",ct);
+        if(o.PaymentMethod!="cod")o.PaymentNeedsReview=true;
         await db.SaveChangesAsync(ct);await tx.CommitAsync(ct);
-        TempData["OrderMessage"]="Đã hủy đơn và hoàn lại tồn kho.";return RedirectToAction(nameof(Index));
+        TempData["OrderMessage"]=o.PaymentNeedsReview?"Đã hủy đơn và hoàn lại tồn kho. Cửa hàng sẽ đối soát khoản thanh toán để xử lý hoàn tiền.":"Đã hủy đơn và hoàn lại tồn kho.";return RedirectToAction(nameof(Index));
     }
 }

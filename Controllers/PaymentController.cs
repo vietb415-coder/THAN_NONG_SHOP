@@ -1,6 +1,5 @@
 using System.Data;
 using System.Security.Claims;
-using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -18,8 +17,6 @@ public class PaymentController(THAN_NONG_SHOP_DbContext db,PaymentGateways gatew
     [HttpGet]
     public Task<IActionResult> Cancel(long orderCode)=>Result(orderCode,null);
     [HttpGet]
-    public Task<IActionResult> MoMoReturn(string orderId)=>Result(null,orderId);
-    [HttpGet]
     public Task<IActionResult> VNPayReturn(string vnp_TxnRef)=>Result(null,vnp_TxnRef);
     private async Task<IActionResult> Result(long? code,string? reference)
     {
@@ -35,12 +32,6 @@ public class PaymentController(THAN_NONG_SHOP_DbContext db,PaymentGateways gatew
             var verified=await gateways.PayOS().Webhooks.VerifyAsync(body);
             return await RecordAsync("payos",null,verified.OrderCode,verified.Amount,verified.Code=="00",ct)?Ok(new {success=true}):BadRequest();
         } catch(Exception ex){log.LogWarning(ex,"PayOS webhook bị từ chối.");return BadRequest();}
-    }
-    [AllowAnonymous,HttpPost,IgnoreAntiforgeryToken]
-    public async Task<IActionResult> MoMoIpn([FromBody]JsonElement body,CancellationToken ct)
-    {
-        if(!gateways.VerifyMomo(body) || PaymentGateways.Value(body,"requestId")!=PaymentGateways.Value(body,"orderId") || !decimal.TryParse(PaymentGateways.Value(body,"amount"),out var amount))return BadRequest();
-        return await RecordAsync("momo",PaymentGateways.Value(body,"orderId"),null,amount,PaymentGateways.Value(body,"resultCode")=="0",ct)?NoContent():BadRequest();
     }
     [AllowAnonymous,HttpGet]
     public async Task<IActionResult> VNPayIpn(CancellationToken ct)

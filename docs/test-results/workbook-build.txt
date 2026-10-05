@@ -1,0 +1,7 @@
+  THAN_NONG_SHOP -> C:\Users\Administrator\Downloads\THAN_NONG_SHOP-master\THAN_NONG_SHOP-master\bin\Debug\net10.0\THAN_NONG_SHOP.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.63

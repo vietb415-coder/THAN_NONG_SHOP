@@ -1,0 +1,16 @@
+PASS  THANNONG15 đúng ngưỡng: giảm 45,000đ, tổng 285,000đ
+PASS  THANNONG15 dưới ngưỡng: giảm 0đ, tổng 328,999đ
+PASS  THANNONG15 giới hạn giảm: giảm 150,000đ, tổng 1,880,000đ
+PASS  MUAVANG50: giảm 50,000đ, tổng 479,000đ
+PASS  FREESHIP: giảm 30,000đ, tổng 199,000đ
+PASS  LUCKY10: giảm 20,000đ, tổng 210,000đ
+PASS  LUCKY30K: giảm 30,000đ, tổng 299,000đ
+PASS  Mật ong đủ điều kiện: giảm 0đ, tổng 529,000đ
+PASS  Mật ong dưới điều kiện: giảm 0đ, tổng 528,999đ
+PASS  Giỏ quà 500K: giảm 0đ, tổng 130,000đ
+PASS  Giỏ quà đặc biệt: giảm 0đ, tổng 130,000đ
+PASS  Mã không tồn tại: giảm 0đ, tổng 130,000đ
+Hoàn tất: 12/12 kiểm thử đạt.
+PASS  1.000 mã ngẫu nhiên không trùng, băm và chuẩn hóa an toàn.
+PASS  Cấu hình động: phần trăm, mức tối đa và trạng thái bật/tắt.
+PASS  Expiry boundary in Vietnam timezone, independent of test execution date.

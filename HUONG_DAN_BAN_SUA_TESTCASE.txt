@@ -23,8 +23,8 @@ CÁC MỤC ĐỂ KIỂM TRA LẠI
   Các sản phẩm cũ chưa có ngày/chứng nhận sẽ hiện thiếu dữ liệu; cần nhập dữ liệu thật, không gán chứng nhận giả.
 
 CẤU HÌNH NGOÀI SOURCE CẦN HOÀN THIỆN
-- Trong ZIP gốc, khóa PayOS, MoMo, VNPay đang trống. COD chạy được; online cần khóa tài khoản merchant thật.
-- Điền PayOS ClientId/ApiKey/ChecksumKey; MoMo PartnerCode/AccessKey/SecretKey; VNPay TmnCode/HashSecret.
+- Trong ZIP gốc, khóa PayOS, VNPay đang trống. COD chạy được; online cần khóa tài khoản merchant thật.
+- Điền PayOS ClientId/ApiKey/ChecksumKey; VNPay TmnCode/HashSecret.
 - Site:PublicBaseUrl phải đúng địa chỉ đang chạy và webhook/IPN phải được cổng thanh toán cấu hình đúng.
 - Gmail cần SMTP smtp.gmail.com:587, EnableSsl=true, Username và mật khẩu ứng dụng hợp lệ; hosting phải kết nối SMTP được.
 - Voucher: có ô nhập ở Giỏ/Checkout. Chiến dịch cũ kết thúc 30/09/2026 nên mã hết hạn phải bị từ chối; không sửa ngày để biến voucher cũ thành còn hiệu lực.

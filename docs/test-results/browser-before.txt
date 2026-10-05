@@ -1,0 +1,11 @@
+PASS TC_24 changing search updates results without page reload
+PASS TC_23/84 reset restores catalogue and clears filters
+FAIL TC_85 reversed price values corrected in visible inputs
+PASS TC_25/29 guest cart survives browser refresh
+PASS Checkout offers payOS and VNPay without removed provider
+FAIL TC_116 launcher does not cover checkout controls at 390px
+PASS Chat opens at 390px
+PASS Chat closes at 390px
+PASS TC_116 launcher does not cover checkout controls at 1280px
+PASS Chat opens at 1280px
+PASS Chat closes at 1280px

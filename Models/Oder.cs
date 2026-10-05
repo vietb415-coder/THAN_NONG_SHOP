@@ -32,6 +32,8 @@ namespace THAN_NONG_SHOP.Models
             _ => false
         };
         public static IEnumerable<string> Next(string current) => All.Where(next => CanMove(current,next));
+        public static bool CanCustomerCancel(string status,IEnumerable<string> lineStatuses) =>
+            status is Pending or Packing && !lineStatuses.Any(s=>s is Shipping or Completed);
     }
 
     public class Oder

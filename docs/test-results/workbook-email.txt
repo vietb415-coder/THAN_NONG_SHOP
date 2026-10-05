@@ -1,0 +1,37 @@
+PASS Reject placeholder password
+PASS Normalize grouped Gmail app password
+PASS Accept complete Gmail configuration without claiming authentication
+PASS Reject implicit SSL port for Gmail SmtpClient
+PASS Invalid port is reported without throwing
+PASS Reject malformed confirmation base URL
+PASS Reject pickup mode in Production
+PASS Confirmation token matches hash and queued link
+PASS Confirmation token expires after approximately 24 hours
+PASS Worker delivers queued email to local pickup file
+PASS Worker does not resend delivered messages
+PASS SMTP dialogue succeeds with configured EnableSsl=false on local server
+PASS Connection failure schedules retry without marking sent
+PASS Admin status reports delivery failure
+PASS Retry backoff is respected
+PASS Block confirmation without queueing a misleading email
+PASS Registration does not create a locked account when SMTP configuration is missing
+PASS Resend reports unavailable configuration rather than claiming delivery
+PASS Expired campaign cannot issue a voucher
+PASS Expired campaign cannot consume a spin or reward stock
+warn: Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager[35]
+      No XML encryptor configured. Key {e61764eb-0885-423b-836c-47c65077e50d} may be persisted to storage in unencrypted form.
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Testing
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: C:\Users\Administrator\Downloads\THAN_NONG_SHOP-master\THAN_NONG_SHOP-master
+warn: Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware[3]
+      Failed to determine the https port for redirect.
+PASS HTTP render /Account/Login with isolated in-memory database
+PASS HTTP render /Account/Register with isolated in-memory database
+PASS HTTP render /Home/Promotions with isolated in-memory database
+PASS Anonymous visitor cannot read admin email diagnostics
+info: Microsoft.Hosting.Lifetime[0]
+      Application is shutting down...
+Failures: 0

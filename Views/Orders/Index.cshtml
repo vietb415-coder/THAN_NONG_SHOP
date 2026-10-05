@@ -13,7 +13,7 @@
 @if(order.Status==OrderStatus.Completed){<a asp-area="" asp-controller="Products" asp-action="Details" asp-route-id="@line.ProductId" asp-fragment="reviews">Đánh giá sản phẩm</a>}
 </p>}
 @if(order.PaymentNeedsReview){<p role="alert">Thanh toán cần cửa hàng đối soát. Vui lòng liên hệ hỗ trợ, không thanh toán lại.</p>}
-@if(order.Status==OrderStatus.Pending){<form asp-action="Cancel" method="post"><input type="hidden" name="id" value="@order.Id"/><button>Hủy đơn hàng</button></form>}
+@if(OrderStatus.CanCustomerCancel(order.Status,lines.Where(d=>d.OderId==order.Id).Select(d=>d.FulfillmentStatus))){<form asp-action="Cancel" method="post"><input type="hidden" name="id" value="@order.Id"/><button>Hủy đơn hàng</button></form>}
 else if(order.Status==OrderStatus.AwaitingPayment){
 <p>Hạn thanh toán: @(order.PaymentExpiresAt?.AddHours(7).ToString("dd/MM/yyyy HH:mm")) (giờ Việt Nam)</p>
 @if(order.PaymentExpiresAt>DateTime.UtcNow && !string.IsNullOrEmpty(order.PaymentUrl)){<a href="@order.PaymentUrl">Tiếp tục thanh toán</a>}

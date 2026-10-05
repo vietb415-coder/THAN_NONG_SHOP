@@ -175,6 +175,7 @@
         bool isAuthPage = (currentController == "Account" && (currentAction == "Login" || currentAction == "Register"));
     }
 
+    <div class="@(isAuthPage ? "site-auth-content" : "site-viewport")">
     @if (!isAuthPage)
     {
         <header>
@@ -245,6 +246,7 @@
         </footer>
     }
 
+    </div>
     @if (!isAuthPage)
     {
         @Html.AntiForgeryToken()

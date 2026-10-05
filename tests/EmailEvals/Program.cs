@@ -155,6 +155,13 @@ sealed class MemoryTempData : Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataPro
     public void SaveTempData(Microsoft.AspNetCore.Http.HttpContext context, IDictionary<string,object> values) { }
 }
 
+sealed class MemoryKeys:Microsoft.AspNetCore.DataProtection.Repositories.IXmlRepository
+{
+    private readonly List<System.Xml.Linq.XElement> keys=[];
+    public IReadOnlyCollection<System.Xml.Linq.XElement> GetAllElements(){lock(keys)return keys.Select(k=>new System.Xml.Linq.XElement(k)).ToArray();}
+    public void StoreElement(System.Xml.Linq.XElement element,string friendlyName){lock(keys)keys.Add(new System.Xml.Linq.XElement(element));}
+}
+
 sealed class TestWebFactory : Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<EmailDelivery>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -166,6 +173,8 @@ sealed class TestWebFactory : Microsoft.AspNetCore.Mvc.Testing.WebApplicationFac
         builder.UseContentRoot(root?.FullName ?? throw new InvalidOperationException("Run from the source folder."));
         builder.ConfigureServices(services =>
         {
+            services.AddSingleton<Microsoft.AspNetCore.DataProtection.IDataProtectionProvider>(new Microsoft.AspNetCore.DataProtection.EphemeralDataProtectionProvider());
+            services.Configure<Microsoft.AspNetCore.DataProtection.KeyManagement.KeyManagementOptions>(o=>{o.XmlRepository=new MemoryKeys();o.XmlEncryptor=null;});
             foreach(var descriptor in services.Where(d => d.ServiceType == typeof(THAN_NONG_SHOP_DbContext)
                 || d.ServiceType == typeof(DbContextOptions<THAN_NONG_SHOP_DbContext>)
                 || d.ServiceType == typeof(Microsoft.EntityFrameworkCore.Infrastructure.IDbContextOptionsConfiguration<THAN_NONG_SHOP_DbContext>)

@@ -1,0 +1,21 @@
+PASS TC_24 changing search updates results without page reload
+PASS TC_23/84 reset restores catalogue and clears filters
+PASS TC_85 reversed price values corrected in visible inputs
+PASS TC_25/29 guest cart survives browser refresh
+PASS Checkout offers payOS and VNPay without removed provider
+PASS TC_116 launcher does not cover checkout controls at 390px
+PASS Chat opens at 390px
+PASS Chat closes at 390px
+PASS TC_116 launcher does not cover checkout controls at 1280px
+PASS Chat opens at 1280px
+PASS Chat closes at 1280px
+PASS TC_05/07/107 phone login shows full name in header
+PASS TC_30/88 guest cart merges into customer cart with quantity controls
+PASS TC_91 checkout prefills customer information
+PASS TC_93 COD checkout shows order confirmation
+PASS TC_93 successful checkout clears customer cart
+PASS TC_04 signed-in customer cannot open registration
+PASS TC_08 customer cannot access admin products
+PASS TC_109 logout clears displayed identity
+PASS No browser JavaScript errors during tested flows
+Failures: 0. Browser uses isolated test data and blocks external requests.

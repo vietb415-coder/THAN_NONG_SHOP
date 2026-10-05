@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
 using THAN_NONG_SHOP.Data;
 using THAN_NONG_SHOP.Models;
 using THAN_NONG_SHOP.Services;
@@ -67,6 +68,7 @@ Check(ShopRules.NearExpiry(today.AddDays(2),today) && !ShopRules.NearExpiry(toda
 foreach(var pair in new[]{("day",1),("week",7),("month",31),("quarter",92)}){
  var (start,end)=ShopRules.Period(pair.Item1,new DateTime(2026,10,5));Check((end-start).Days==pair.Item2,$"Report period {pair.Item1}");}
 Check(ShippingMethods.Fee("standard")==30000 && ShippingMethods.Fee("express")==50000 && ShippingMethods.Fee("cold")==70000,"TC_70/71/72 shipping fees");
+db.Categories.Add(new Category{Id=1,Name="Vegetables",Description="Fresh vegetables"});await db.SaveChangesAsync();
 var product=new Product{Name="Fresh tomato",Description="fresh produce",price=100000,categoryId=1,stockQuantity=5};
 product.Batches.Add(new ProductBatch{Code="B-1",ExpiryDate=today.AddDays(2),HarvestDate=today,RemainingQuantity=5});db.Products.Add(product);await db.SaveChangesAsync();
 var cart=new CartState(db,new HttpContextAccessor{HttpContext=http},protect);
@@ -104,6 +106,134 @@ await Review().Save(product.Id,5,"Four images",[Image(),Image(),Image(),Image()]
 await Review().Save(product.Id,5,"One video",[Video()],CancellationToken.None);Check(await db.ReviewMedia.CountAsync(m=>m.IsVideo)==1,"TC_62 one video accepted");
 await Review().Save(product.Id,5,"Two videos",[Video(),Video()],CancellationToken.None);Check(await db.ReviewMedia.CountAsync()==1,"TC_63 two videos rejected");
 Check(ReviewUploads.Inspect(File("bad.png",[1,2,3],"image/png"))==null && ReviewUploads.Inspect(File("evil.exe",[1],"application/octet-stream"))==null,"TC_64 invalid signatures and executable files rejected");
+// Reproduce workbook failures against controller behavior, before changing production code.
+http.User=new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier,a.UserName),new Claim(ClaimTypes.Role,"User")],"test"));
+async Task<Oder> ReservedOrder(string status,string method="cod") {
+ var o=new Oder{CustomerName="Customer",PhoneNumber=a.Phone,Address="123 Main Street",Status=status,PaymentMethod=method,TotalPrice=product.price};
+ db.Entry(o).Property(nameof(Oder.UserName)).CurrentValue=a.UserName;db.Oders.Add(o);await db.SaveChangesAsync();
+ await inventory.ReserveAsync(o,[new CartItem{Product=product,Quantity=1}],CancellationToken.None);await db.SaveChangesAsync();return o;
+}
+OrdersController Orders(){var c=new OrdersController(db,lifecycle);Setup(c);return c;}
+var packing=await ReservedOrder(OrderStatus.Packing);
+await Orders().Cancel(packing.Id,CancellationToken.None);
+Check(packing.Status==OrderStatus.Cancelled && packing.InventoryRestored && product.stockQuantity==5,"TC_78 customer cancels packing order and restores stock");
+await Orders().Cancel(packing.Id,CancellationToken.None);
+Check(product.stockQuantity==(packing.InventoryRestored?5:4),"TC_78 repeated cancellation does not restore twice");
+if(!packing.InventoryRestored){await lifecycle.CancelAsync(packing,"Test cleanup",CancellationToken.None);await db.SaveChangesAsync();}
+var mixed=await ReservedOrder(OrderStatus.Packing);
+(await db.OderDetails.SingleAsync(d=>d.OderId==mixed.Id)).FulfillmentStatus=OrderStatus.Shipping;await db.SaveChangesAsync();
+await Orders().Cancel(mixed.Id,CancellationToken.None);
+Check(mixed.Status==OrderStatus.Packing && !mixed.InventoryRestored,"TC_78 mixed order with shipped line cannot be cancelled");
+await lifecycle.CancelAsync(mixed,"Test cleanup",CancellationToken.None);await db.SaveChangesAsync();
+var onlinePacking=await ReservedOrder(OrderStatus.Packing,"vnpay");
+await Orders().Cancel(onlinePacking.Id,CancellationToken.None);
+Check(onlinePacking.Status==OrderStatus.Cancelled && onlinePacking.PaymentNeedsReview,"TC_78 cancellation of paid online order flags refund review");
+if(!onlinePacking.InventoryRestored){await lifecycle.CancelAsync(onlinePacking,"Test cleanup",CancellationToken.None);await db.SaveChangesAsync();}
+var someoneElse=await ReservedOrder(OrderStatus.Pending);
+db.Entry(someoneElse).Property(nameof(Oder.UserName)).CurrentValue=created.UserName;await db.SaveChangesAsync();
+Check(await Orders().Cancel(someoneElse.Id,CancellationToken.None) is NotFoundResult && !someoneElse.InventoryRestored,"TC_78 cannot cancel another customer's order");
+await lifecycle.CancelAsync(someoneElse,"Test cleanup",CancellationToken.None);await db.SaveChangesAsync();
+
+ProductsController Products(){var c=new ProductsController(db);Setup(c);return c;}
+async Task<List<Product>> Search(string? keyword,int? category=null,decimal? min=null,decimal? max=null){var result=(ViewResult)await Products().Index(keyword,category,min,max,CancellationToken.None);return (List<Product>)result.Model!;}
+Check((await Search("  tomato  ")).Count==1,"TC_19/47/79 trimmed product name search");
+Check((await Search("fresh produce")).Count==1,"TC_21 product description search");
+Check((await Search("tomato",1,90000,110000)).Count==1 && (await Search("tomato",2,90000,110000)).Count==0,"TC_22/46/81/82/83 combined category and price filters");
+Check((await Search("tomato",null,110000,90000)).Count==1,"TC_85 reversed price bounds are normalized");
+Check((await Search(null,null,-1,null)).Count==1,"TC_86 negative price does not crash");
+Check((await Search("does-not-exist")).Count==0,"TC_20/80 unknown search returns empty results");
+Check((await Search(null)).Count==1,"TC_23/84 clearing filters restores full catalogue");
+http.Request.Headers["X-Requested-With"]="XMLHttpRequest";
+Check(await Products().Index("tomato",null,null,null,CancellationToken.None) is PartialViewResult,"TC_24 AJAX returns results without full page layout");
+http.Request.Headers.Remove("X-Requested-With");
+
+await cart.WriteAsync([],CancellationToken.None);
+await controller.AddToCart(product.Id,2,CancellationToken.None);
+Check((await cart.ReadAsync()).Single().Quantity==2 && await db.SavedCartItems.AnyAsync(c=>c.UserName==a.UserName),"TC_25/30/87 customer cart persists in database");
+await controller.UpdateQuantity(product.Id,-1,CancellationToken.None);
+Check((await cart.ReadAsync()).Single().Quantity==2,"TC_28 negative quantity leaves cart unchanged");
+await controller.UpdateQuantity(product.Id,6,CancellationToken.None);
+Check((await cart.ReadAsync()).Single().Quantity==2,"TC_48/95 overstock quantity leaves cart unchanged");
+await controller.UpdateQuantity(product.Id,3,CancellationToken.None);
+Check((await cart.ReadAsync()).Single().Quantity==3,"TC_26/89 cart quantity updates");
+await controller.UpdateQuantity(product.Id,0,CancellationToken.None);
+Check((await cart.ReadAsync()).Count==0,"TC_49/89 zero quantity removes item");
+await controller.AddToCart(product.Id,1,CancellationToken.None);await controller.RemoveFromCart(product.Id,CancellationToken.None);
+Check((await cart.ReadAsync()).Count==0,"TC_27/90 removal empties cart");
+await controller.AddToCart(product.Id,1,CancellationToken.None);
+http.Session.SetString("CheckoutToken","invalid-details");var countBefore=await db.Oders.CountAsync();
+await controller.Checkout("","","","cod","standard","invalid-details",CancellationToken.None);
+Check(await db.Oders.CountAsync()==countBefore && (await cart.ReadAsync()).Count==1,"TC_92 blank checkout rejected without losing cart");
+await controller.ApplyPromotion("MISSING","checkout",CancellationToken.None);
+Check(http.Session.GetString("AppliedPromotionCode")==null && controller.TempData["PromotionError"]!=null,"TC_50 invalid voucher rejected with message");
+product.Batches.Single().RemainingQuantity=0;product.stockQuantity=0;await db.SaveChangesAsync();
+var detailsBefore=await db.OderDetails.CountAsync();
+try { await inventory.ReserveAsync(new Oder{CustomerName="Customer",PhoneNumber=a.Phone,Address="123 Main Street"},[new CartItem{Product=product,Quantity=1}],CancellationToken.None);Check(false,"TC_94 checkout sees updated out-of-stock batch"); }
+catch(InvalidOperationException) { Check(await db.OderDetails.CountAsync()==detailsBefore && product.stockQuantity==0,"TC_94 stale cart cannot reserve stock after batch sells out"); }
+product.Batches.Single().RemainingQuantity=5;product.stockQuantity=5;await db.SaveChangesAsync();
+
+// Authentication failures in the workbook blocked these cases: verify validation independently.
+http.User=new ClaimsPrincipal(new ClaimsIdentity());
+foreach(var invalid in new[]{("weak","new2@example.com","0981234567","weak","weak","password"),("mismatch","new2@example.com","0981234567","Strong!123","Other!123","confirmPassword"),("bademail","bad-email","0981234567","Strong!123","Strong!123","email"),("badphone","new2@example.com","123","Strong!123","Strong!123","phoneNumber")}) {
+ var c=Account();var before=await db.Users.CountAsync();await c.Register(invalid.Item1,"New Customer",invalid.Item2,invalid.Item3,invalid.Item4,invalid.Item5);
+ Check(c.ModelState[invalid.Item6]?.Errors.Count>0 && await db.Users.CountAsync()==before,$"TC_32/33/34/35 invalid registration {invalid.Item1} blocked");
+}
+http.User=new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier,a.UserName)],"test"));
+var already=Account();var usersBefore=await db.Users.CountAsync();
+Check(already.Register() is RedirectToActionResult,"TC_04 authenticated visitor cannot open guest registration");
+await already.Register("blocked","Blocked","blocked@example.com","0981234567","Strong!123","Strong!123");
+Check(await db.Users.CountAsync()==usersBefore,"TC_04 authenticated visitor cannot submit guest registration");
+http.User=new ClaimsPrincipal(new ClaimsIdentity());
+var duplicatePhone=Account();await duplicatePhone.Register("phone_duplicate","Customer","different@example.com",a.Phone,"Strong!123","Strong!123");
+Check(duplicatePhone.ModelState.Values.SelectMany(v=>v.Errors).Any(e=>e.ErrorMessage.Contains("đã được đăng ký")),"TC_31 duplicate phone rejected");
+var trimmed=Account();await trimmed.Register("  trim_user  ","  Trim User  ","  trimmed@example.com  ","  0981234567  ","Strong!123","Strong!123");
+var trimmedUser=await db.Users.SingleAsync(u=>u.UserName=="trim_user");
+Check(trimmedUser.Fullname=="Trim User" && trimmedUser.Email=="trimmed@example.com" && trimmedUser.Phone=="0981234567","TC_36 registration trims name, email and phone consistently");
+http.User=new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier,a.UserName),new Claim(ClaimTypes.Role,"User")],"test"));
+
+var paymentConfig=new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string,string?>{
+ ["VNPay:TmnCode"]="TESTMERCHANT",["VNPay:HashSecret"]="test-secret-not-real",["Site:PublicBaseUrl"]="https://shop.example.com"
+}).Build();
+var payments=new PaymentGateways(paymentConfig,new Clients());
+var payable=await ReservedOrder(OrderStatus.AwaitingPayment,"vnpay");
+payable.PaymentReference="test-payment";payable.PaymentExpiresAt=DateTime.UtcNow.AddMinutes(15);await db.SaveChangesAsync();
+var paymentUrl=await payments.CreateAsync(payable,"127.0.0.1",CancellationToken.None);
+Check(paymentUrl.Contains("vnp_Amount=10000000") && paymentUrl.Contains("vnp_SecureHash="),"VNPay link uses VND amount multiplied by 100 and signature");
+async Task Notify(string responseCode,string transactionStatus,decimal callbackAmount,bool tamper=false){
+ var values=new Dictionary<string,string>{["vnp_TmnCode"]="TESTMERCHANT",["vnp_TxnRef"]="test-payment",["vnp_Amount"]=(callbackAmount*100).ToString(System.Globalization.CultureInfo.InvariantCulture),["vnp_ResponseCode"]=responseCode,["vnp_TransactionStatus"]=transactionStatus};
+ values["vnp_SecureHash"]=PaymentGateways.Hmac(PaymentGateways.VnpData(values),"test-secret-not-real",true);
+ if(tamper)values["vnp_Amount"]="1";
+ http.Request.QueryString=QueryString.Create(values);
+ var c=new PaymentController(db,payments,lifecycle,NullLogger<PaymentController>.Instance);Setup(c);await c.VNPayIpn(CancellationToken.None);
+}
+await Notify("24","02",payable.TotalPrice);
+Check(payable.Status==OrderStatus.AwaitingPayment && !payable.InventoryRestored && product.stockQuantity==4,"TC_18/52 failed payment keeps reservation until deadline");
+await Notify("00","00",payable.TotalPrice,true);
+Check(payable.Status==OrderStatus.AwaitingPayment,"VNPay rejects tampered callback signature");
+await Notify("00","00",payable.TotalPrice+1);
+Check(payable.Status==OrderStatus.AwaitingPayment,"VNPay rejects correctly signed callback with wrong amount");
+await Notify("00","00",payable.TotalPrice);
+Check(payable.Status==OrderStatus.Paid && product.stockQuantity==4,"TC_17 payment success marks paid without subtracting stock twice");
+var emailCount=await db.EmailMessages.CountAsync();await Notify("00","00",payable.TotalPrice);
+Check(product.stockQuantity==4 && await db.EmailMessages.CountAsync()==emailCount,"Duplicate payment callback does not repeat inventory or email side effects");
+http.Request.QueryString=QueryString.Empty;
+await lifecycle.CancelAsync(payable,"Test cleanup",CancellationToken.None);await db.SaveChangesAsync();
+var due=await ReservedOrder(OrderStatus.AwaitingPayment,"vnpay");due.PaymentExpiresAt=DateTime.UtcNow.AddSeconds(-1);
+var future=await ReservedOrder(OrderStatus.AwaitingPayment,"vnpay");future.PaymentExpiresAt=DateTime.UtcNow.AddMinutes(15);await db.SaveChangesAsync();
+var maintenanceServices=new ServiceCollection();
+maintenanceServices.AddScoped(_=>new THAN_NONG_SHOP_DbContext(opts));maintenanceServices.AddScoped<InventoryService>();
+maintenanceServices.AddScoped<EmailDelivery>(_=>new EmailDelivery(_.GetRequiredService<THAN_NONG_SHOP_DbContext>(),config,env));
+maintenanceServices.AddScoped<OrderLifecycle>();maintenanceServices.AddScoped<PaymentGateways>(_=>new PaymentGateways(config,new Clients()));
+using(var maintenanceProvider=maintenanceServices.BuildServiceProvider()){
+ var worker=new CommerceMaintenance(maintenanceProvider.GetRequiredService<IServiceScopeFactory>(),NullLogger<CommerceMaintenance>.Instance);
+ await worker.TickAsync(CancellationToken.None);
+ db.ChangeTracker.Clear();
+ var expired=await db.Oders.SingleAsync(o=>o.Id==due.Id);
+ Check(expired.Status==OrderStatus.Cancelled && expired.InventoryRestored && (await db.Products.SingleAsync(p=>p.Id==product.Id)).stockQuantity==4,"TC_53 maintenance cancels overdue order and restores exact stock");
+ Check((await db.Oders.SingleAsync(o=>o.Id==future.Id)).Status==OrderStatus.AwaitingPayment,"TC_52 maintenance preserves order before 15-minute deadline");
+ await worker.TickAsync(CancellationToken.None);db.ChangeTracker.Clear();
+ Check((await db.Products.SingleAsync(p=>p.Id==product.Id)).stockQuantity==4,"TC_53 repeated maintenance never restores stock twice");
+}
 Directory.Delete(env.ContentRootPath,true);
 Console.WriteLine($"Failures: {failures}. InMemory tests do not verify SQL Server locking or real payment/SMTP providers.");return failures==0?0:1;
 

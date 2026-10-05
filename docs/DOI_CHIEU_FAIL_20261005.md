@@ -32,8 +32,8 @@ Excel đầu tiên cũng được đối chiếu các mục giao hàng, đánh g
 | TC_63 | 2 video | 2 video bị từ chối, giữ dữ liệu cũ. |
 | TC_64 | Ảnh/video sai định dạng | Kiểm tra extension/MIME/signature/dung lượng; từ chối file sai/EXE. |
 | TC_65 | Lô đúng 3 ngày | Mục Thống kê doanh thu hiển thị báo cáo/lô cận hạn; ngưỡng <3 ngày được kiểm thử. |
-| TC_66 | Thanh toán | Có lựa chọn COD/PayOS/MoMo/VNPay; QR online do cổng cung cấp sau khi cấu hình khóa thật. Chưa có khóa trong ZIP. |
-| TC_67 | MoMo thất bại/hủy | MoMo fail/cancel giữ đơn đến 15 phút; cần merchant keys để test tích hợp thật. |
+| TC_66 | Thanh toán | Có lựa chọn COD/PayOS/VNPay; QR online do cổng cung cấp sau khi cấu hình khóa thật. Chưa có khóa trong ZIP. |
+| TC_67 | Cổng thanh toán đã gỡ | Không còn áp dụng; website hiện hỗ trợ COD, PayOS và VNPay. |
 | TC_68 | VNPay thanh toán | VNPay có IPN kiểm tra chữ ký và số tiền; cần merchant keys để test tích hợp thật. |
 | TC_69 | Đặt hàng COD | Kiểm thử Guest COD tạo đơn Chờ xác nhận; trừ kho đúng. |
 | TC_70 | Giao nhanh | Giao nhanh 50.000đ, lưu ShippingMethod trên đơn; kiểm thử. |
