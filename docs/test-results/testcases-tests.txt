@@ -1,0 +1,36 @@
+PASS TC_38 invalid password does not issue login
+PASS TC_39 unknown email rejected
+PASS TC_40 phone login finds locked account
+PASS TC_07 uppercase email resolves account before activation check
+PASS TC_37 uppercase duplicate email rejected
+PASS TC_03 registration attempts confirmation delivery immediately (local pickup)
+PASS TC_05 confirmation activates account
+PASS Confirmation token cannot be reused
+PASS TC_05/07/08 successful phone login role User
+PASS TC_05/07/08 successful phone login role Seller
+PASS TC_05/07/08 successful phone login role Admin
+PASS TC_41 equal harvest and expiry rejected
+PASS TC_41 expiry before harvest rejected
+PASS TC_44/65 exact 3 days excluded, 2 days included
+PASS Report period day
+PASS Report period week
+PASS Report period month
+PASS Report period quarter
+PASS TC_70/71/72 shipping fees
+PASS TC_73 empty checkout rejected with message
+PASS TC_69/74 guest COD creates correct order
+PASS TC_75 reservation reduces batch and product stock
+PASS Guest can access only order ids granted to their session
+PASS Guest order cannot be read from another session
+PASS Cancellation restores exact stock
+PASS Repeated cancellation never restores twice
+PASS TC_45 overstock rejected without reducing inventory
+PASS No stars never saves a review
+PASS TC_58/59 rating 1 saved
+PASS TC_58/59 rating 5 saved
+PASS TC_60 three images accepted
+PASS TC_61 four images rejected without replacing old media
+PASS TC_62 one video accepted
+PASS TC_63 two videos rejected
+PASS TC_64 invalid signatures and executable files rejected
+Failures: 0. InMemory tests do not verify SQL Server locking or real payment/SMTP providers.

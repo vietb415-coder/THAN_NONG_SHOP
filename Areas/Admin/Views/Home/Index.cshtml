@@ -1,5 +1,5 @@
 @model THAN_NONG_SHOP.Models.SalesReport
-@{Layout="~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";var max=Math.Max(1,Model.Points.Select(p=>p.Revenue).DefaultIfEmpty().Max());}
+@{ViewData["Title"]="Thống kê doanh thu";ViewBag.AdminPageTitle="Thống kê doanh thu";Layout="~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";var max=Math.Max(1,Model.Points.Select(p=>p.Revenue).DefaultIfEmpty().Max());}
 <h1>Báo cáo bán hàng</h1>
 <form method="get" class="commerce-panel"><label>Kỳ báo cáo <select name="period">
 @foreach(var option in new Dictionary<string,string>{{"day","Ngày"},{"week","Tuần"},{"month","Tháng"},{"quarter","Quý"}}){<option value="@option.Key" selected="@(Model.Period==option.Key)">@option.Value</option>}

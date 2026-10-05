@@ -11,6 +11,8 @@ public sealed class OrderLifecycle(THAN_NONG_SHOP_DbContext db,InventoryService 
         if(order.Status==OrderStatus.Cancelled)return;
         await inventory.RestoreAsync(order,ct);
         order.Status=OrderStatus.Cancelled;
+        foreach(var detail in await db.OderDetails.Where(d=>d.OderId==order.Id).ToListAsync(ct))
+            detail.FulfillmentStatus=OrderStatus.Cancelled;
         var voucher=await db.PromotionVouchers.FirstOrDefaultAsync(v=>v.OrderId==order.Id,ct);
         if(voucher!=null) {voucher.OrderId=null;voucher.UsedAt=null;db.PromotionVoucherEvents.Add(new PromotionVoucherEvent{VoucherId=voucher.Id,UserName=voucher.UserName,OrderId=order.Id,EventType=VoucherEventTypes.Released,Note=reason,CreatedAt=DateTime.UtcNow});}
     }

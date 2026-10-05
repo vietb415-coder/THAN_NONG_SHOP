@@ -60,7 +60,9 @@ namespace THAN_NONG_SHOP.Areas.Admin.Controllers
         {
             ValidateImage(file);
             if(file == null) ModelState.AddModelError("file","Vui lòng chọn ảnh sản phẩm.");
-            if(!ShopRules.ValidBatch(batchCode,harvestDate,expiryDate,product.stockQuantity)) ModelState.AddModelError("batchCode","Nhập mã lô, số lượng dương, ngày thu hoạch và hạn dùng hợp lệ (hạn dùng sau thu hoạch, chưa hết hạn).");
+            if(harvestDate.HasValue && expiryDate.HasValue && expiryDate.Value.Date<=harvestDate.Value.Date)
+                ModelState.AddModelError("expiryDate","Hạn sử dụng phải lớn hơn ngày thu hoạch.");
+            else if(!ShopRules.ValidBatch(batchCode,harvestDate,expiryDate,product.stockQuantity)) ModelState.AddModelError("batchCode","Nhập mã lô, số lượng dương, ngày thu hoạch và hạn dùng hợp lệ (hạn dùng sau thu hoạch, chưa hết hạn).");
             if(!_db.Categories.Any(c=>c.Id==product.categoryId)) ModelState.AddModelError("categoryId","Danh mục không hợp lệ.");
             if(_db.ProductBatches.Any(b=>b.Code==batchCode))ModelState.AddModelError("batchCode","Mã lô đã tồn tại.");
             if (ModelState.IsValid)
@@ -180,6 +182,22 @@ namespace THAN_NONG_SHOP.Areas.Admin.Controllers
 
         [HttpGet]
         public IActionResult Batches(int id) { var p=Owned.Include(p=>p.Batches).FirstOrDefault(p=>p.Id==id);return p==null?NotFound():View(p); }
+        [HttpPost,ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateBatchDates(int id,int batchId,DateTime? harvestDate,DateTime? expiryDate)
+        {
+            await using var tx=await _db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+            var p=await Owned.Include(p=>p.Batches).FirstOrDefaultAsync(p=>p.Id==id);if(p==null)return NotFound();
+            var batch=p.Batches.FirstOrDefault(b=>b.Id==batchId);if(batch==null)return NotFound();
+            if(!harvestDate.HasValue || !expiryDate.HasValue || expiryDate.Value.Date<=harvestDate.Value.Date) {
+                TempData["BatchError"]="Hạn sử dụng phải lớn hơn ngày thu hoạch. Vui lòng nhập đầy đủ hai ngày.";
+                return RedirectToAction(nameof(Batches),new{id});
+            }
+            batch.HarvestDate=harvestDate.Value.Date;batch.ExpiryDate=expiryDate.Value.Date;batch.IsLegacy=false;
+            batch.IsNearExpiry=batch.RemainingQuantity>0 && ShopRules.NearExpiry(batch.ExpiryDate,ShopRules.Today);
+            p.stockQuantity=p.Batches.Where(b=>b.ExpiryDate==null || b.ExpiryDate>=ShopRules.Today).Sum(b=>b.RemainingQuantity);
+            await _db.SaveChangesAsync();await tx.CommitAsync();
+            return RedirectToAction(nameof(Batches),new{id});
+        }
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> AddBatch(int id,string code,DateTime? harvestDate,DateTime? expiryDate,int quantity) {
             await using var tx=await _db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);

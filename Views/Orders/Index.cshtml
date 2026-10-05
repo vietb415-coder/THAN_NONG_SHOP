@@ -1,5 +1,5 @@
 @model List<THAN_NONG_SHOP.Models.Oder>
-@{ViewData["Title"]="Đơn hàng của tôi";}
+@{ViewData["Title"]="Đơn hàng của tôi"; var lines=ViewBag.OrderLines as List<OderDetail> ?? [];}
 <section class="commerce-panel"><h1>Đơn hàng của tôi</h1>
 @if(TempData["OrderMessage"]!=null){<p role="status">@TempData["OrderMessage"]</p>}
 @if(Model.Count==0){<p>Bạn chưa có đơn hàng.</p>}
@@ -7,6 +7,11 @@
 <article class="commerce-panel"><h2>Đơn #@order.Id — @order.Status</h2>
 <p>@order.OrderDate.ToString("dd/MM/yyyy HH:mm") · @order.TotalPrice.ToString("N0") đ · @order.PaymentMethod</p>
 <p>@order.CustomerName — @order.PhoneNumber — @order.Address</p>
+<p>Giao hàng: @ShippingMethods.Names.GetValueOrDefault(order.ShippingMethod,order.ShippingMethod) · Phí @order.ShippingFee.ToString("N0") đ</p>
+@foreach(var line in lines.Where(d=>d.OderId==order.Id)) {
+<p>@(line.Product?.Name ?? "Sản phẩm") × @line.Quantity
+@if(order.Status==OrderStatus.Completed){<a asp-area="" asp-controller="Products" asp-action="Details" asp-route-id="@line.ProductId" asp-fragment="reviews">Đánh giá sản phẩm</a>}
+</p>}
 @if(order.PaymentNeedsReview){<p role="alert">Thanh toán cần cửa hàng đối soát. Vui lòng liên hệ hỗ trợ, không thanh toán lại.</p>}
 @if(order.Status==OrderStatus.Pending){<form asp-action="Cancel" method="post"><input type="hidden" name="id" value="@order.Id"/><button>Hủy đơn hàng</button></form>}
 else if(order.Status==OrderStatus.AwaitingPayment){

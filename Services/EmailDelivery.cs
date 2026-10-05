@@ -10,9 +10,12 @@ namespace THAN_NONG_SHOP.Services;
 
 public sealed class EmailDelivery(THAN_NONG_SHOP_DbContext db, IConfiguration config, IWebHostEnvironment env)
 {
-    public void Queue(string recipient,string subject,string body) => db.EmailMessages.Add(new EmailMessage { Recipient=recipient,Subject=subject,Body=body });
+    public EmailMessage Queue(string recipient,string subject,string body) {
+        var message=new EmailMessage { Recipient=recipient,Subject=subject,Body=body };
+        db.EmailMessages.Add(message);return message;
+    }
     public bool CanConfirm => EmailConfiguration.Errors(config, env).Count == 0;
-    public void Confirmation(user account)
+    public EmailMessage Confirmation(user account)
     {
         if (!CanConfirm) throw new InvalidOperationException(EmailConfiguration.UnavailableMessage);
         var token=Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
@@ -21,9 +24,39 @@ public sealed class EmailDelivery(THAN_NONG_SHOP_DbContext db, IConfiguration co
         var baseUrl=config["Site:PublicBaseUrl"]?.Trim().TrimEnd('/');
         if(!Uri.TryCreate(baseUrl,UriKind.Absolute,out var uri) || uri.Scheme is not ("https" or "http"))
             throw new InvalidOperationException("Cần cấu hình Site:PublicBaseUrl để tạo liên kết xác nhận email.");
-        Queue(account.Email,"Xác nhận email Thần Nông Shop",$"Xin chào {account.Fullname},\nMở liên kết sau trong vòng 24 giờ để xác nhận tài khoản:\n{baseUrl}/Account/ConfirmEmail?username={Uri.EscapeDataString(account.UserName)}&token={token}\nNếu bạn không đăng ký, hãy bỏ qua email này.");
+        var message=Queue(account.Email,"Xác nhận email Thần Nông Shop",$"Xin chào {account.Fullname},\nMở liên kết sau trong vòng 24 giờ để xác nhận tài khoản:\n{baseUrl}/Account/ConfirmEmail?username={Uri.EscapeDataString(account.UserName)}&token={token}\nNếu bạn không đăng ký, hãy bỏ qua email này.");
+        return message;
+    }
+    public async Task<bool> SendConfirmationNowAsync(EmailMessage item,CancellationToken ct=default)
+    {
+        try {
+            await EmailTransport.SendAsync(item,config,env,ct);
+            item.SentAt=DateTime.UtcNow;item.NextAttemptAt=null;
+        } catch(OperationCanceledException) when(ct.IsCancellationRequested) { throw; }
+        catch(Exception) {item.Attempts++;item.NextAttemptAt=DateTime.UtcNow.AddSeconds(15);}
+        await db.SaveChangesAsync(ct);
+        return item.SentAt.HasValue;
     }
     public static string Hash(string token)=>Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
+}
+
+internal static class EmailTransport
+{
+    public static async Task SendAsync(EmailMessage item,IConfiguration config,IWebHostEnvironment env,CancellationToken ct)
+    {
+        using var message=new MailMessage(config["Email:From"]!,item.Recipient,item.Subject,item.Body) {BodyEncoding=Encoding.UTF8,SubjectEncoding=Encoding.UTF8};
+        using var client=new SmtpClient();
+        if(EmailConfiguration.IsPickup(config,env)) {
+            var dir=Path.GetFullPath(config["Email:PickupDirectory"] ?? Path.Combine(env.ContentRootPath,"App_Data","mail"));
+            Directory.CreateDirectory(dir);client.DeliveryMethod=SmtpDeliveryMethod.SpecifiedPickupDirectory;client.PickupDirectoryLocation=dir;
+        } else {
+            client.Host=config["Email:SmtpHost"]!.Trim();client.Port=config.GetValue("Email:SmtpPort",587);client.EnableSsl=config.GetValue("Email:EnableSsl",true);
+            client.UseDefaultCredentials=false;
+            if(!string.IsNullOrEmpty(config["Email:Username"]))client.Credentials=new NetworkCredential(config["Email:Username"]!.Trim(),EmailConfiguration.Password(config));
+        }
+        using var timeout=CancellationTokenSource.CreateLinkedTokenSource(ct);timeout.CancelAfter(TimeSpan.FromSeconds(15));
+        await client.SendMailAsync(message,timeout.Token);
+    }
 }
 
 public sealed class EmailOutboxWorker(IServiceScopeFactory scopes,IConfiguration config,IWebHostEnvironment env,ILogger<EmailOutboxWorker> log, EmailWorkerStatus status):BackgroundService

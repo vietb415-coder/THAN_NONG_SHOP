@@ -13,19 +13,19 @@ namespace THAN_NONG_SHOP.Controllers;
 
 public class PaymentController(THAN_NONG_SHOP_DbContext db,PaymentGateways gateways,OrderLifecycle lifecycle,ILogger<PaymentController> log):Controller
 {
-    [Authorize, HttpGet]
+    [HttpGet]
     public Task<IActionResult> Return(long orderCode)=>Result(orderCode,null);
-    [Authorize, HttpGet]
+    [HttpGet]
     public Task<IActionResult> Cancel(long orderCode)=>Result(orderCode,null);
-    [Authorize, HttpGet]
+    [HttpGet]
     public Task<IActionResult> MoMoReturn(string orderId)=>Result(null,orderId);
-    [Authorize, HttpGet]
+    [HttpGet]
     public Task<IActionResult> VNPayReturn(string vnp_TxnRef)=>Result(null,vnp_TxnRef);
     private async Task<IActionResult> Result(long? code,string? reference)
     {
         var name=User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var order=await db.Oders.AsNoTracking().FirstOrDefaultAsync(o=>o.UserName==name && ((code!=null && o.PayOSOrderCode==code)||(reference!=null && o.PaymentReference==reference)));
-        if(order==null)return NotFound();ViewBag.OrderId=order.Id;ViewBag.PaymentStatus=order.Status;return View("Result");
+        var order=await db.Oders.AsNoTracking().FirstOrDefaultAsync(o=>((code!=null && o.PayOSOrderCode==code)||(reference!=null && o.PaymentReference==reference)));
+        if(order==null || (name!=null?order.UserName!=name:order.UserName!=null || !GuestOrderAccess.Contains(HttpContext,order.Id)))return NotFound();ViewBag.OrderId=order.Id;ViewBag.PaymentStatus=order.Status;return View("Result");
     }
     [AllowAnonymous,HttpPost,IgnoreAntiforgeryToken]
     public async Task<IActionResult> Webhook([FromBody]Webhook body,CancellationToken ct)

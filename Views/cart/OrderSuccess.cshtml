@@ -1,18 +1,12 @@
-﻿@{
-    ViewData["Title"] = "Đặt hàng thành công";
-}
-
-<div style="max-width: 600px; margin: 50px auto; padding: 40px; text-align: center; font-family: Arial, sans-serif; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-    <div style="color: #2ea751; margin-bottom: 20px;"><svg class="app-icon" style="width: 64px; height: 64px; margin: 0;"><use href="#icon-check"></use></svg></div>
-
-    <h2 style="color: #2c3e50; margin-bottom: 15px; font-weight: bold; letter-spacing: 0.5px;">ĐẶT HÀNG THÀNH CÔNG!</h2>
-
-    <p style="color: #4a5568; line-height: 1.6; margin-bottom: 30px; font-size: 16px;">
-        Cảm ơn em đã ủng hộ nông sản sạch của <strong>Thần Nông Shop</strong>.<br />
-        Đơn hàng của em đã được ghi nhận vào hệ thống Database và đang chờ bộ phận Admin xử lý.
-    </p>
-
-    <a asp-controller="Products" asp-action="Index" style="display: inline-block; background: #2ea751; color: white; padding: 12px 30px; text-decoration: none; border-radius: 4px; font-weight: bold; transition: background 0.2s; box-shadow: 0 2px 4px rgba(46, 167, 81, 0.3);">
-        Tiếp tục xem sản phẩm
-    </a>
-</div>
+@model THAN_NONG_SHOP.Models.Oder
+@{ViewData["Title"]="Đã ghi nhận đơn hàng";}
+<section class="commerce-panel"><h1>Đã ghi nhận đơn hàng #@Model.Id</h1>
+<p>Trạng thái: <strong>@Model.Status</strong></p>
+<p>@Model.CustomerName — @Model.PhoneNumber — @Model.Address</p>
+<p>@ShippingMethods.Names.GetValueOrDefault(Model.ShippingMethod,Model.ShippingMethod) · Phí giao hàng @Model.ShippingFee.ToString("N0") đ</p>
+<p>Tổng thanh toán: <strong>@Model.TotalPrice.ToString("N0") đ</strong></p>
+@if(TempData["OrderMessage"]!=null){<p role="alert">@TempData["OrderMessage"]</p>}
+@if(Model.Status==OrderStatus.AwaitingPayment && !string.IsNullOrEmpty(Model.PaymentUrl)){<a href="@Model.PaymentUrl">Tiếp tục thanh toán / Quét QR</a>}
+@if(User.Identity?.IsAuthenticated==true){<p><a asp-controller="Orders" asp-action="Index">Đơn hàng của tôi</a></p>}
+else{<p>Hãy lưu mã đơn để liên hệ cửa hàng. Bạn có thể xem lại đơn này trong phiên trình duyệt hiện tại.</p>}
+<a asp-controller="Products" asp-action="Index">Tiếp tục mua sắm</a></section>

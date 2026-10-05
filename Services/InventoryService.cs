@@ -36,10 +36,12 @@ public sealed class InventoryService(THAN_NONG_SHOP_DbContext db)
                 batch.RemainingQuantity+=detail.Quantity;
             } else foreach(var a in detail.Allocations) a.ProductBatch.RemainingQuantity+=a.Quantity;
         }
-        await db.SaveChangesAsync(ct);
+        // Update stock and the restoration marker together in the caller's transaction.
+        // Include newly created legacy batches without an intermediate SaveChanges.
         foreach(var id in details.Select(d=>d.ProductId).Distinct()) {
             var p=await db.Products.Include(p=>p.Batches).SingleAsync(p=>p.Id==id,ct);
-            p.stockQuantity=p.Batches.Where(b=>b.ExpiryDate==null || b.ExpiryDate>=ShopRules.Today).Sum(b=>b.RemainingQuantity);
+            var batches=p.Batches.Concat(db.ProductBatches.Local.Where(b=>b.ProductId==id)).Distinct();
+            p.stockQuantity=batches.Where(b=>b.ExpiryDate==null || b.ExpiryDate>=ShopRules.Today).Sum(b=>b.RemainingQuantity);
         }
         order.InventoryRestored=true;
     }

@@ -10,7 +10,12 @@ namespace THAN_NONG_SHOP.Controllers;
 [Authorize]
 public sealed class OrdersController(THAN_NONG_SHOP_DbContext db,OrderLifecycle lifecycle) : Controller
 {
-    public async Task<IActionResult> Index(CancellationToken ct) => View(await db.Oders.AsNoTracking().Where(o=>o.UserName==User.FindFirstValue(ClaimTypes.NameIdentifier)).OrderByDescending(o=>o.OrderDate).ToListAsync(ct));
+    public async Task<IActionResult> Index(CancellationToken ct) {
+        var orders=await db.Oders.AsNoTracking().Where(o=>o.UserName==User.FindFirstValue(ClaimTypes.NameIdentifier)).OrderByDescending(o=>o.OrderDate).ToListAsync(ct);
+        var ids=orders.Select(o=>o.Id).ToArray();
+        ViewBag.OrderLines=await db.OderDetails.AsNoTracking().Include(d=>d.Product).Where(d=>ids.Contains(d.OderId)).ToListAsync(ct);
+        return View(orders);
+    }
     [HttpPost,ValidateAntiForgeryToken]
     public async Task<IActionResult> Cancel(int id,CancellationToken ct) {
         await using var tx=await db.Database.BeginTransactionAsync(IsolationLevel.Serializable,ct);

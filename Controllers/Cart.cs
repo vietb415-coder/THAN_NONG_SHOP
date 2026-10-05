@@ -47,7 +47,7 @@ public class CartController(THAN_NONG_SHOP_DbContext db,CartState cart,Inventory
         await cart.WriteAsync(entries.Where(i=>i.Quantity>0 && stock.GetValueOrDefault(i.ProductId)>0).Select(i=>i with {Quantity=Math.Min(i.Quantity,stock[i.ProductId])}),ct);return NoContent();
     }
     [HttpPost,ValidateAntiForgeryToken]
-    public async Task<IActionResult> AddToCart(int productId,int quantity,CancellationToken ct)
+    public async Task<IActionResult> AddToCart(int productId,int quantity,CancellationToken ct,bool buyNow=false)
     {
         var product=await db.Products.AsNoTracking().Include(p=>p.Batches).FirstOrDefaultAsync(p=>p.Id==productId,ct);if(product==null)return NotFound();
         var entries=await cart.ReadAsync(ct);var current=entries.FirstOrDefault(i=>i.ProductId==productId);
@@ -55,7 +55,7 @@ public class CartController(THAN_NONG_SHOP_DbContext db,CartState cart,Inventory
         if(quantity<=0 || wanted>999 || wanted>stock || (current==null && entries.Count>=30)){
             TempData["CartError"]=quantity<=0?"Số lượng không hợp lệ.":$"Chỉ còn {stock} sản phẩm trong kho. Giỏ tối đa 30 mặt hàng, 999 sản phẩm mỗi loại.";
             return RedirectToAction("Details","Products",new {id=productId});}
-        entries.RemoveAll(i=>i.ProductId==productId);entries.Add(new(productId,(int)wanted));await cart.WriteAsync(entries,ct);return RedirectToAction(nameof(Index));
+        entries.RemoveAll(i=>i.ProductId==productId);entries.Add(new(productId,(int)wanted));await cart.WriteAsync(entries,ct);return RedirectToAction(buyNow?nameof(Checkout):nameof(Index));
     }
     [HttpPost,ValidateAntiForgeryToken]
     public async Task<IActionResult> UpdateQuantity(int productId,int quantity,CancellationToken ct)
@@ -88,14 +88,14 @@ public class CartController(THAN_NONG_SHOP_DbContext db,CartState cart,Inventory
     }
     [HttpPost,ValidateAntiForgeryToken]
     public IActionResult RemovePromotion(string? returnTo){HttpContext.Session.Remove(PromotionKey);return RedirectToAction(returnTo=="checkout"?nameof(Checkout):nameof(Index));}
-    [Authorize(Roles="User,Seller"),HttpGet]
+    [HttpGet]
     public async Task<IActionResult> Checkout(CancellationToken ct)
     {
-        var items=await cart.ProductsAsync(ct);if(items.Count==0)return RedirectToAction(nameof(Index));var user=await db.Users.AsNoTracking().SingleAsync(u=>u.UserName==Username,ct);
-        ViewBag.UserFullName=user.Fullname;ViewBag.UserPhone=user.Phone;var subtotal=items.Sum(i=>i.Product!.price*i.Quantity);Prices(subtotal,await PromotionAsync(subtotal,ct));
+        var items=await cart.ProductsAsync(ct);if(items.Count==0){TempData["CartError"]="Giỏ hàng rỗng. Vui lòng thêm sản phẩm trước khi đặt hàng.";return RedirectToAction(nameof(Index));}var user=Username==null?null:await db.Users.AsNoTracking().SingleAsync(u=>u.UserName==Username,ct);
+        ViewBag.UserFullName=user?.Fullname;ViewBag.UserPhone=user?.Phone;var subtotal=items.Sum(i=>i.Product!.price*i.Quantity);Prices(subtotal,await PromotionAsync(subtotal,ct));
         var token=Guid.NewGuid().ToString("N");HttpContext.Session.SetString("CheckoutToken",token);ViewBag.CheckoutToken=token;return View(items);
     }
-    [Authorize(Roles="User,Seller"),HttpPost,ValidateAntiForgeryToken]
+    [HttpPost,ValidateAntiForgeryToken]
     public async Task<IActionResult> Checkout(string customerName,string shippingAddress,string shippingPhone,string paymentMethod,string shippingMethod,string checkoutToken,CancellationToken ct)
     {
         customerName=(customerName??"").Trim();shippingAddress=(shippingAddress??"").Trim();shippingPhone=(shippingPhone??"").Trim();paymentMethod=(paymentMethod??"").ToLowerInvariant();
@@ -104,7 +104,7 @@ public class CartController(THAN_NONG_SHOP_DbContext db,CartState cart,Inventory
             TempData["CheckoutError"]="Vui lòng nhập đủ tên, địa chỉ hợp lệ và số điện thoại 10 chữ số.";return RedirectToAction(nameof(Checkout));}
         if(!ShippingMethods.Names.ContainsKey(shippingMethod??"") || paymentMethod is not ("cod" or "payos" or "momo" or "vnpay"))return BadRequest("Phương thức không hợp lệ.");
         if(!gateways.IsConfigured(paymentMethod)){TempData["CheckoutError"]="Cổng thanh toán chưa được cấu hình. Vui lòng chọn COD hoặc liên hệ cửa hàng.";return RedirectToAction(nameof(Checkout));}
-        HttpContext.Session.SetString("ShippingMethod",shippingMethod);var items=await cart.ProductsAsync(ct);if(items.Count==0)return RedirectToAction(nameof(Index));
+        HttpContext.Session.SetString("ShippingMethod",shippingMethod);var items=await cart.ProductsAsync(ct);if(items.Count==0){TempData["CartError"]="Giỏ hàng rỗng. Vui lòng thêm sản phẩm trước khi đặt hàng.";return RedirectToAction(nameof(Index));}
         Oder order;
         try {
             await using var tx=await db.Database.BeginTransactionAsync(IsolationLevel.Serializable,ct);
@@ -127,10 +127,18 @@ public class CartController(THAN_NONG_SHOP_DbContext db,CartState cart,Inventory
         } catch(Exception ex) when(ex is InvalidOperationException or DbUpdateException or Microsoft.Data.SqlClient.SqlException){
             logger.LogWarning(ex,"Đặt hàng bị từ chối.");TempData["CheckoutError"]=ex is InvalidOperationException?ex.Message:"Dữ liệu giỏ hàng hoặc tồn kho vừa thay đổi. Vui lòng thử lại.";return RedirectToAction(nameof(Checkout));}
         HttpContext.Session.Remove("CheckoutToken");HttpContext.Session.Remove(PromotionKey);
+        HttpContext.Session.SetInt32("LastOrderId",order.Id);
+        if(Username==null)GuestOrderAccess.Grant(HttpContext,order.Id);
         if(paymentMethod!="cod"){
             try {var url=await gateways.CreateAsync(order,HttpContext.Connection.RemoteIpAddress?.ToString()??"127.0.0.1",ct);order.PaymentUrl=url;await db.SaveChangesAsync(ct);return Redirect(url);}
-            catch(Exception ex){logger.LogError(ex,"Không tạo được link cho đơn {Id}.",order.Id);TempData["OrderMessage"]="Chưa tạo được liên kết thanh toán. Đơn được giữ tối đa 15 phút và sẽ tự hủy nếu chưa thanh toán.";return RedirectToAction("Index","Orders");}}
+            catch(Exception ex){logger.LogError(ex,"Không tạo được link cho đơn {Id}.",order.Id);TempData["OrderMessage"]="Chưa tạo được liên kết thanh toán. Đơn được giữ tối đa 15 phút và sẽ tự hủy nếu chưa thanh toán.";return RedirectToAction(Username==null?nameof(OrderSuccess):"Index",Username==null?"Cart":"Orders");}}
         return RedirectToAction(nameof(OrderSuccess));
     }
-    public IActionResult OrderSuccess()=>View();
+    public async Task<IActionResult> OrderSuccess(CancellationToken ct)
+    {
+        var id=HttpContext.Session.GetInt32("LastOrderId");
+        var order=await db.Oders.AsNoTracking().FirstOrDefaultAsync(o=>o.Id==id,ct);
+        if(order==null || (Username!=null?order.UserName!=Username:!GuestOrderAccess.Contains(HttpContext,order.Id)))return RedirectToAction(nameof(Index));
+        return View(order);
+    }
 }

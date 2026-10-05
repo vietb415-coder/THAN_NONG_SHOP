@@ -30,8 +30,9 @@
                 Đơn vị: @product.Unit · Số lượng có sẵn: <strong>@product.stockQuantity</strong>
             </p>
 
-            @if(!string.IsNullOrWhiteSpace(product.Certification)){<p><strong>Chứng nhận / nguồn gốc:</strong> @product.Certification</p>}
-            @foreach(var batch in product.Batches.Where(b=>b.RemainingQuantity>0 && b.ExpiryDate>=ShopRules.Today).OrderBy(b=>b.ExpiryDate)){<p>Lô @batch.Code · Thu hoạch @batch.HarvestDate?.ToString("dd/MM/yyyy") · Hạn dùng @batch.ExpiryDate?.ToString("dd/MM/yyyy")</p>}
+            <div class="commerce-panel"><strong>Chứng nhận / nguồn gốc:</strong> @(string.IsNullOrWhiteSpace(product.Certification) ? "Chưa cung cấp chứng nhận" : product.Certification)</div>
+            @foreach(var batch in product.Batches.Where(b=>b.RemainingQuantity>0 && b.ExpiryDate>=ShopRules.Today).OrderBy(b=>b.ExpiryDate)){<p class="commerce-panel"><strong>Lô @batch.Code</strong> · Thu hoạch @batch.HarvestDate?.ToString("dd/MM/yyyy") · Hạn dùng @batch.ExpiryDate?.ToString("dd/MM/yyyy")</p>}
+            @if(!product.Batches.Any(b=>b.RemainingQuantity>0 && b.ExpiryDate>=ShopRules.Today)){<p>Hạn sử dụng: chưa có thông tin lô còn hạn. Cửa hàng cần cập nhật ngày thực tế.</p>}
             <h3 style="color: #34495e; margin: 25px 0 8px;">Mô tả sản phẩm</h3>
             <p style="color: #555; line-height: 1.7;">@product.Description</p>
 
@@ -44,9 +45,9 @@
             {
                 <form asp-area="" asp-controller="Cart" asp-action="AddToCart" method="post" style="margin-top: 28px;">
                     <input type="hidden" name="productId" value="@product.Id" />
-                    <input type="hidden" name="quantity" value="1" />
-                    <label>Ảnh / video đánh giá <input type="file" name="media" multiple accept="image/jpeg,image/png,image/webp,video/mp4" /></label><p>Tối đa 3 ảnh × 5 MB và 1 video MP4 × 20 MB. Khi chọn file mới, toàn bộ file cũ của đánh giá sẽ được thay thế.</p>
-                <button type="submit" style="width: 100%; border: 0; border-radius: 7px; padding: 13px; background: #2e5a1c; color: #fff; font-size: 16px; font-weight: 700; cursor: pointer;"><svg class="app-icon"><use href="#icon-cart"></use></svg>Thêm vào giỏ hàng</button>
+                    <label>Số lượng <input type="number" name="quantity" value="1" min="1" max="@product.stockQuantity" required /></label>
+                    
+                <button type="submit" style="width: 100%; border: 0; border-radius: 7px; padding: 13px; background: #2e5a1c; color: #fff; font-size: 16px; font-weight: 700; cursor: pointer;"><svg class="app-icon"><use href="#icon-cart"></use></svg>Thêm vào giỏ hàng</button><button type="submit" name="buyNow" value="true" style="width:100%;margin-top:10px;padding:12px;background:#b54708;color:white;border:0;border-radius:7px">Mua ngay</button>
                 </form>
             }
             else
@@ -82,6 +83,7 @@
                 <input type="hidden" name="productId" value="@product.Id" />
                 <label for="reviewRating" style="font-weight:700;">Số sao</label>
                 <select id="reviewRating" name="rating" required style="display:block; margin:7px 0 12px; padding:9px;">
+                    <option value="" selected="@(Model.CurrentUserReview == null)">Chọn số sao</option>
                     @for (var star = 5; star >= 1; star--)
                     {
                         <option value="@star" selected="@(Model.CurrentUserReview?.Rating == star)">@star sao</option>
@@ -89,6 +91,7 @@
                 </select>
                 <label for="reviewComment" style="font-weight:700;">Nhận xét</label>
                 <textarea id="reviewComment" name="comment" minlength="3" maxlength="1000" required rows="4" style="display:block; width:100%; box-sizing:border-box; margin:7px 0 12px; padding:10px;">@Model.CurrentUserReview?.Comment</textarea>
+                <label>Ảnh / video đánh giá <input type="file" name="media" multiple accept="image/jpeg,image/png,image/webp,video/mp4" /></label><p>Tối đa 3 ảnh × 5 MB và 1 video MP4 × 20 MB. Khi chọn file mới, toàn bộ file cũ của đánh giá sẽ được thay thế.</p>
                 <button type="submit" style="padding:10px 18px; border:0; border-radius:7px; background:#2e5a1c; color:#fff; font-weight:700;">@(Model.CurrentUserReview == null ? "Gửi đánh giá" : "Cập nhật đánh giá")</button>
             </form>
         }

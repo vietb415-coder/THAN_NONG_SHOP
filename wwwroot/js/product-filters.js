@@ -20,6 +20,17 @@
     } finally { if (request === pending) results.removeAttribute('aria-busy'); }
   }
   form.addEventListener('submit', event => { event.preventDefault(); update(); });
+  let typing;
+  form.elements.searchString.addEventListener('input', () => {
+    clearTimeout(typing);
+    pending?.abort();
+    typing = setTimeout(() => update(), 300);
+  });
+  form.querySelector('a').addEventListener('click', event => {
+    event.preventDefault(); clearTimeout(typing);
+    for (const name of ['searchString','categoryId','minPrice','maxPrice']) form.elements[name].value = '';
+    update();
+  });
   form.querySelectorAll('select,input[type=number]').forEach(input => input.addEventListener('change', () => update()));
   window.addEventListener('popstate', () => { const values=new URL(location.href).searchParams; for(const name of ['searchString','categoryId','minPrice','maxPrice'])form.elements[name].value=values.get(name)||''; update(false); });
 })();

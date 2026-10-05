@@ -188,7 +188,7 @@
                 </a>
 
                 <div class="auth-buttons">
-                    @if(User.IsInRole("Seller") || User.IsInRole("Admin")){<a href="/Admin/Home">Quản lý gian hàng</a>}
+                    @if(User.IsInRole("Seller") || User.IsInRole("Admin")){<a href="/Admin/Home">Thống kê doanh thu</a><a href="/Admin/Product">Quản lý gian hàng</a>}
                     <a asp-controller="Orders" asp-action="Index">Đơn hàng</a>
                     <a asp-controller="Cart" asp-action="Index" class="btn-cart"><svg class="app-icon"><use href="#icon-cart"></use></svg>Giỏ hàng</a>
                     <span style="color: #cbd5e0">|</span>

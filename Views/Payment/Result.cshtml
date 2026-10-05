@@ -16,6 +16,8 @@
     </h2>
     <p style="color:#52606d;">Mã đơn hàng: <strong>#@ViewBag.OrderId</strong></p>
     <p style="color:#52606d; line-height:1.6;">Trạng thái chính thức của đơn hàng sẽ được cập nhật tự động sau khi nhận xác nhận hợp lệ từ cổng thanh toán.</p>
-    <a asp-controller="Orders" asp-action="Index">Xem trạng thái đơn hàng</a>
+    @if(User.Identity?.IsAuthenticated==true){<a asp-controller="Orders" asp-action="Index">Xem trạng thái đơn hàng</a>}
+    else {<a asp-controller="Cart" asp-action="OrderSuccess">Xem đơn vừa đặt</a>}
+    @if(ViewBag.PaymentStatus as string == OrderStatus.AwaitingPayment){<p>Trang sẽ tự cập nhật sau khi cổng thanh toán xác nhận.</p><script>setTimeout(() => location.reload(), 5000);</script>}
     <a asp-controller="Home" asp-action="Index" style="display:inline-block; margin-top:18px; padding:12px 28px; border-radius:7px; color:#fff; background:#2e5a1c; text-decoration:none; font-weight:700;">Về trang chủ</a>
 </div>
