@@ -37,7 +37,8 @@ env.EnvironmentName="Development";
 var pickup=Path.Combine(Path.GetTempPath(),"thannong-email-test-"+Guid.NewGuid());
 config["Email:PickupDirectory"]=pickup;
 var services = new ServiceCollection();
-services.AddDbContext<THAN_NONG_SHOP_DbContext>(o=>o.UseInMemoryDatabase("email-"+Guid.NewGuid()),ServiceLifetime.Singleton);
+var saveFailure = new RegistrationSaveFailure();
+services.AddDbContext<THAN_NONG_SHOP_DbContext>(o=>o.UseInMemoryDatabase("email-"+Guid.NewGuid()).AddInterceptors(saveFailure),ServiceLifetime.Singleton);
 using var provider=services.BuildServiceProvider();
 var db=provider.GetRequiredService<THAN_NONG_SHOP_DbContext>();
 var mail=new EmailDelivery(db,config,env);
@@ -102,8 +103,9 @@ config["Email:EnableSsl"]="true";
 config["Email:Username"]="sender@example.com";
 config["Email:Password"]="DIEN_MAT_KHAU_UNG_DUNG_MOI";
 var count=await db.EmailMessages.CountAsync();
-try{mail.Confirmation(account);Check(false,"Block confirmation with invalid configuration");}
-catch(InvalidOperationException){Check(await db.EmailMessages.CountAsync()==count,"Block confirmation without queueing a misleading email");}
+var pendingConfirmation=mail.Confirmation(account);await db.SaveChangesAsync();
+Check(!await mail.SendConfirmationNowAsync(pendingConfirmation) && pendingConfirmation.SentAt==null && pendingConfirmation.NextAttemptAt>DateTime.UtcNow,
+    "WB_62 invalid SMTP configuration preserves queued confirmation and retry schedule");
 var protector = new Microsoft.AspNetCore.DataProtection.EphemeralDataProtectionProvider();
 var http = new Microsoft.AspNetCore.Http.DefaultHttpContext();
 var controller = new THAN_NONG_SHOP.Controllers.AccountController(db,
@@ -113,11 +115,31 @@ controller.ControllerContext = new Microsoft.AspNetCore.Mvc.ControllerContext { 
 controller.TempData = new Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary(http, new MemoryTempData());
 var beforeUsers = await db.Users.CountAsync();
 var registration = await controller.Register("test_register", "Test Register", "new@example.com", "0912345678", "Example!123", "Example!123");
-Check(registration is Microsoft.AspNetCore.Mvc.ViewResult && !controller.ModelState.IsValid
-    && await db.Users.CountAsync() == beforeUsers, "Registration does not create a locked account when SMTP configuration is missing");
+Check(registration is Microsoft.AspNetCore.Mvc.RedirectToActionResult && controller.ModelState.IsValid
+    && await db.Users.CountAsync() == beforeUsers+1 && !await db.Users.Where(u=>u.UserName=="test_register").Select(u=>u.EmailConfirmed).SingleAsync(),
+    "WB_62 registration creates unconfirmed account and durable email while SMTP is unavailable");
+Check(controller.TempData["AccountMessage"]?.ToString()?.Contains("chưa gửi được")==true,"Failed SMTP is not reported as successful delivery");
+var retryController = new THAN_NONG_SHOP.Controllers.AccountController(db,
+    new Microsoft.AspNetCore.Identity.PasswordHasher<user>(), protector, mail,
+    new CartState(db, new Microsoft.AspNetCore.Http.HttpContextAccessor { HttpContext = http }, protector));
+retryController.ControllerContext = controller.ControllerContext;
+retryController.TempData = new Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary(http, new MemoryTempData());
+var beforeRetryEmails = await db.EmailMessages.CountAsync();
+var retried = await retryController.Register("test_register", "Test Register", "new@example.com", "0912345678", "Example!123", "Example!123");
+Check(retried is Microsoft.AspNetCore.Mvc.RedirectToActionResult { ActionName: "Login" }
+    && retryController.ModelState.IsValid && await db.Users.CountAsync()==beforeUsers+1
+    && await db.EmailMessages.CountAsync()==beforeRetryEmails,
+    "Retry after SMTP failure acknowledges pending account without duplicate account or email");
+saveFailure.FailNext = true;
+var saveResult = await retryController.Register("save_failure", "Save Failure", "save@example.com", "0923456789", "Example!123", "Example!123");
+Check(saveResult is Microsoft.AspNetCore.Mvc.ViewResult
+    && retryController.ModelState.Values.SelectMany(v=>v.Errors).Any(e=>e.ErrorMessage.Contains("Không thể lưu"))
+    && !retryController.ModelState.Values.SelectMany(v=>v.Errors).Any(e=>e.ErrorMessage.Contains("đã được đăng ký"))
+    && !await db.Users.AnyAsync(u=>u.UserName=="save_failure") && await db.EmailMessages.CountAsync()==beforeRetryEmails,
+    "Non-duplicate save failure reports storage error and leaves no pending tracked registration");
 await controller.ResendConfirmation("new@example.com");
-Check(controller.TempData["AccountMessage"]?.ToString() == EmailConfiguration.UnavailableMessage,
-    "Resend reports unavailable configuration rather than claiming delivery");
+Check(controller.TempData["AccountMessage"]?.ToString()?.Contains("5 phút")==true,
+    "Immediate resend respects cooldown for pending confirmation");
 if (PromotionCatalog.HasCampaignEnded())
 {
     var home = new THAN_NONG_SHOP.Controllers.HomeController(db, protector);
@@ -135,10 +157,28 @@ using (var client = factory.CreateClient(new Microsoft.AspNetCore.Mvc.Testing.We
         Check(response.StatusCode == HttpStatusCode.OK, $"HTTP render {route} with isolated in-memory database");
     }
     var unauthorized = await client.GetAsync("/Admin/Email");
+    var missingToken = await client.PostAsync("/Cart/AddToCart",new FormUrlEncodedContent(new Dictionary<string,string>{{"productId","1"},{"quantity","1"}}));
+    Check(missingToken.StatusCode==HttpStatusCode.BadRequest,"WB_12 cart POST without antiforgery token returns HTTP 400");
     Check(unauthorized.StatusCode == HttpStatusCode.Redirect, "Anonymous visitor cannot read admin email diagnostics");
 }
 Console.WriteLine($"Failures: {failures}");
 return failures==0?0:1;
+
+sealed class RegistrationSaveFailure : Microsoft.EntityFrameworkCore.Diagnostics.SaveChangesInterceptor
+{
+    public bool FailNext { get; set; }
+    public override ValueTask<Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<int>> SavingChangesAsync(
+        Microsoft.EntityFrameworkCore.Diagnostics.DbContextEventData eventData, Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<int> result,
+        CancellationToken cancellationToken = default)
+    {
+        if (FailNext)
+        {
+            FailNext = false;
+            throw new DbUpdateException("Simulated storage failure");
+        }
+        return new(result);
+    }
+}
 
 sealed class TestEnvironment : IWebHostEnvironment {
  public string EnvironmentName {get;set;}="Production";

@@ -1,3 +1,5 @@
+> Tài liệu lịch sử ngày 05/10. Kết quả và thay đổi bản hiện tại: [KIEM_TRA_FAIL_20261007.md](KIEM_TRA_FAIL_20261007.md).
+
 # Đối chiếu 38 case Fail trong TEST_CASE_APP_THANNONG.xlsx
 
 Excel đầu tiên cũng được đối chiếu các mục giao hàng, đánh giá, báo cáo và thông tin lô. Hai ZIP đính kèm có nội dung giống nhau. Bộ mới là bản chính; riêng TC_74 mới cho phép Guest checkout, khác yêu cầu đăng nhập ở bộ đầu.

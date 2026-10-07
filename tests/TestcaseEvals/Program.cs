@@ -47,7 +47,18 @@ Check(duplicate.ModelState.Values.SelectMany(v=>v.Errors).Any(e=>e.ErrorMessage.
 var registration=Account();await registration.Register("new_customer","New Customer","new@example.com","0987654321","Strong!123","Strong!123");
 var created=await db.Users.SingleAsync(u=>u.UserName=="new_customer");var confirmation=await db.EmailMessages.SingleAsync();
 Check(confirmation.SentAt!=null && Directory.GetFiles(config["Email:PickupDirectory"]!).Length==1,"TC_03 registration attempts confirmation delivery immediately (local pickup)");
+var registrationReplay = Account();
+var replayResult = await registrationReplay.Register("new_customer", "New Customer", "NEW@EXAMPLE.COM", "0987654321", "Strong!123", "Strong!123");
+Check(replayResult is RedirectToActionResult { ActionName: "Login" } && registrationReplay.ModelState.IsValid
+    && await db.Users.CountAsync(u=>u.UserName=="new_customer")==1 && await db.EmailMessages.CountAsync()==1,
+    "Repeated pending registration acknowledges saved account without another account or email");
+var wrongReplay = Account();
+Check(await wrongReplay.Register("new_customer", "New Customer", "new@example.com", "0987654321", "Different!123", "Different!123") is ViewResult
+    && !wrongReplay.ModelState.IsValid, "Pending registration with a different password remains rejected");
 var token=confirmation.Body.Split("&token=")[1].Split('\n')[0];var confirm=Account();await confirm.ConfirmEmail(created.UserName,token);
+var confirmedReplay = Account();
+Check(await confirmedReplay.Register("new_customer", "New Customer", "new@example.com", "0987654321", "Strong!123", "Strong!123") is ViewResult
+    && !confirmedReplay.ModelState.IsValid, "Confirmed account cannot be registered again");
 Check(created.EmailConfirmed && created.ConfirmationTokenHash==null,"TC_05 confirmation activates account");
 Check(await confirm.ConfirmEmail(created.UserName,token) is BadRequestObjectResult,"Confirmation token cannot be reused");
 
@@ -234,6 +245,102 @@ using(var maintenanceProvider=maintenanceServices.BuildServiceProvider()){
  await worker.TickAsync(CancellationToken.None);db.ChangeTracker.Clear();
  Check((await db.Products.SingleAsync(p=>p.Id==product.Id)).stockQuantity==4,"TC_53 repeated maintenance never restores stock twice");
 }
+// Regression cases from the workbook added on 07/10/2026.
+product=await db.Products.Include(p=>p.Batches).SingleAsync(p=>p.Id==product.Id);
+a=await db.Users.SingleAsync(u=>u.UserName==a.UserName);
+http.User=new ClaimsPrincipal(new ClaimsIdentity());
+a.Password="Legacy!123";await db.SaveChangesAsync();
+await Account().Login(a.Phone,"wrong");
+Check(a.Password=="Legacy!123","WB_2 wrong password leaves legacy password unchanged");
+await Account().Login(a.Phone,"Legacy!123");
+Check(a.Password.StartsWith("AQAAAA") && http.User.Identity?.IsAuthenticated==true,"WB_1 legacy password upgraded on successful login");
+http.User=new ClaimsPrincipal(new ClaimsIdentity());
+var oldHasher=new Microsoft.AspNetCore.Identity.PasswordHasher<user>(Microsoft.Extensions.Options.Options.Create(new Microsoft.AspNetCore.Identity.PasswordHasherOptions{IterationCount=10000}));
+a.Password=oldHasher.HashPassword(a,"Legacy!123");var oldHash=a.Password;await db.SaveChangesAsync();
+await Account().Login(a.Phone,"Legacy!123");
+Check(a.Password!=oldHash && hasher.VerifyHashedPassword(a,a.Password,"Legacy!123")!=Microsoft.AspNetCore.Identity.PasswordVerificationResult.Failed,"WB_3 old iteration hash rehashed after correct password");
+var ambiguous=new user{UserName=a.Phone,Email="ambiguous@example.com",Phone="0999999999",RoleId=2,EmailConfirmed=true,Fullname="Ambiguous",Password=hasher.HashPassword(a,"Legacy!123")};
+db.Users.Add(ambiguous);await db.SaveChangesAsync();http.User=new ClaimsPrincipal(new ClaimsIdentity());
+var ambiguousLogin=Account();await ambiguousLogin.Login(a.Phone,"Legacy!123");
+Check(http.User.Identity?.IsAuthenticated!=true && !ambiguousLogin.ModelState.IsValid,"WB_4 ambiguous identifiers cannot sign in");
+db.Remove(ambiguous);await db.SaveChangesAsync();
+await Account().Login(a.Phone,"Legacy!123",false,"https://evil.example/steal");
+Check(http.User.Identity?.IsAuthenticated==true,"WB_8 external returnUrl still permits legitimate login");
+var expiredAccount=new user{UserName="expired_token",Fullname="Expired Token",Email="expired@example.com",Phone="0901111222",RoleId=2,ConfirmationTokenHash=EmailDelivery.Hash(new string('A',64)),ConfirmationExpiresAt=DateTime.UtcNow.AddSeconds(-1)};
+db.Add(expiredAccount);await db.SaveChangesAsync();
+Check(await Account().ConfirmEmail(expiredAccount.UserName,new string('A',64)) is BadRequestObjectResult && !expiredAccount.EmailConfirmed,"WB_64 expired confirmation cannot activate account");
+var denied=Account();denied.AccessDenied();Check(http.Response.StatusCode==403,"WB_11 access denied renders HTTP 403");http.Response.StatusCode=200;
+Check(OrderStatus.CanMove(OrderStatus.Pending,OrderStatus.Packing) && !OrderStatus.CanMove(OrderStatus.Pending,OrderStatus.Shipping)
+ && OrderStatus.CanMove(OrderStatus.Paid,OrderStatus.Cancelled) && !OrderStatus.CanMove(OrderStatus.AwaitingPayment,OrderStatus.Packing)
+ && !OrderStatus.CanMove(OrderStatus.Completed,OrderStatus.Pending),"WB_42 order transition matrix");
+await cart.WriteAsync([new(product.Id,1)],CancellationToken.None);
+var ordersBefore=await db.Oders.CountAsync();var stockBefore=product.stockQuantity;
+http.Session.SetString("CheckoutToken","expired-voucher");http.Session.SetString("AppliedPromotionCode","NO-LONGER-VALID");
+await controller.Checkout("Customer","123 Main Street",a.Phone,"cod","standard","expired-voucher",CancellationToken.None);
+Check(await db.Oders.CountAsync()==ordersBefore && product.stockQuantity==stockBefore
+ && controller.TempData["CheckoutError"]?.ToString().Contains("Voucher vừa hết hiệu lực")==true,"WB_26 expired voucher blocks checkout before order/stock mutation");
+http.Session.Remove("AppliedPromotionCode");http.Session.SetString("CheckoutToken","replay-order");
+await controller.Checkout("Customer","123 Main Street",a.Phone,"cod","standard","replay-order",CancellationToken.None);
+var committed=await db.Oders.SingleAsync(o=>o.CheckoutToken=="replay-order");var countAfter=await db.Oders.CountAsync();var stockAfter=product.stockQuantity;
+var replay=await controller.Checkout("Customer","123 Main Street",a.Phone,"cod","standard","replay-order",CancellationToken.None);
+Check(replay is RedirectToActionResult {ControllerName:"Orders"} && await db.Oders.CountAsync()==countAfter && product.stockQuantity==stockAfter,"WB_21 replay after session token cleared returns existing order without another reservation");
+http.User=new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier,"stranger")],"test"));
+Check(await controller.Checkout("Stranger","123 Main Street",a.Phone,"cod","standard","replay-order",CancellationToken.None) is NotFoundResult,"WB_21 replay token cannot access another customer's order");
+http.User=new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier,a.UserName),new Claim(ClaimTypes.Role,"User")],"test"));
+await lifecycle.CancelAsync(committed,"Cleanup",CancellationToken.None);await db.SaveChangesAsync();
+await cart.WriteAsync([new(product.Id,1)],CancellationToken.None);
+http.Session.SetString("CheckoutToken","bad-token");
+await controller.Checkout("Customer","123 Main Street",a.Phone,"cod","standard","wrong-token",CancellationToken.None);
+Check(controller.TempData["CheckoutError"]?.ToString().Contains("Phiên thanh toán")==true,"WB_20 wrong checkout token is rejected");
+Check(await controller.Checkout("Customer","123 Main Street",a.Phone,"momo","standard","bad-token",CancellationToken.None) is BadRequestObjectResult,"Removed payment method is rejected");
+await controller.Checkout("Customer","123 Main Street",a.Phone,"payos","standard","bad-token",CancellationToken.None);
+Check(controller.TempData["CheckoutError"]?.ToString().Contains("chưa được cấu hình")==true,"WB_24 missing PayOS keys refuse order before reserve");
+foreach(var q in new[]{0,-1}){
+ await controller.AddToCart(product.Id,q,CancellationToken.None);
+ Check((await cart.ReadAsync()).Single().Quantity==1,$"WB_13 invalid quantity {q} does not mutate cart");
+}
+http.User=new ClaimsPrincipal(new ClaimsIdentity());http.Request.Headers.Cookie="CartItems=corrupted-cookie";
+Check(cart.Guest().Count==0,"WB_17 tampered cookie yields empty cart without exception");
+http.User=new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier,a.UserName),new Claim(ClaimTypes.Role,"User")],"test"));
+
+// Media boundaries and review ownership from white-box cases 48-52.
+Check(ReviewUploads.Inspect(File("renamed.jpg",[137,80,78,71,13,10,26,10,0],"image/jpeg"))==null,"WB_50 PNG renamed as JPEG is rejected");
+Check(ReviewUploads.Inspect(File("test.png",[137,80,78,71,13,10,26,10,0],"image/jpeg"))==null,"WB_50 mismatched MIME type rejected");
+byte[] Sized(byte[] header,int size){var bytes=new byte[size];header.CopyTo(bytes,0);return bytes;}
+Check(ReviewUploads.Inspect(File("limit.png",Sized([137,80,78,71,13,10,26,10],5*1024*1024),"image/png"))!=null
+ && ReviewUploads.Inspect(File("limit.png",Sized([137,80,78,71,13,10,26,10],5*1024*1024+1),"image/png"))==null,"WB_51 image limit exactly 5 MiB and +1 byte");
+Check(ReviewUploads.Inspect(File("limit.mp4",Sized([0,0,0,12,102,116,121,112,0,0,0,0],20*1024*1024),"video/mp4"))!=null
+ && ReviewUploads.Inspect(File("limit.mp4",Sized([0,0,0,12,102,116,121,112,0,0,0,0],20*1024*1024+1),"video/mp4"))==null,"WB_51 video limit exactly 20 MiB and +1 byte");
+var savedReview=await db.ProductReviews.Include(r=>r.Media).SingleAsync();var oldMedia=savedReview.Media.Select(m=>Path.Combine(env.ContentRootPath,"App_Data","review-media",m.FileName)).ToArray();
+await Review().Save(product.Id,1,"New image",[Image()],CancellationToken.None);
+Check(oldMedia.All(path=>!System.IO.File.Exists(path)) && savedReview.Media.Count==1 && System.IO.File.Exists(Path.Combine(env.ContentRootPath,"App_Data","review-media",savedReview.Media.Single().FileName)),"WB_52 saving replacement media removes old files after commit");
+foreach(var input in new[]{(0,"Valid comment"),(6,"Valid comment"),(1,"ab"),(5,new string('x',1001))}){
+ var prev=savedReview.Comment;await Review().Save(product.Id,input.Item1,input.Item2,null,CancellationToken.None);
+ Check(savedReview.Comment==prev,$"WB_49 invalid rating/comment {input.Item1}/{input.Item2.Length} leaves review unchanged");
+}
+foreach(var length in new[]{3,1000}){await Review().Save(product.Id,5,new string('x',length),null,CancellationToken.None);Check(savedReview.Comment.Length==length,$"WB_49 valid comment boundary {length}");}
+http.User=new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier,"never-purchased")],"test"));
+await Review().Save(product.Id,5,"Not purchased",null,CancellationToken.None);
+Check(!await db.ProductReviews.AnyAsync(r=>r.UserName=="never-purchased"),"WB_48 customer without completed purchase cannot review");
+http.User=new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier,a.UserName),new Claim(ClaimTypes.Role,"User")],"test"));
+var chat=new ChatbotService(new Clients(),db,new HttpContextAccessor{HttpContext=http},Microsoft.Extensions.Options.Options.Create(new ChatbotOptions()),NullLogger<ChatbotService>.Instance);
+http.Request.Headers.Cookie="THAN_NONG_CHAT_VISITOR="+new string('a',32);
+var customerConversation=await chat.ReplyAsync(new ChatRequest{Message="đơn hàng của tôi"},CancellationToken.None);
+http.User=new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier,"other-customer")],"test"));
+var otherConversation=await chat.ReplyAsync(new ChatRequest{Message="xin chào",ConversationId=customerConversation.ConversationId},CancellationToken.None);
+Check(otherConversation.ConversationId!=customerConversation.ConversationId,"WB_54 another customer cannot reuse conversation id");
+Check(!await chat.SetFeedbackAsync(new ChatFeedbackRequest{MessageId=customerConversation.MessageId,Helpful=true},CancellationToken.None),"WB_57 another customer's feedback target rejected");
+http.User=new ClaimsPrincipal(new ClaimsIdentity());
+var guestConversation=await chat.ReplyAsync(new ChatRequest{Message="đơn hàng của tôi",ConversationId=customerConversation.ConversationId},CancellationToken.None);
+Check(guestConversation.ConversationId!=customerConversation.ConversationId && guestConversation.Orders.Count==0,"WB_55 guest after logout cannot recover customer conversation or orders using same visitor cookie");
+Check(!await chat.SetFeedbackAsync(new ChatFeedbackRequest{MessageId=customerConversation.MessageId,Helpful=true},CancellationToken.None),"WB_57 same browser after logout cannot modify customer feedback");
+var chatController=new ChatController(chat);
+foreach(var length in new[]{0,1001}){
+ var response=await chatController.Send(new ChatRequest{Message=new string('x',length)},CancellationToken.None);
+ Check(response.Result is BadRequestObjectResult,$"WB_56 invalid chat message length {length}");
+}
+var validChat=await chatController.Send(new ChatRequest{Message=new string('x',1000)},CancellationToken.None);
+Check(validChat.Result is OkObjectResult,"WB_56 1000-character chat message accepted");
 Directory.Delete(env.ContentRootPath,true);
 Console.WriteLine($"Failures: {failures}. InMemory tests do not verify SQL Server locking or real payment/SMTP providers.");return failures==0?0:1;
 

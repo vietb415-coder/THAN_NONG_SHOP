@@ -1,3 +1,5 @@
+> Tài liệu lịch sử ngày 05/10. Kết quả và thay đổi bản hiện tại: [KIEM_TRA_FAIL_20261007.md](KIEM_TRA_FAIL_20261007.md).
+
 # Kiểm tra các case Fail trong TEST_CASE_APP_THANNONG.xlsx — 05/10/2026
 
 Đọc trực tiếp file Excel người dùng cung cấp: sheet1 có 18 dòng Fail, sheet2 có 69 dòng Fail; tổng 87 dòng tương ứng 70 mã case khác nhau. Giữ nguyên kết quả trong Excel gốc. Nhiều dòng được ghi Fail do tài khoản chưa kích hoạt nên chưa thực hiện được các bước phía sau.

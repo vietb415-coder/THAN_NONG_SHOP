@@ -8,7 +8,7 @@
 
     <div asp-validation-summary="All" style="color: #e53e3e; margin-bottom: 15px; font-size: 14px; list-style: none; padding: 0;"></div>
 
-    <form asp-controller="Account" asp-action="Register" method="post">
+    <form id="registrationForm" asp-controller="Account" asp-action="Register" method="post">
         <input type="hidden" name="returnUrl" value="@returnUrl" />
 
         <div style="margin-bottom: 15px;">
@@ -55,3 +55,28 @@
 </div>
 
 @if(TempData["AccountMessage"] != null){<p role="status">@TempData["AccountMessage"]</p>}
+
+<script>
+    (() => {
+        const form = document.getElementById('registrationForm');
+        const button = form.querySelector('button[type="submit"]');
+        let submitting = false;
+        form.addEventListener('submit', event => {
+            if (submitting) {
+                event.preventDefault();
+                return;
+            }
+            if (event.defaultPrevented || !form.checkValidity()) return;
+            submitting = true;
+            button.disabled = true;
+            button.textContent = 'ĐANG XỬ LÝ ĐĂNG KÝ…';
+            form.setAttribute('aria-busy', 'true');
+        });
+        window.addEventListener('pageshow', () => {
+            submitting = false;
+            button.disabled = false;
+            button.textContent = 'ĐĂNG KÝ';
+            form.removeAttribute('aria-busy');
+        });
+    })();
+</script>

@@ -19,11 +19,7 @@ public static class EmailConfiguration
 
     public static List<string> Errors(IConfiguration config, IHostEnvironment env)
     {
-        var errors = new List<string>();
-        if (!Uri.TryCreate(config["Site:PublicBaseUrl"]?.Trim(), UriKind.Absolute, out var uri)
-            || uri.Scheme is not ("https" or "http") || !string.IsNullOrEmpty(uri.Query)
-            || !string.IsNullOrEmpty(uri.Fragment) || !string.IsNullOrEmpty(uri.UserInfo))
-            errors.Add("Site:PublicBaseUrl phải là URL website hợp lệ, không có query hoặc fragment.");
+        var errors = ConfirmationErrors(config);
         if (!MailAddress.TryCreate(config["Email:From"], out _))
             errors.Add("Email:From chưa có địa chỉ gửi hợp lệ.");
         if (IsPickup(config, env)) return errors;
@@ -46,6 +42,17 @@ public static class EmailConfiguration
                 errors.Add("Gmail SMTP cần Email:Username là địa chỉ Gmail gửi thư.");
             if (port != 587 || !ssl) errors.Add("Gmail với SmtpClient cần cổng 587 và EnableSsl = true (STARTTLS).");
         }
+        return errors;
+    }
+
+    // Creating a durable confirmation request does not require a working SMTP connection.
+    public static List<string> ConfirmationErrors(IConfiguration config)
+    {
+        var errors = new List<string>();
+        if (!Uri.TryCreate(config["Site:PublicBaseUrl"]?.Trim(), UriKind.Absolute, out var uri)
+            || uri.Scheme is not ("https" or "http") || !string.IsNullOrEmpty(uri.Query)
+            || !string.IsNullOrEmpty(uri.Fragment) || !string.IsNullOrEmpty(uri.UserInfo))
+            errors.Add("Site:PublicBaseUrl phải là URL website hợp lệ, không có query hoặc fragment.");
         return errors;
     }
 }

@@ -102,7 +102,7 @@ public sealed class ChatbotService(IHttpClientFactory clients, THAN_NONG_SHOP_Db
     }
 
     private bool CanAccess(ChatConversation conversation) => !string.IsNullOrWhiteSpace(UserName)
-        ? conversation.UserName == UserName : conversation.VisitorId == GetVisitorId();
+        ? conversation.UserName == UserName : conversation.UserName == null && conversation.VisitorId == GetVisitorId();
 
     private string GetVisitorId()
     {

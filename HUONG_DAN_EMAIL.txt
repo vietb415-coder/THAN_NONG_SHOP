@@ -1,20 +1,7 @@
-FULL SOURCE THAN NONG SHOP — ĐÓNG GÓI 05/10/2026
+EMAIL — BẢN 07/10/2026
 
-Bản này lấy từ ZIP mới nhất bạn gửi; giữ nguyên code và cấu hình email/database bạn đã điền. Đã bỏ bin, obj, .vs để không mang theo bản build và cấu hình cũ. Giải nén vào thư mục mới.
-
-CÁCH CHẠY
-1. Mở THAN_NONG_SHOP.slnx bằng Visual Studio hỗ trợ .NET 10.
-2. Restore NuGet rồi Build/Rebuild Solution và chạy ứng dụng.
-3. Kiểm tra kết nối SQL Server phù hợp máy/hosting đang dùng.
-4. Mở /Admin/Email bằng tài khoản Admin để kiểm tra cấu hình và lỗi gửi.
-5. Gửi lại email xác nhận từ trang đăng nhập (mỗi yêu cầu cách nhau ít nhất 5 phút); mở thư mới nhất, kiểm tra Spam.
-
-LÊN HOST
-Publish source này từ Visual Studio; không upload ZIP source trực tiếp thay cho bản publish. Giữ kết nối database hiện đang hoạt động trên host. Nếu host có cấu hình riêng, hợp nhất các giá trị cần thiết. Restart website sau khi cập nhật.
-
-CẤU HÌNH EMAIL
-appsettings.json và appsettings.Production.json đã có mật khẩu ứng dụng do bạn điền; không cần thay bằng chữ mẫu. Development dùng appsettings.json và appsettings.Development.json (nếu có); Production dùng appsettings.json và appsettings.Production.json. Biến môi trường có thể ghi đè. Không đưa file cấu hình có mật khẩu thật lên GitHub.
-
-KẾT QUẢ KIỂM TRA 04/10/2026
-Build 0 lỗi, 12 cảnh báo. Email/tài khoản/HTTP: 24 PASS; khuyến mãi: 15 PASS; chatbot: 12 PASS. Sau Clean và Build, hai file cấu hình trong output khớp source. Bản đóng gói này không thay đổi code đã kiểm thử.
-Chưa kiểm chứng mật khẩu được Gmail chấp nhận, thư đến Inbox, kết nối SQL/SMTP của hosting hoặc thanh toán thực tế. SMTP trong kiểm thử là giả lập. Báo cáo cũ trong source ghi nhận giai đoạn mật khẩu còn mẫu; trạng thái cấu hình hiện tại theo hướng dẫn này.
+Hướng dẫn hiện tại: HUONG_DAN_BAN_SUA_TESTCASE.txt và docs/KIEM_TRA_FAIL_20261007.md.
+Không đổi mật khẩu/cấu hình thật trong appsettings.json bằng chữ mẫu.
+Admin kiểm tra /Admin/Email sau khi publish và restart.
+Đăng ký lưu tài khoản chưa xác nhận và email vào outbox; nếu SMTP lỗi không thông báo gửi thành công và không cho đăng nhập trước khi xác nhận.
+Kiểm thử mới đạt SMTP loopback/pickup/retry/HTTP. Chưa xác minh Gmail nhận thư thật trên hosting.

@@ -1,44 +1,33 @@
-HƯỚNG DẪN CHẠY BẢN SỬA THEO TEST CASE — 05/10/2026
+BẢN SỬA THEO TEST CASE — 07/10/2026
 
-1. Giải nén vào thư mục mới; mở THAN_NONG_SHOP.slnx bằng Visual Studio.
-2. Dùng .NET 10 SDK. Restore NuGet rồi Build.
-3. Giữ cấu hình SQL/SMTP thực tế của bạn trong appsettings.json hoặc cấu hình môi trường trên hosting.
-4. Trong Package Manager Console (Default project: THAN_NONG_SHOP), chạy:
-   Update-Database -Context THAN_NONG_SHOP_DbContext
-   Bản này không thêm cột database/migration mới; lệnh trên áp dụng những migration đã có nhưng chưa chạy.
-5. Chạy local để kiểm tra trước. Sau đó Publish lại đầy đủ source; việc tải ZIP không tự cập nhật hosting.
+1. Giải nén vào thư mục mới, mở THAN_NONG_SHOP.slnx bằng Visual Studio hỗ trợ .NET 10.
+2. Restore NuGet, Build/Rebuild Solution.
+3. Giữ connection string database đang dùng; cấu hình môi trường Production có thể ghi đè appsettings.json.
+4. Bản sửa ngày 07/10 không thêm migration. Nếu database đã áp dụng tất cả migration hiện có thì không cần Update-Database.
+   Nếu chưa áp dụng, xem Get-Migration -Context THAN_NONG_SHOP_DbContext trước, rồi áp dụng các migration còn thiếu với Update-Database -Context THAN_NONG_SHOP_DbContext.
+   Ứng dụng hiện có Database.Migrate() khi khởi động; kiểm tra log nếu hosting không cho chạy migration.
+5. Publish lại ứng dụng lên MonsterASP.NET rồi restart website. ZIP này là source, không phải thư mục publish.
 
-CÁC MỤC ĐỂ KIỂM TRA LẠI
-- Đăng ký: nhập email thật. Hệ thống thử gửi thư ngay; nếu SMTP lỗi sẽ thông báo và thử lại.
-- Mở liên kết xác nhận trong email rồi đăng nhập bằng tên đăng nhập, email (không phân biệt hoa thường) hoặc SĐT.
-- Admin: /Admin/Email xem cấu hình/hàng đợi/lỗi email. SMTP tiếp nhận không bảo đảm thư đã vào Inbox Gmail.
-- /Products: gõ từ khóa sẽ tự cập nhật sau khoảng 300 ms, không cần bấm Áp dụng. Xóa bộ lọc cũng không tải lại cả trang.
-- Chi tiết sản phẩm: chọn số lượng, Thêm giỏ hoặc Mua ngay.
-- Guest có thể checkout theo TC_74 của Excel mới. Đơn Guest gắn với phiên trình duyệt; không có quyền đọc lịch sử tài khoản hay đánh giá.
-- Checkout: chọn Giao thường 30.000đ / Giao nhanh 50.000đ / Giao lạnh 70.000đ và nhập địa chỉ bắt buộc.
-- Đơn hàng của tôi: hủy đơn Chờ xác nhận; stock của lô và sản phẩm được hoàn đúng một lần.
-- Đơn Đã giao: vào Đơn hàng → Đánh giá sản phẩm. Chọn 1–5 sao; tối đa 3 ảnh (5 MB/ảnh) và 1 MP4 (20 MB).
-- Admin/Seller: Thống kê doanh thu → Ngày/Tuần/Tháng/Quý; Top 5; lô cận hạn <3 ngày.
-- Quản lý sản phẩm → Lô hàng / Hạn sử dụng → Cập nhật ngày thực tế của lô.
-  Các sản phẩm cũ chưa có ngày/chứng nhận sẽ hiện thiếu dữ liệu; cần nhập dữ liệu thật, không gán chứng nhận giả.
+EMAIL
+- Đăng ký tạo tài khoản chưa xác nhận và lưu thư trong hàng đợi, thử SMTP ngay.
+- Khi SMTP lỗi, tài khoản chưa được phép đăng nhập; thông báo thật và giữ hàng đợi để gửi lại.
+- Admin mở /Admin/Email để xem cấu hình/hàng đợi/trạng thái/lỗi. Kiểm tra From, Username, mật khẩu ứng dụng Gmail, smtp.gmail.com, cổng 587, EnableSsl=true.
+- Site:PublicBaseUrl phải đúng website; mở liên kết mới nhất trong email để xác nhận, hạn 24 giờ. Gửi lại email cách nhau tối thiểu 5 phút.
 
-CẤU HÌNH NGOÀI SOURCE CẦN HOÀN THIỆN
-- Trong ZIP gốc, khóa PayOS, VNPay đang trống. COD chạy được; online cần khóa tài khoản merchant thật.
-- Điền PayOS ClientId/ApiKey/ChecksumKey; VNPay TmnCode/HashSecret.
-- Site:PublicBaseUrl phải đúng địa chỉ đang chạy và webhook/IPN phải được cổng thanh toán cấu hình đúng.
-- Gmail cần SMTP smtp.gmail.com:587, EnableSsl=true, Username và mật khẩu ứng dụng hợp lệ; hosting phải kết nối SMTP được.
-- Voucher: có ô nhập ở Giỏ/Checkout. Chiến dịch cũ kết thúc 30/09/2026 nên mã hết hạn phải bị từ chối; không sửa ngày để biến voucher cũ thành còn hiệu lực.
+THANH TOÁN
+- Web hỗ trợ COD, PayOS và VNPay.
 
-KIỂM TRA ĐÃ THỰC HIỆN
-- Biên dịch C# và Razor Release: thành công, 0 lỗi. Do mạng NuGet bị chặn, kiểm tra dùng bản sao với tham chiếu DLL cùng phiên bản từ bản build sẵn có; csproj giao cho bạn vẫn giữ PackageReference gốc.
-- TestcaseEvals: 35 kiểm tra đạt (đăng nhập quyền User/Seller/Admin bằng SĐT, email hoa thường, gửi thư local/kích hoạt, ngày lô, shipping, Guest COD, tồn kho, hoàn tồn, rating/media).
-- EmailEvals: 24 kiểm tra đạt (thư pickup, SMTP loopback, retry, render HTTP và quyền truy cập).
-- PromotionEvals: 15 dòng PASS, gồm 12 tình huống tính tiền voucher và kiểm tra mã/cấu hình/hết hạn.
-- JavaScript: kiểm tra cú pháp và mô phỏng live-search/clear-filter thành công.
-- Chưa kiểm tra giao dịch online thật, thư đến Gmail thật, khóa đồng thời SQL Server, hoặc chạy toàn bộ case trên Chrome/Edge/hosting của bạn.
-- Không đổi kết quả trong Excel thành Pass: cần kiểm thử lại trên môi trường triển khai.
+KIỂM TRA MỚI
+- 119 assertion logic, 26 email/HTTP, 15 voucher, 12 chatbot: tổng 172 PASS, 0 FAIL.
+- Build lại toàn bộ: 0 lỗi, 12 cảnh báo nullable có sẵn.
+- Chưa kiểm thử trình duyệt mới do môi trường chặn Chrome; chưa xác minh Gmail nhận thư, thanh toán thật hoặc SQL Server đồng thời.
+- Xem docs/KIEM_TRA_FAIL_20261007.md để đối chiếu đủ 162 dòng Fail/145 mã và giới hạn kiểm thử. Log mới trong docs/test-results/20261007.
 
-LỆNH CHẠY KIỂM THỬ (từ thư mục chứa csproj)
-dotnet run --project tests/TestcaseEvals
-dotnet run --project tests/EmailEvals
-dotnet run --project tests/PromotionEvals
+CHẠY LẠI
+  dotnet run --project tests/TestcaseEvals/TestcaseEvals.csproj
+  dotnet run --project tests/EmailEvals/EmailEvals.csproj
+  dotnet run --project tests/PromotionEvals/PromotionEvals.csproj
+  dotnet run --project tests/ChatbotEvals/ChatbotEvals.csproj
+  dotnet run --project tests/BrowserEvals/BrowserEvals.csproj
+  dotnet build THAN_NONG_SHOP.csproj
+BrowserEvals mặc định dùng Edge; có thể cấu hình TEST_BROWSER_CHANNEL và TEST_BROWSER_PATH để dùng Chrome.

@@ -4,11 +4,16 @@
     ViewData["Title"] = "Đăng Nhập";
     var loginUsername = ViewData["LoginUsername"] as string ?? "";
     var returnUrl = ViewData["ReturnUrl"] as string;
+    var accountMessage = TempData["AccountMessage"] as string;
 }
 
 <div style="max-width: 400px; margin: 60px auto; padding: 30px; background: #fdfbf7; border: 1px solid #eaddca; border-radius: 12px; font-family: 'Segoe UI', Arial, sans-serif; box-shadow: 0 8px 25px rgba(92,64,51,0.06);">
     <h3 style="text-align: center; color: #5c4033; margin-bottom: 25px; font-family: 'Playfair Display', serif; font-size: 24px; font-weight: bold;"><svg class="app-icon"><use href="#icon-key"></use></svg>ĐĂNG NHẬP HỆ THỐNG</h3>
 
+    @if (!string.IsNullOrWhiteSpace(accountMessage))
+    {
+        <p role="status" style="padding:12px; border:1px solid #d2b48c; border-radius:6px; background:#fff; color:#5c4033;">@accountMessage</p>
+    }
     <div asp-validation-summary="All" style="color: #e53e3e; margin-bottom: 15px; font-size: 14px; list-style: none; padding: 0;"></div>
 
     <form asp-controller="Account" asp-action="Login" method="post" autocomplete="off">
@@ -41,6 +46,5 @@
     </form>
 </div>
 
-@if(TempData["AccountMessage"] != null){<p role="status">@TempData["AccountMessage"]</p>}
 
 <form asp-action="ResendConfirmation" method="post" class="commerce-panel"><label>Email chưa xác nhận <input type="email" name="email" required /></label><button>Gửi lại email xác nhận</button></form>

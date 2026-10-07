@@ -99,6 +99,18 @@ public class CartController(THAN_NONG_SHOP_DbContext db,CartState cart,Inventory
     public async Task<IActionResult> Checkout(string customerName,string shippingAddress,string shippingPhone,string paymentMethod,string shippingMethod,string checkoutToken,CancellationToken ct)
     {
         customerName=(customerName??"").Trim();shippingAddress=(shippingAddress??"").Trim();shippingPhone=(shippingPhone??"").Trim();paymentMethod=(paymentMethod??"").ToLowerInvariant();
+        // A completed request remains idempotent even after its session token is cleared.
+        if (!string.IsNullOrWhiteSpace(checkoutToken))
+        {
+            var completed = await db.Oders.AsNoTracking().FirstOrDefaultAsync(o=>o.CheckoutToken==checkoutToken,ct);
+            if (completed != null)
+            {
+                if (Username != null ? completed.UserName != Username
+                    : completed.UserName != null || !GuestOrderAccess.Contains(HttpContext,completed.Id)) return NotFound();
+                HttpContext.Session.SetInt32("LastOrderId",completed.Id);
+                return Username==null ? RedirectToAction(nameof(OrderSuccess)) : RedirectToAction("Index","Orders");
+            }
+        }
         if(checkoutToken==null || checkoutToken!=HttpContext.Session.GetString("CheckoutToken")){TempData["CheckoutError"]="Phiên thanh toán đã thay đổi. Vui lòng kiểm tra lại đơn.";return RedirectToAction(nameof(Checkout));}
         if(customerName.Length is <2 or >100 || shippingAddress.Length is <5 or >500 || !Regex.IsMatch(shippingPhone,@"^0[0-9]{9}$")){
             TempData["CheckoutError"]="Vui lòng nhập đủ tên, địa chỉ hợp lệ và số điện thoại 10 chữ số.";return RedirectToAction(nameof(Checkout));}
@@ -109,7 +121,11 @@ public class CartController(THAN_NONG_SHOP_DbContext db,CartState cart,Inventory
         try {
             await using var tx=await db.Database.BeginTransactionAsync(IsolationLevel.Serializable,ct);
             var previous=await db.Oders.FirstOrDefaultAsync(o=>o.CheckoutToken==checkoutToken && o.UserName==Username,ct);if(previous!=null)return RedirectToAction("Index","Orders");
-            var subtotal=items.Sum(i=>i.Product!.price*i.Quantity);var p=await PromotionAsync(subtotal,ct);
+            var subtotal=items.Sum(i=>i.Product!.price*i.Quantity);
+            var appliedCode=HttpContext.Session.GetString(PromotionKey);
+            var p=await PromotionAsync(subtotal,ct);
+            if(!string.IsNullOrWhiteSpace(appliedCode) && !p.IsValid)
+                throw new InvalidOperationException("Voucher vừa hết hiệu lực, vui lòng kiểm tra lại tổng tiền trước khi đặt hàng.");
             if(paymentMethod!="cod" && p.FinalTotal<=0)throw new InvalidOperationException("Đơn 0đ vui lòng chọn COD.");
             order=new Oder {UserName=Username,CustomerName=customerName,Address=shippingAddress,PhoneNumber=shippingPhone,OrderDate=DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(7)).DateTime,
                 Subtotal=subtotal,ShippingFee=p.ShippingFee,DiscountAmount=p.DiscountAmount,TotalPrice=p.FinalTotal,ShippingMethod=shippingMethod,PaymentMethod=paymentMethod,

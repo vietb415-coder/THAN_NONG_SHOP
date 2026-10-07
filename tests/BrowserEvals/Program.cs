@@ -26,7 +26,7 @@ using(var scope=factory.Services.CreateScope()){
  db.Entry(account).Property(nameof(user.NormalizedEmail)).CurrentValue="BROWSER@EXAMPLE.COM";await db.SaveChangesAsync();
 }
 using var playwright=await Playwright.CreateAsync();
-await using var browser=await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions{Channel="msedge",Headless=true});
+await using var browser=await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions{Channel=Environment.GetEnvironmentVariable("TEST_BROWSER_CHANNEL") ?? "msedge",ExecutablePath=Environment.GetEnvironmentVariable("TEST_BROWSER_PATH"),Headless=true,Args=["--no-sandbox"]});
 var page=await browser.NewPageAsync(new BrowserNewPageOptions{ViewportSize=new ViewportSize{Width=390,Height=844}});
 var server=factory.Services.GetRequiredService<Microsoft.AspNetCore.Hosting.Server.IServer>();
 var baseUrl=server.Features.Get<Microsoft.AspNetCore.Hosting.Server.Features.IServerAddressesFeature>()!.Addresses.Single().TrimEnd('/');
@@ -53,7 +53,7 @@ await page.WaitForURLAsync("**/Cart");
 await page.ReloadAsync();
 Check((await page.Locator("body").InnerTextAsync()).Contains("Cà chua test"),"TC_25/29 guest cart survives browser refresh");
 await page.GotoAsync(baseUrl+"/Cart/Checkout");
-Check(await page.Locator("input[name=paymentMethod][value=momo]").CountAsync()==0 && await page.Locator("input[name=paymentMethod][value=payos]").CountAsync()==1 && await page.Locator("input[name=paymentMethod][value=vnpay]").CountAsync()==1,"Checkout offers payOS and VNPay without removed provider");
+Check(await page.Locator("input[name=paymentMethod][value=momo]").CountAsync()==0 && await page.Locator("input[name=paymentMethod][value=payos]").CountAsync()==1 && await page.Locator("input[name=paymentMethod][value=vnpay]").CountAsync()==1,"Checkout excludes removed wallet and offers payOS and VNPay");
 foreach(var size in new[]{(390,844),(1280,800)}){
  await page.SetViewportSizeAsync(size.Item1,size.Item2);
  await page.EvaluateAsync("document.querySelector('form[action=\"/Cart/Checkout\"] button[type=submit]').scrollIntoView({block:'end'})");
@@ -100,7 +100,7 @@ Check(await page.Locator("form[action='/Cart/UpdateQuantity']").CountAsync()==0,
 await page.GotoAsync(baseUrl+"/Account/Register");
 Check(!page.Url.Contains("/Account/Register"),"TC_04 signed-in customer cannot open registration");
 await page.GotoAsync(baseUrl+"/Admin/Product");
-Check(page.Url.Contains("/Account/Login"),"TC_08 customer cannot access admin products");
+Check(page.Url.Contains("/Account/AccessDenied") && (await page.Locator("body").InnerTextAsync()).Contains("Không có quyền truy cập"),"TC_08 customer receives access denied instead of another login page");
 await page.GotoAsync(baseUrl+"/");
 await page.Locator("form[action='/Account/Logout'] button").ClickAsync();
 await page.WaitForURLAsync(baseUrl+"/");

@@ -1,0 +1,14 @@
+PASS  TV must not map to food
+PASS  TV phrased naturally must not match passion fruit
+PASS  Laptop must not map to food
+PASS  Phone must not map to food
+PASS  Vietnamese exact product
+PASS  Missing accents
+PASS  Joined product name
+PASS  Minor typo
+PASS  English synonym
+PASS  Category query
+PASS  Out-of-stock product is hidden
+PASS  Broad catalog returns only in-stock products
+
+All chatbot catalog evals passed.

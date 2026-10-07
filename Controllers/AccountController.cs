@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.DataProtection;
 using THAN_NONG_SHOP.Services;
 using THAN_NONG_SHOP.Models;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Data.SqlClient;
 
 namespace THAN_NONG_SHOP.Controllers
 {
@@ -25,12 +26,14 @@ namespace THAN_NONG_SHOP.Controllers
         private readonly IDataProtector _voucherProtector;
         private readonly EmailDelivery _email;
         private readonly CartState _cart;
+        private readonly ILogger<AccountController>? _log;
 
-        public AccountController(THAN_NONG_SHOP_DbContext context, IPasswordHasher<Models.user> passwordHasher, IDataProtectionProvider dataProtectionProvider, EmailDelivery email, CartState cart)
+        public AccountController(THAN_NONG_SHOP_DbContext context, IPasswordHasher<Models.user> passwordHasher, IDataProtectionProvider dataProtectionProvider, EmailDelivery email, CartState cart, ILogger<AccountController>? log = null)
         {
             _context = context;
             _email = email; _cart = cart;
             _passwordHasher = passwordHasher;
+            _log = log;
             _voucherProtector = dataProtectionProvider.CreateProtector("THAN_NONG_SHOP.VoucherCode.v1");
         }
 
@@ -276,6 +279,7 @@ namespace THAN_NONG_SHOP.Controllers
 
         public IActionResult AccessDenied()
         {
+            Response.StatusCode = StatusCodes.Status403Forbidden;
             return View();
         }
         [HttpGet]
@@ -301,10 +305,6 @@ namespace THAN_NONG_SHOP.Controllers
             {
                 ModelState.AddModelError("username", "Tên đăng nhập dài 3–50 ký tự, bắt đầu bằng chữ, chỉ gồm chữ không dấu, số, dấu chấm, gạch ngang hoặc gạch dưới.");
             }
-            else if (await _context.Users.AnyAsync(u => u.UserName == username))
-            {
-                ModelState.AddModelError("username", "Tên đăng nhập này đã tồn tại.");
-            }
 
             if (fullName.Length is < 2 or > 100)
             {
@@ -323,6 +323,15 @@ namespace THAN_NONG_SHOP.Controllers
 
             if (!ShopRules.StrongPassword(password)) ModelState.AddModelError("password", "Mật khẩu phải có 8–128 ký tự, chữ hoa, chữ thường, số và ký tự đặc biệt.");
             if (password != confirmPassword) ModelState.AddModelError("confirmPassword", "Mật khẩu nhập lại không khớp.");
+            ViewData["ReturnUrl"] = returnUrl;
+            if (!ModelState.IsValid) return View();
+
+            // A retry while SMTP is sending must acknowledge the account already saved.
+            if (await IsPendingRegistrationAsync(username, fullName, email, phoneNumber, password))
+                return PendingRegistrationResult(returnUrl);
+
+            if (await _context.Users.AnyAsync(u => u.UserName == username))
+                ModelState.AddModelError("username", "Tên đăng nhập này đã tồn tại.");
             if (await _context.Users.AnyAsync(u => u.NormalizedEmail == ShopRules.NormalizeEmail(email) || u.Phone == phoneNumber))
                 ModelState.AddModelError("email", "Email hoặc Số điện thoại đã được đăng ký");
 
@@ -358,12 +367,45 @@ namespace THAN_NONG_SHOP.Controllers
             // Let this request attempt delivery first; worker retries if SMTP fails.
             confirmation.NextAttemptAt=DateTime.UtcNow.AddMinutes(1);
             try { await _context.SaveChangesAsync(); }
-            catch (DbUpdateException) { ModelState.AddModelError("email", "Tên đăng nhập, Email hoặc Số điện thoại đã được đăng ký."); return View(); }
+            catch (DbUpdateException ex)
+            {
+                _context.Entry(newUser).State = EntityState.Detached;
+                _context.Entry(confirmation).State = EntityState.Detached;
+                if (ex.InnerException is SqlException sql && sql.Errors.Cast<SqlError>().Any(e => e.Number is 2601 or 2627))
+                {
+                    // Two requests can pass the initial checks before either commits.
+                    if (await IsPendingRegistrationAsync(username, fullName, email, phoneNumber, password))
+                        return PendingRegistrationResult(returnUrl);
+                    ModelState.AddModelError("email", "Tên đăng nhập, Email hoặc Số điện thoại đã được đăng ký.");
+                }
+                else
+                {
+                    _log?.LogError(ex, "Không thể lưu tài khoản và email xác nhận khi đăng ký.");
+                    ModelState.AddModelError("", "Không thể lưu đăng ký lúc này. Vui lòng thử lại sau hoặc liên hệ Admin.");
+                }
+                return View();
+            }
             var sent=await _email.SendConfirmationNowAsync(confirmation);
             TempData["AccountMessage"]=sent
-                ? "Máy chủ email đã tiếp nhận thư xác nhận. Vui lòng mở liên kết trong hộp thư hoặc thư rác để kích hoạt tài khoản."
+                ? "Đã tạo tài khoản thành công. Máy chủ email đã tiếp nhận thư xác nhận. Vui lòng mở liên kết trong hộp thư hoặc thư rác để kích hoạt tài khoản."
                 : "Đã tạo tài khoản nhưng máy chủ email chưa gửi được thư. Hệ thống sẽ thử lại; bạn có thể bấm Gửi lại email xác nhận. Admin có thể xem lỗi tại mục Email.";
             return RedirectToAction("Login", new { returnUrl });
+        }
+
+        private async Task<bool> IsPendingRegistrationAsync(string username, string fullName, string email, string phone, string password)
+        {
+            var account = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.UserName == username);
+            return account != null && !account.EmailConfirmed && account.IsActive && account.RoleId == 2
+                && account.Fullname == fullName && account.Phone == phone
+                && ShopRules.NormalizeEmail(account.Email) == ShopRules.NormalizeEmail(email)
+                && account.Password.StartsWith("AQAAAA", StringComparison.Ordinal)
+                && _passwordHasher.VerifyHashedPassword(account, account.Password, password) != PasswordVerificationResult.Failed;
+        }
+
+        private IActionResult PendingRegistrationResult(string? returnUrl)
+        {
+            TempData["AccountMessage"] = "Tài khoản đã được tạo và đang chờ xác nhận email. Vui lòng kiểm tra hộp thư và thư rác; nếu chưa nhận được thư, hãy bấm Gửi lại email xác nhận.";
+            return RedirectToAction(nameof(Login), new { returnUrl });
         }
 
         [HttpGet]

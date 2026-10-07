@@ -1,0 +1,51 @@
+/workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master/Models/user.cs(6,18): warning CS8981: The type name 'user' only contains lower-cased ascii characters. Such names may become reserved for the language. [/workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master/THAN_NONG_SHOP.csproj]
+/workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master/Controllers/Cart.cs(77,131): warning CS8604: Possible null reference argument for parameter 'value' in 'void SessionExtensions.SetString(ISession session, string key, string value)'. [/workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master/THAN_NONG_SHOP.csproj]
+/workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master/Controllers/Cart.cs(119,56): warning CS8604: Possible null reference argument for parameter 'value' in 'void SessionExtensions.SetString(ISession session, string key, string value)'. [/workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master/THAN_NONG_SHOP.csproj]
+/workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master/Models/user.cs(26,29): warning CS8618: Non-nullable property 'Role' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [/workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master/THAN_NONG_SHOP.csproj]
+/workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master/Models/Role.cs(6,23): warning CS8618: Non-nullable property 'roleName' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [/workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master/THAN_NONG_SHOP.csproj]
+/workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master/Models/Product.cs(35,37): warning CS8618: Non-nullable property 'Products' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [/workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master/THAN_NONG_SHOP.csproj]
+/workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master/Models/Product.cs(36,38): warning CS8618: Non-nullable property 'Categories' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [/workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master/THAN_NONG_SHOP.csproj]
+/workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master/Models/Oder.cs(43,23): warning CS8618: Non-nullable property 'CustomerName' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [/workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master/THAN_NONG_SHOP.csproj]
+/workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master/Models/Oder.cs(45,23): warning CS8618: Non-nullable property 'PhoneNumber' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [/workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master/THAN_NONG_SHOP.csproj]
+/workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master/Models/Oder.cs(47,23): warning CS8618: Non-nullable property 'Address' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [/workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master/THAN_NONG_SHOP.csproj]
+/workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master/Models/Category.cs(9,23): warning CS8618: Non-nullable property 'Name' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [/workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master/THAN_NONG_SHOP.csproj]
+/workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master/Models/Category.cs(10,23): warning CS8618: Non-nullable property 'Description' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [/workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master/THAN_NONG_SHOP.csproj]
+PASS Reject placeholder password
+PASS Normalize grouped Gmail app password
+PASS Accept complete Gmail configuration without claiming authentication
+PASS Reject implicit SSL port for Gmail SmtpClient
+PASS Invalid port is reported without throwing
+PASS Reject malformed confirmation base URL
+PASS Reject pickup mode in Production
+PASS Confirmation token matches hash and queued link
+PASS Confirmation token expires after approximately 24 hours
+PASS Worker delivers queued email to local pickup file
+PASS Worker does not resend delivered messages
+PASS SMTP dialogue succeeds with configured EnableSsl=false on local server
+PASS Connection failure schedules retry without marking sent
+PASS Admin status reports delivery failure
+PASS Retry backoff is respected
+PASS WB_62 invalid SMTP configuration preserves queued confirmation and retry schedule
+PASS WB_62 registration creates unconfirmed account and durable email while SMTP is unavailable
+PASS Failed SMTP is not reported as successful delivery
+PASS Immediate resend respects cooldown for pending confirmation
+PASS Expired campaign cannot issue a voucher
+PASS Expired campaign cannot consume a spin or reward stock
+warn: Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager[35]
+      No XML encryptor configured. Key {c4f0711f-1094-4295-ac78-f6a4a3612b83} may be persisted to storage in unencrypted form.
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Testing
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: /workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master
+warn: Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware[3]
+      Failed to determine the https port for redirect.
+PASS HTTP render /Account/Login with isolated in-memory database
+PASS HTTP render /Account/Register with isolated in-memory database
+PASS HTTP render /Home/Promotions with isolated in-memory database
+PASS WB_12 cart POST without antiforgery token returns HTTP 400
+PASS Anonymous visitor cannot read admin email diagnostics
+info: Microsoft.Hosting.Lifetime[0]
+      Application is shutting down...
+Failures: 0

@@ -8,13 +8,14 @@ using THAN_NONG_SHOP.Models;
 
 namespace THAN_NONG_SHOP.Services;
 
-public sealed class EmailDelivery(THAN_NONG_SHOP_DbContext db, IConfiguration config, IWebHostEnvironment env)
+public sealed class EmailDelivery(THAN_NONG_SHOP_DbContext db, IConfiguration config, IWebHostEnvironment env,
+    ILogger<EmailDelivery>? log=null, EmailWorkerStatus? status=null)
 {
     public EmailMessage Queue(string recipient,string subject,string body) {
         var message=new EmailMessage { Recipient=recipient,Subject=subject,Body=body };
         db.EmailMessages.Add(message);return message;
     }
-    public bool CanConfirm => EmailConfiguration.Errors(config, env).Count == 0;
+    public bool CanConfirm => EmailConfiguration.ConfirmationErrors(config).Count == 0;
     public EmailMessage Confirmation(user account)
     {
         if (!CanConfirm) throw new InvalidOperationException(EmailConfiguration.UnavailableMessage);
@@ -32,8 +33,17 @@ public sealed class EmailDelivery(THAN_NONG_SHOP_DbContext db, IConfiguration co
         try {
             await EmailTransport.SendAsync(item,config,env,ct);
             item.SentAt=DateTime.UtcNow;item.NextAttemptAt=null;
+            status?.Set(EmailConfiguration.IsPickup(config,env)
+                ? "Đã ghi thư thử vào thư mục local; chưa gửi ra Internet."
+                : "SMTP đã tiếp nhận thư xác nhận. Vui lòng kiểm tra hộp thư và thư rác.");
         } catch(OperationCanceledException) when(ct.IsCancellationRequested) { throw; }
-        catch(Exception) {item.Attempts++;item.NextAttemptAt=DateTime.UtcNow.AddSeconds(15);}
+        catch(Exception ex) {
+            item.Attempts++;item.NextAttemptAt=DateTime.UtcNow.AddSeconds(15);
+            status?.Set(ex is OperationCanceledException
+                ? "SMTP quá 15 giây chưa phản hồi. Kiểm tra kết nối SMTP từ hosting."
+                : "SMTP chưa gửi được thư xác nhận. Kiểm tra cấu hình email và log ứng dụng; hệ thống sẽ thử lại.");
+            log?.LogWarning(ex,"Email xác nhận #{EmailId} chưa gửi được, sẽ thử lại.",item.Id);
+        }
         await db.SaveChangesAsync(ct);
         return item.SentAt.HasValue;
     }
@@ -44,6 +54,8 @@ internal static class EmailTransport
 {
     public static async Task SendAsync(EmailMessage item,IConfiguration config,IWebHostEnvironment env,CancellationToken ct)
     {
+        if(EmailConfiguration.Errors(config,env).Count>0)
+            throw new InvalidOperationException(EmailConfiguration.UnavailableMessage);
         using var message=new MailMessage(config["Email:From"]!,item.Recipient,item.Subject,item.Body) {BodyEncoding=Encoding.UTF8,SubjectEncoding=Encoding.UTF8};
         using var client=new SmtpClient();
         if(EmailConfiguration.IsPickup(config,env)) {

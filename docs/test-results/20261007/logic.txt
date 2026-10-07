@@ -1,0 +1,126 @@
+/workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master/tests/TestcaseEvals/Program.cs(385,125): warning CS8767: Nullability of reference types in type of parameter 'value' of 'bool MemorySession.TryGetValue(string key, out byte[]? value)' doesn't match implicitly implemented member 'bool ISession.TryGetValue(string key, out byte[]? value)' (possibly because of nullability attributes). [/workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master/tests/TestcaseEvals/TestcaseEvals.csproj]
+/workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master/tests/TestcaseEvals/Program.cs(77,40): warning CS8602: Dereference of a possibly null reference. [/workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master/tests/TestcaseEvals/TestcaseEvals.csproj]
+/workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master/tests/TestcaseEvals/Program.cs(270,42): warning CS8602: Dereference of a possibly null reference. [/workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master/tests/TestcaseEvals/TestcaseEvals.csproj]
+/workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master/tests/TestcaseEvals/Program.cs(283,44): warning CS8602: Dereference of a possibly null reference. [/workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master/tests/TestcaseEvals/TestcaseEvals.csproj]
+/workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master/tests/TestcaseEvals/Program.cs(285,44): warning CS8602: Dereference of a possibly null reference. [/workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master/tests/TestcaseEvals/TestcaseEvals.csproj]
+/workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master/tests/TestcaseEvals/Program.cs(206,46): warning CS8620: Argument of type 'Dictionary<string, string>' cannot be used for parameter 'parameters' of type 'IEnumerable<KeyValuePair<string, string?>>' in 'QueryString QueryString.Create(IEnumerable<KeyValuePair<string, string?>> parameters)' due to differences in the nullability of reference types. [/workspace/scratch/7665b23e6f60/work/THAN_NONG_SHOP-master/tests/TestcaseEvals/TestcaseEvals.csproj]
+PASS TC_38 invalid password does not issue login
+PASS TC_39 unknown email rejected
+PASS TC_40 phone login finds locked account
+PASS TC_07 uppercase email resolves account before activation check
+PASS TC_37 uppercase duplicate email rejected
+PASS TC_03 registration attempts confirmation delivery immediately (local pickup)
+PASS TC_05 confirmation activates account
+PASS Confirmation token cannot be reused
+PASS TC_05/07/08 successful phone login role User
+PASS TC_05/07/08 successful phone login role Seller
+PASS TC_05/07/08 successful phone login role Admin
+PASS TC_41 equal harvest and expiry rejected
+PASS TC_41 expiry before harvest rejected
+PASS TC_44/65 exact 3 days excluded, 2 days included
+PASS Report period day
+PASS Report period week
+PASS Report period month
+PASS Report period quarter
+PASS TC_70/71/72 shipping fees
+PASS TC_73 empty checkout rejected with message
+PASS TC_69/74 guest COD creates correct order
+PASS TC_75 reservation reduces batch and product stock
+PASS Guest can access only order ids granted to their session
+PASS Guest order cannot be read from another session
+PASS Cancellation restores exact stock
+PASS Repeated cancellation never restores twice
+PASS TC_45 overstock rejected without reducing inventory
+PASS No stars never saves a review
+PASS TC_58/59 rating 1 saved
+PASS TC_58/59 rating 5 saved
+PASS TC_60 three images accepted
+PASS TC_61 four images rejected without replacing old media
+PASS TC_62 one video accepted
+PASS TC_63 two videos rejected
+PASS TC_64 invalid signatures and executable files rejected
+PASS TC_78 customer cancels packing order and restores stock
+PASS TC_78 repeated cancellation does not restore twice
+PASS TC_78 mixed order with shipped line cannot be cancelled
+PASS TC_78 cancellation of paid online order flags refund review
+PASS TC_78 cannot cancel another customer's order
+PASS TC_19/47/79 trimmed product name search
+PASS TC_21 product description search
+PASS TC_22/46/81/82/83 combined category and price filters
+PASS TC_85 reversed price bounds are normalized
+PASS TC_86 negative price does not crash
+PASS TC_20/80 unknown search returns empty results
+PASS TC_23/84 clearing filters restores full catalogue
+PASS TC_24 AJAX returns results without full page layout
+PASS TC_25/30/87 customer cart persists in database
+PASS TC_28 negative quantity leaves cart unchanged
+PASS TC_48/95 overstock quantity leaves cart unchanged
+PASS TC_26/89 cart quantity updates
+PASS TC_49/89 zero quantity removes item
+PASS TC_27/90 removal empties cart
+PASS TC_92 blank checkout rejected without losing cart
+PASS TC_50 invalid voucher rejected with message
+PASS TC_94 stale cart cannot reserve stock after batch sells out
+PASS TC_32/33/34/35 invalid registration weak blocked
+PASS TC_32/33/34/35 invalid registration mismatch blocked
+PASS TC_32/33/34/35 invalid registration bademail blocked
+PASS TC_32/33/34/35 invalid registration badphone blocked
+PASS TC_04 authenticated visitor cannot open guest registration
+PASS TC_04 authenticated visitor cannot submit guest registration
+PASS TC_31 duplicate phone rejected
+PASS TC_36 registration trims name, email and phone consistently
+PASS VNPay link uses VND amount multiplied by 100 and signature
+PASS TC_18/52 failed payment keeps reservation until deadline
+PASS VNPay rejects tampered callback signature
+PASS VNPay rejects correctly signed callback with wrong amount
+PASS TC_17 payment success marks paid without subtracting stock twice
+PASS Duplicate payment callback does not repeat inventory or email side effects
+PASS TC_53 maintenance cancels overdue order and restores exact stock
+PASS TC_52 maintenance preserves order before 15-minute deadline
+PASS TC_53 repeated maintenance never restores stock twice
+PASS WB_2 wrong password leaves legacy password unchanged
+PASS WB_1 legacy password upgraded on successful login
+PASS WB_3 old iteration hash rehashed after correct password
+PASS WB_4 ambiguous identifiers cannot sign in
+PASS WB_8 external returnUrl still permits legitimate login
+PASS WB_64 expired confirmation cannot activate account
+PASS WB_11 access denied renders HTTP 403
+PASS WB_42 order transition matrix
+PASS WB_26 expired voucher blocks checkout before order/stock mutation
+PASS WB_21 replay after session token cleared returns existing order without another reservation
+PASS WB_21 replay token cannot access another customer's order
+PASS WB_20 wrong checkout token is rejected
+PASS WB_24 missing MoMo keys refuse order before reserve
+PASS WB_13 invalid quantity 0 does not mutate cart
+PASS WB_13 invalid quantity -1 does not mutate cart
+PASS WB_17 tampered cookie yields empty cart without exception
+PASS TC_67 MoMo create verifies signed response
+PASS MoMo tampered create response rejected
+PASS MoMo query correlates order and request IDs
+PASS WB_36 correctly signed MoMo IPN with mismatched requestId rejected
+PASS MoMo invalid signature cannot mark order paid
+PASS MoMo wrong amount cannot mark order paid
+PASS TC_67 cancelled MoMo attempt keeps reservation until deadline
+PASS MoMo valid successful IPN marks order paid
+PASS WB_33 repeated MoMo IPN does not queue another email
+PASS WB_34 late MoMo payment flags review and keeps cancelled status
+PASS WB_50 PNG renamed as JPEG is rejected
+PASS WB_50 mismatched MIME type rejected
+PASS WB_51 image limit exactly 5 MiB and +1 byte
+PASS WB_51 video limit exactly 20 MiB and +1 byte
+PASS WB_52 saving replacement media removes old files after commit
+PASS WB_49 invalid rating/comment 0/13 leaves review unchanged
+PASS WB_49 invalid rating/comment 6/13 leaves review unchanged
+PASS WB_49 invalid rating/comment 1/2 leaves review unchanged
+PASS WB_49 invalid rating/comment 5/1001 leaves review unchanged
+PASS WB_49 valid comment boundary 3
+PASS WB_49 valid comment boundary 1000
+PASS WB_48 customer without completed purchase cannot review
+PASS WB_54 another customer cannot reuse conversation id
+PASS WB_57 another customer's feedback target rejected
+PASS WB_55 guest after logout cannot recover customer conversation or orders using same visitor cookie
+PASS WB_57 same browser after logout cannot modify customer feedback
+PASS WB_56 invalid chat message length 0
+PASS WB_56 invalid chat message length 1001
+PASS WB_56 1000-character chat message accepted
+Failures: 0. InMemory tests do not verify SQL Server locking or real payment/SMTP providers.
